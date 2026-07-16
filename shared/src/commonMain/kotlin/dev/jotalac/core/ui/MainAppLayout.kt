@@ -31,30 +31,8 @@ fun MainLayoutScreen(
         }
     ) { paddingValues ->
 
-        // 2. Inside the Scaffold, we split the screen horizontally for Desktop
-//        Row(
-//            modifier = Modifier.padding(paddingValues)
-//        ) {
-//            // 3. The Left Sidebar (File tree, branches, settings)
-//            NavigationRail {
-//                NavigationRailItem(
-//                    selected = true,
-//                    onClick = { },
-//                    icon = { Text("📝") },
-//                    label = { Text("Editor") }
-//                )
-//                NavigationRailItem(
-//                    selected = false,
-//                    onClick = { },
-//                    icon = { Text("⚙️") },
-//                    label = { Text("Settings") }
-//                )
-//            }
-
-//        }
         Box(modifier = Modifier.padding(paddingValues)) {
             currentScreen()
-
         }
     }
 }
