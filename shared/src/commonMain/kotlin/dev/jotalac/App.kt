@@ -16,9 +16,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +48,9 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCode
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
@@ -53,6 +58,10 @@ import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.compose.elements.highlightedCodeBlock
 import com.mikepenz.markdown.compose.elements.highlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
+import dev.jotalac.core.navigation.Route
+import dev.jotalac.core.ui.MainLayoutScreen
+import dev.jotalac.core.ui.theme.AppTheme
+import dev.jotalac.feature.editor.ui.EditorScreen
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
@@ -377,24 +386,21 @@ fun MarkdownEditor(initialContent: String) {
 @Composable
 @Preview
 fun App() {
-    val initialMarkdownContent = """
-        # Hello Markdown
-        
-        This is a simple markdown example with:
-        
-        - Bullet points
-        - **Bold text**
-        - *Italic text*
-        
-        ```kotlin
-        val myValue = 10
-        fun thisIsFunction()
-        ```
-        
-        [Check out this link](https://github.com/mikepenz/multiplatform-markdown-renderer)
-    """.trimIndent()
-    
-    MarkdownEditor(initialContent = initialMarkdownContent)
+
+
+    AppTheme {
+        val navController = rememberNavController()
+        NavHost(navController = navController, startDestination = Route.MainApp) {
+            composable<Route.MainApp> {
+                MainLayoutScreen {
+                    EditorScreen()
+                }
+
+            }
+        }
+
+//        MarkdownEditor(initialContent = initialMarkdownContent)
+    }
 }
 
 @Composable
