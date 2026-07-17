@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.data.mapperw
+package dev.jotalac.feature.editor.data.mapper
 
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.parser.CancellationToken

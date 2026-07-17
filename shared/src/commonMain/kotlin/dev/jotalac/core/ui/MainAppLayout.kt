@@ -24,13 +24,12 @@ fun MainLayoutScreen(
                 title = { Text("main-branch / my-note.md") }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /* Commit to Git */ }) {
-                Text("Sync")
-            }
-        }
+//        floatingActionButton = {
+//            FloatingActionButton(onClick = { /* Commit to Git */ }) {
+//                Text("Sync")
+//            }
+//        }
     ) { paddingValues ->
-
         Box(modifier = Modifier.padding(paddingValues)) {
             currentScreen()
         }

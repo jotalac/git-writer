@@ -1,5 +1,6 @@
 package dev.jotalac.feature.editor.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,21 +12,30 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun MarkdownEditorBlocksList(
-    markdownBlocks: List<String>,
+    blocks: List<String>,
     focusedIndex: Int?,
+    cursorTarget: TextRange?,
+    onBlockFocus: (index: Int, cursor: TextRange?) -> Unit,
+    onBlockChange: (index: Int, text: String) -> Unit,
+    onBlockFocusLost: (index: Int, text: String) -> Unit,
+    onEscape: () -> Unit,
+    onAddBlockBelow: (index: Int) -> Unit,
+    onMoveUp: (index: Int) -> Boolean,
+    onMoveDown: (index: Int) -> Boolean,
+    onBackspaceOnEmpty: (index: Int) -> Boolean,
+    onAddBlockAtEnd: () -> Unit,
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState(),
+    listState: LazyListState = rememberLazyListState()
 ) {
     LazyColumn(
         state = listState,
@@ -34,7 +44,7 @@ fun MarkdownEditorBlocksList(
             .padding(16.dp),
         contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        itemsIndexed(markdownBlocks) { index, block ->
+        itemsIndexed(blocks) { index, block ->
             val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
             Box(
@@ -44,12 +54,44 @@ fun MarkdownEditorBlocksList(
                     .bringIntoViewRequester(bringIntoViewRequester)
             ) {
                 if (focusedIndex == index) {
-                    val focusRequester = remember { FocusRequester() }
-                    var hasFocused by remember { mutableStateOf(false) }
+                    ActiveEditorBlock(
+                        initialText = block,
+                        cursorTarget = cursorTarget,
+                        onTextChange = { newText -> onBlockChange(index, newText) },
+                        onFocusLost = { text -> onBlockFocusLost(index, text) },
+                        onEscape = onEscape,
+                        onAddBlockBelow = { onAddBlockBelow(index) },
+                        onMoveUp = { onMoveUp(index) },
+                        onMoveDown = { onMoveDown(index) },
+                        onBackspaceOnEmpty = { onBackspaceOnEmpty(index) },
+                        bringIntoViewRequester = bringIntoViewRequester
+                    )
+                } else {
+                    RenderedEditorBlock(
+                        text = block,
+                        modifier = Modifier.clickable {
+                            onBlockFocus(index, null)
+                        }
+                    )
                 }
             }
+        }
 
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .clickable {
+                        onAddBlockAtEnd()
+                    }
+            ) {
+                Text(
+                    text = "Tap to add new text...",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
         }
     }
-
 }

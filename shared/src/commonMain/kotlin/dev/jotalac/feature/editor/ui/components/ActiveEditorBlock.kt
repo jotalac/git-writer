@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -26,92 +27,69 @@ import androidx.compose.ui.text.input.TextFieldValue
 
 @Composable
 fun ActiveEditorBlock(
-    index: Int,
-    blockTextContent: String
+    initialText: String,
+    cursorTarget: TextRange?,
+    onTextChange: (String) -> Unit,
+    onFocusLost: (String) -> Unit,
+    onEscape: () -> Unit,
+    onAddBlockBelow: () -> Unit,
+    onMoveUp: () -> Boolean,
+    onMoveDown: () -> Boolean,
+    onBackspaceOnEmpty: () -> Boolean,
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    bringIntoViewRequester: BringIntoViewRequester? = null
 ) {
-    val focusRequester = remember { FocusRequester() }
     var hasFocused by remember { mutableStateOf(false) }
 
-    var textFieldValue by remember(index) {
-        val initialSelection = cursorTarget ?: TextRange(block.length)
+    var textFieldValue by remember {
+        val initialSelection = cursorTarget ?: TextRange(initialText.length)
         val safeSelection = TextRange(
-            initialSelection.start.coerceIn(0, block.length),
-            initialSelection.end.coerceIn(0, block.length)
+            initialSelection.start.coerceIn(0, initialText.length),
+            initialSelection.end.coerceIn(0, initialText.length)
         )
-        mutableStateOf(TextFieldValue(text = block, selection = safeSelection))
+        mutableStateOf(TextFieldValue(text = initialText, selection = safeSelection))
     }
 
-    LaunchedEffect(Unit) {
-        bringIntoViewRequester.bringIntoView()
-    }
-
-    // Auto-scroll when typing pushes the cursor out of view
     LaunchedEffect(textFieldValue.selection) {
-        bringIntoViewRequester.bringIntoView()
+        bringIntoViewRequester?.bringIntoView()
     }
 
     BasicTextField(
         value = textFieldValue,
         onValueChange = {
             textFieldValue = it
-            blocks[index] = it.text
+            onTextChange(it.text)
         },
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
                     hasFocused = true
                 } else if (hasFocused) {
-                    // Element lost focus
-                    val currentFocused = focusedIndex
-
-                    if (textFieldValue.text.isBlank()) {
-                        if (index < blocks.size) {
-                            blocks.removeAt(index)
-                            if (currentFocused != null && currentFocused > index) {
-                                focusedIndex = currentFocused - 1
-                            }
-                        }
-                    } else {
-                        val currentText = blocks[index]
-                        val newChunks = chunkMarkdownIntoBlocks(currentText)
-                        if (newChunks.isEmpty()) {
-                            blocks.removeAt(index)
-                            if (currentFocused != null && currentFocused > index) {
-                                focusedIndex = currentFocused - 1
-                            }
-                        } else if (newChunks.size > 1) {
-                            blocks.removeAt(index)
-                            blocks.addAll(index, newChunks)
-
-                            if (currentFocused != null && currentFocused > index) {
-                                focusedIndex = currentFocused + (newChunks.size - 1)
-                            }
-                        }
-                    }
-
-                    if (focusedIndex == index) {
-                        focusedIndex = null
-                    }
+                    onFocusLost(textFieldValue.text)
                 }
             }
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown) {
                     when (event.key) {
                         Key.Escape -> {
-                            focusManager.clearFocus()
-                            focusedIndex = null
+                            onEscape()
                             true
                         }
                         Key.Enter -> {
                             if (event.isCtrlPressed || event.isShiftPressed) {
-                                blocks.add(index + 1, "")
-                                cursorTarget = TextRange(0)
-                                focusedIndex = index + 1
+                                onAddBlockBelow()
                                 true
                             } else {
-                                false
+                                // handle list continuation
+                                val newTextFieldValue = handleMarkdownListContinuation(textFieldValue)
+                                if (newTextFieldValue != null) {
+                                    textFieldValue = newTextFieldValue
+                                    onTextChange(textFieldValue.text)
+                                    true
+                                } else false
                             }
                         }
                         Key.DirectionUp -> {
@@ -119,10 +97,8 @@ fun ActiveEditorBlock(
                             val firstNewline = textFieldValue.text.indexOf('\n')
                             val isFirstLine = if (firstNewline == -1) true else cursorStart <= firstNewline
 
-                            if (isFirstLine && index > 0) {
-                                cursorTarget = TextRange(blocks[index - 1].length)
-                                focusedIndex = index - 1
-                                true
+                            if (isFirstLine) {
+                                onMoveUp()
                             } else {
                                 false
                             }
@@ -132,24 +108,15 @@ fun ActiveEditorBlock(
                             val lastNewline = textFieldValue.text.lastIndexOf('\n')
                             val isLastLine = if (lastNewline == -1) true else cursorStart > lastNewline
 
-                            if (isLastLine && index < blocks.size - 1) {
-                                cursorTarget = TextRange(0)
-                                focusedIndex = index + 1
-                                true
+                            if (isLastLine) {
+                                onMoveDown()
                             } else {
                                 false
                             }
                         }
                         Key.Backspace -> {
-                            // delete the block if the content is empty
                             if (textFieldValue.text.isBlank()) {
-                                blocks.removeAt(index)
-                                focusedIndex = if (blocks.isNotEmpty() && focusedIndex != null) {
-                                    focusedIndex!! - 1
-                                } else {
-                                    null
-                                }
-                                true
+                                onBackspaceOnEmpty()
                             } else {
                                 false
                             }
@@ -169,4 +136,48 @@ fun ActiveEditorBlock(
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
+}
+
+private val numberedListRegex = Regex("^(\\d+)\\. ")
+
+private fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFieldValue? {
+    val text = currentValue.text
+    val cursorIndex = currentValue.selection.start
+    val textBeforeCursor = text.substring(0, cursorIndex)
+
+    val lastLineIndex = textBeforeCursor.lastIndexOf('\n')
+    val currentLineToCursor = textBeforeCursor.substring(lastLineIndex + 1)
+
+    val numberMatch = numberedListRegex.find(currentLineToCursor)
+
+
+    if (currentLineToCursor == "- " || (numberMatch != null && currentLineToCursor == numberMatch.value)) { // empty list
+        val lineStartIndex = lastLineIndex + 1
+
+        val cleanText = text.substring(0, lineStartIndex) + text.substring(cursorIndex)
+        val newCursorPos = lineStartIndex + 1
+
+        return TextFieldValue(text = cleanText, selection = TextRange(newCursorPos))
+
+    } else if (currentLineToCursor.startsWith("- ")) { // dashed list
+        val insertText = "\n- "
+        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
+
+        val newCursor = TextRange(cursorIndex + insertText.length)
+        return TextFieldValue(text = newText, selection = newCursor)
+
+    } else if (numberMatch != null) { // numbered list
+        // todo - when new item is inserted in the middle change the lines count afterwards
+        val currentNumberString = numberMatch.groupValues[1]
+        val nextNumber = currentNumberString.toInt() + 1
+        val insertText = "\n$nextNumber. "
+
+        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
+        val newCursorPos = cursorIndex + insertText.length
+
+        return TextFieldValue(text = newText, selection = TextRange(newCursorPos))
+    }
+
+    return null
+
 }
