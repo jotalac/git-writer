@@ -30,6 +30,7 @@ fun MarkdownEditorBlocksList(
     onBlockFocusLost: (index: Int, text: String) -> Unit,
     onEscape: () -> Unit,
     onAddBlockBelow: (index: Int) -> Unit,
+    onSplitBlock: (index: Int, cursor: Int) -> Unit,
     onMoveUp: (index: Int) -> Boolean,
     onMoveDown: (index: Int) -> Boolean,
     onBackspaceOnEmpty: (index: Int) -> Boolean,
@@ -47,6 +48,7 @@ fun MarkdownEditorBlocksList(
         itemsIndexed(blocks) { index, block ->
             val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -61,6 +63,7 @@ fun MarkdownEditorBlocksList(
                         onFocusLost = { text -> onBlockFocusLost(index, text) },
                         onEscape = onEscape,
                         onAddBlockBelow = { onAddBlockBelow(index) },
+                        onSplitBlock = { cursor -> onSplitBlock(index, cursor) },
                         onMoveUp = { onMoveUp(index) },
                         onMoveDown = { onMoveDown(index) },
                         onBackspaceOnEmpty = { onBackspaceOnEmpty(index) },

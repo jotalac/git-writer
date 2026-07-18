@@ -33,6 +33,7 @@ fun ActiveEditorBlock(
     onFocusLost: (String) -> Unit,
     onEscape: () -> Unit,
     onAddBlockBelow: () -> Unit,
+    onSplitBlock: (Int) -> Unit,
     onMoveUp: () -> Boolean,
     onMoveDown: () -> Boolean,
     onBackspaceOnEmpty: () -> Boolean,
@@ -68,6 +69,7 @@ fun ActiveEditorBlock(
                 if (focusState.isFocused) {
                     hasFocused = true
                 } else if (hasFocused) {
+                    hasFocused = false
                     onFocusLost(textFieldValue.text)
                 }
             }
@@ -79,7 +81,14 @@ fun ActiveEditorBlock(
                             true
                         }
                         Key.Enter -> {
-                            if (event.isCtrlPressed || event.isShiftPressed) {
+                            if (event.isShiftPressed) {
+                                // add new line withing the current block
+                                textFieldValue = handleNewLineWithinBlock(textFieldValue)
+                                onTextChange(textFieldValue.text)
+                                true
+                            }
+                            else if (event.isCtrlPressed) {
+                                // exit the current block and create new
                                 onAddBlockBelow()
                                 true
                             } else {
@@ -89,7 +98,14 @@ fun ActiveEditorBlock(
                                     textFieldValue = newTextFieldValue
                                     onTextChange(textFieldValue.text)
                                     true
-                                } else false
+                                } else if (isInsideCodeBlock(textFieldValue.text, textFieldValue.selection.start)) {
+                                    // dont break when inside code block
+                                    false
+                                } else {
+                                    // split block on just enter press
+                                    onSplitBlock(textFieldValue.selection.start)
+                                    true
+                                }
                             }
                         }
                         Key.DirectionUp -> {
@@ -138,7 +154,25 @@ fun ActiveEditorBlock(
     }
 }
 
+private fun isInsideCodeBlock(text: String, cursorIndex: Int): Boolean {
+    val textBeforeCursor = text.substring(0, cursorIndex)
+    val fenceCount = textBeforeCursor.split("```").size - 1
+    return fenceCount % 2 != 0
+}
+
 private val numberedListRegex = Regex("^(\\d+)\\. ")
+
+private fun insertTextBetween(text: String, leftSplitIndex: Int, rightSplitIndex: Int = leftSplitIndex, insertText: String = ""): String {
+    return text.substring(0, leftSplitIndex) + insertText + text.substring(rightSplitIndex)
+}
+
+private fun handleNewLineWithinBlock(currentValue: TextFieldValue): TextFieldValue {
+    val text = currentValue.text
+    val cursorIndex = currentValue.selection.start
+    val newText = insertTextBetween(text = text, leftSplitIndex = cursorIndex, insertText = "  \n")
+
+    return TextFieldValue(text=newText, selection = TextRange(cursorIndex + 3))
+}
 
 private fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFieldValue? {
     val text = currentValue.text
@@ -154,14 +188,16 @@ private fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFi
     if (currentLineToCursor == "- " || (numberMatch != null && currentLineToCursor == numberMatch.value)) { // empty list
         val lineStartIndex = lastLineIndex + 1
 
-        val cleanText = text.substring(0, lineStartIndex) + text.substring(cursorIndex)
+        val cleanText = insertTextBetween(text, lineStartIndex, cursorIndex)
+//        val cleanText = text.substring(0, lineStartIndex) + text.substring(cursorIndex)
         val newCursorPos = lineStartIndex + 1
 
         return TextFieldValue(text = cleanText, selection = TextRange(newCursorPos))
 
     } else if (currentLineToCursor.startsWith("- ")) { // dashed list
         val insertText = "\n- "
-        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
+        val newText = insertTextBetween(text = text, leftSplitIndex = cursorIndex, insertText = insertText)
+//        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
 
         val newCursor = TextRange(cursorIndex + insertText.length)
         return TextFieldValue(text = newText, selection = newCursor)
@@ -172,7 +208,8 @@ private fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFi
         val nextNumber = currentNumberString.toInt() + 1
         val insertText = "\n$nextNumber. "
 
-        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
+        val newText = insertTextBetween(text = text, leftSplitIndex = cursorIndex, insertText = insertText)
+//        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
         val newCursorPos = cursorIndex + insertText.length
 
         return TextFieldValue(text = newText, selection = TextRange(newCursorPos))

@@ -87,34 +87,38 @@ fun MarkdownEditor(
                 markdownBlocks[index] = text
             },
             onBlockFocusLost = { index, text ->
-                val currentFocused = focusedIndex
+                if (index < markdownBlocks.size && markdownBlocks[index] == text) {
+                    val currentFocused = focusedIndex
 
-                if (text.isBlank()) {
-                    if (index < markdownBlocks.size) {
-                        markdownBlocks.removeAt(index)
-                        if (currentFocused != null && currentFocused > index) {
-                            focusedIndex = currentFocused - 1
+                    if (text.isBlank()) {
+                        if (index < markdownBlocks.size) {
+                            markdownBlocks.removeAt(index)
+                            if (currentFocused != null && currentFocused > index) {
+                                focusedIndex = currentFocused - 1
+                            }
+                        }
+                    } else {
+                        val newChunks = chunkMarkdownIntoBlocks(text)
+                        if (newChunks.isEmpty()) {
+                            markdownBlocks.removeAt(index)
+                            if (currentFocused != null && currentFocused > index) {
+                                focusedIndex = currentFocused - 1
+                            }
+                        } else if (newChunks.size > 1) {
+                            println("chunks: $newChunks")
+                            markdownBlocks.removeAt(index)
+                            markdownBlocks.addAll(index, newChunks)
+                            println("Markdown blocks: " + markdownBlocks.joinToString(",\n"))
+
+                            if (currentFocused != null && currentFocused > index) {
+                                focusedIndex = currentFocused + (newChunks.size - 1)
+                            }
                         }
                     }
-                } else {
-                    val newChunks = chunkMarkdownIntoBlocks(text)
-                    if (newChunks.isEmpty()) {
-                        markdownBlocks.removeAt(index)
-                        if (currentFocused != null && currentFocused > index) {
-                            focusedIndex = currentFocused - 1
-                        }
-                    } else if (newChunks.size > 1) {
-                        markdownBlocks.removeAt(index)
-                        markdownBlocks.addAll(index, newChunks)
 
-                        if (currentFocused != null && currentFocused > index) {
-                            focusedIndex = currentFocused + (newChunks.size - 1)
-                        }
+                    if (focusedIndex == index) {
+                        focusedIndex = null
                     }
-                }
-
-                if (focusedIndex == index) {
-                    focusedIndex = null
                 }
             },
             onEscape = {
@@ -125,6 +129,35 @@ fun MarkdownEditor(
                 markdownBlocks.add(index + 1, "")
                 cursorTarget = TextRange(0)
                 focusedIndex = index + 1
+            },
+            onSplitBlock = { index, cursorStart ->
+                val text = markdownBlocks[index]
+                val textBefore = text.substring(0, cursorStart)
+                val textAfter = text.substring(cursorStart)
+                
+                val chunksBefore = chunkMarkdownIntoBlocks(textBefore)
+                val finalChunksBefore = if (chunksBefore.isEmpty() && textBefore.isNotEmpty()) {
+                    listOf(textBefore)
+                } else if (textBefore.isEmpty()) {
+                    listOf("")
+                } else {
+                    chunksBefore
+                }
+
+                val chunksAfter = chunkMarkdownIntoBlocks(textAfter)
+                val finalChunksAfter = if (chunksAfter.isEmpty() && textAfter.isNotEmpty()) {
+                    listOf(textAfter)
+                } else if (textAfter.isEmpty()) {
+                    listOf("")
+                } else {
+                    chunksAfter
+                }
+                
+                markdownBlocks.removeAt(index)
+                markdownBlocks.addAll(index, finalChunksBefore + finalChunksAfter)
+                
+                cursorTarget = TextRange(0)
+                focusedIndex = index + finalChunksBefore.size
             },
             onMoveUp = { index ->
                 if (index > 0) {
@@ -137,7 +170,7 @@ fun MarkdownEditor(
             },
             onMoveDown = { index ->
                 if (index < markdownBlocks.size - 1) {
-                    cursorTarget = TextRange(0)
+                    cursorTarget = TextRange(markdownBlocks[index + 1].length)
                     focusedIndex = index + 1
                     true
                 } else {
