@@ -52,6 +52,18 @@ fun ActiveEditorBlock(
         mutableStateOf(TextFieldValue(text = initialText, selection = safeSelection))
     }
 
+    LaunchedEffect(initialText, cursorTarget) {
+        if (initialText != textFieldValue.text) {
+            textFieldValue = textFieldValue.copy(
+                text = initialText,
+                selection = cursorTarget ?: TextRange(
+                    textFieldValue.selection.start.coerceIn(0, initialText.length),
+                    textFieldValue.selection.end.coerceIn(0, initialText.length)
+                )
+            )
+        }
+    }
+
     LaunchedEffect(textFieldValue.selection) {
         bringIntoViewRequester?.bringIntoView()
     }
@@ -130,6 +142,11 @@ fun ActiveEditorBlock(
                                 false
                             }
                         }
+                        Key.Tab -> {
+                            textFieldValue = handleIndentation(textFieldValue, event.isShiftPressed)
+                            onTextChange(textFieldValue.text)
+                            true
+                        }
                         Key.Backspace -> {
                             if (textFieldValue.text.isBlank()) {
                                 onBackspaceOnEmpty()
@@ -174,6 +191,64 @@ private fun handleNewLineWithinBlock(currentValue: TextFieldValue): TextFieldVal
     return TextFieldValue(text=newText, selection = TextRange(cursorIndex + 3))
 }
 
+private fun exitListContinuation(lastLineIndex: Int, cursorIndex: Int, text: String): TextFieldValue {
+    val lineStartIndex = lastLineIndex + 1
+
+    val cleanText = insertTextBetween(text, lineStartIndex, cursorIndex)
+    val newCursorPos = lineStartIndex + 1
+
+    return TextFieldValue(text = cleanText, selection = TextRange(newCursorPos))
+}
+
+private fun handleUnorderedList(fullText: String, currentLineText: String, lastLineIndex: Int, cursorIndex: Int, startSpaces: Int): TextFieldValue? {
+    if (currentLineText == "- ") {
+        return exitListContinuation(lastLineIndex, cursorIndex, fullText)
+    } else if (currentLineText.startsWith("- ")) {
+        val insertText = "\n" + " ".repeat(startSpaces) + "- "
+        val newText = insertTextBetween(text = fullText, leftSplitIndex = cursorIndex, insertText = insertText)
+
+        val newCursor = TextRange(cursorIndex + insertText.length)
+        return TextFieldValue(text = newText, selection = newCursor)
+    }
+
+    return null
+}
+
+private fun handleOrderedList(fullText: String, currentLineText: String, lastLineIndex: Int, cursorIndex: Int, spacesStart: Int): TextFieldValue? {
+    val numberMatch = numberedListRegex.find(currentLineText)
+
+    if (numberMatch != null && currentLineText == numberMatch.value) {
+        return exitListContinuation(lastLineIndex, cursorIndex, fullText)
+
+    } else if (numberMatch != null) {
+        // todo - when new item is inserted in the middle change the lines count afterwards
+        val currentNumberString = numberMatch.groupValues[1]
+        val nextNumber = currentNumberString.toInt() + 1
+        val insertText = "\n" + " ".repeat(spacesStart) + "$nextNumber. "
+
+        val newText = insertTextBetween(text = fullText, leftSplitIndex = cursorIndex, insertText = insertText)
+        val newCursorPos = cursorIndex + insertText.length
+
+        return TextFieldValue(text = newText, selection = TextRange(newCursorPos))
+    }
+
+    return null
+}
+
+private fun handleBlockQuotes(fullText: String, currentLineText: String, lastLineIndex: Int, cursorIndex: Int): TextFieldValue? {
+    if (currentLineText== ">") {
+        return exitListContinuation(lastLineIndex, cursorIndex, fullText)
+    } else if (currentLineText.startsWith(">")) {
+        val insertText = "\n> "
+        val newText = insertTextBetween(text = fullText, leftSplitIndex = cursorIndex, insertText = insertText)
+
+        val newCursor = TextRange(cursorIndex + insertText.length)
+        return TextFieldValue(text = newText, selection = newCursor)
+    }
+
+    return null
+}
+
 private fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFieldValue? {
     val text = currentValue.text
     val cursorIndex = currentValue.selection.start
@@ -182,39 +257,79 @@ private fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFi
     val lastLineIndex = textBeforeCursor.lastIndexOf('\n')
     val currentLineToCursor = textBeforeCursor.substring(lastLineIndex + 1)
 
-    val numberMatch = numberedListRegex.find(currentLineToCursor)
+    val spacesStart = currentLineToCursor.takeWhile { it == ' ' }.length
+    val cleanCurrentLine = currentLineToCursor.trim()
+
+    return handleUnorderedList(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)
+        ?: handleOrderedList(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)
+        ?: handleBlockQuotes(text, cleanCurrentLine, lastLineIndex, cursorIndex)
+}
 
 
-    if (currentLineToCursor == "- " || (numberMatch != null && currentLineToCursor == numberMatch.value)) { // empty list
-        val lineStartIndex = lastLineIndex + 1
+private fun handleIndentation(currentValue: TextFieldValue, isUntab: Boolean): TextFieldValue {
+    val text = currentValue.text
+    val rawStart = currentValue.selection.start
+    val rawEnd = currentValue.selection.end
 
-        val cleanText = insertTextBetween(text, lineStartIndex, cursorIndex)
-//        val cleanText = text.substring(0, lineStartIndex) + text.substring(cursorIndex)
-        val newCursorPos = lineStartIndex + 1
+    val minCursor = minOf(rawStart, rawEnd)
+    val maxCursor = maxOf(rawStart, rawEnd)
 
-        return TextFieldValue(text = cleanText, selection = TextRange(newCursorPos))
+    val startLineIndex = text.lastIndexOf('\n', minCursor - 1).coerceAtLeast(-1) + 1
+    val endLineIndex = text.indexOf('\n', maxCursor).let { if (it == -1) text.length else it }
 
-    } else if (currentLineToCursor.startsWith("- ")) { // dashed list
-        val insertText = "\n- "
-        val newText = insertTextBetween(text = text, leftSplitIndex = cursorIndex, insertText = insertText)
-//        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
+    val textBefore = text.substring(0, startLineIndex)
+    val targetLines = text.substring(startLineIndex, endLineIndex)
+    val textAfter = text.substring(endLineIndex)
 
-        val newCursor = TextRange(cursorIndex + insertText.length)
-        return TextFieldValue(text = newText, selection = newCursor)
+    var firstLineShift = 0
+    var totalShift = 0
 
-    } else if (numberMatch != null) { // numbered list
-        // todo - when new item is inserted in the middle change the lines count afterwards
-        val currentNumberString = numberMatch.groupValues[1]
-        val nextNumber = currentNumberString.toInt() + 1
-        val insertText = "\n$nextNumber. "
+    val modifiedLines = targetLines.split('\n').mapIndexed { index, line ->
+        val shift: Int
+        val newLine = if (isUntab) {
+            // remove up to 4 leading spaces
+            val leadingSpaces = line.takeWhile { it == ' ' }.length
+            when {
+                leadingSpaces > 0 -> {
+                    val spacesToRemove = minOf(leadingSpaces, 4)
+                    shift = -spacesToRemove
+                    line.substring(spacesToRemove)
+                }
+                // fallback for tab signs
+                line.startsWith("\t") -> {
+                    shift = -1
+                    line.substring(1)
+                }
+                // no indentation found
+                else -> {
+                    shift = 0
+                    line
+                }
+            }
+        } else {
+            // add tab
+            shift = 4
+            "    $line"
+        }
 
-        val newText = insertTextBetween(text = text, leftSplitIndex = cursorIndex, insertText = insertText)
-//        val newText = text.substring(0, cursorIndex) + insertText + text.substring(cursorIndex)
-        val newCursorPos = cursorIndex + insertText.length
+        if (index == 0) firstLineShift = shift
+        totalShift += shift
 
-        return TextFieldValue(text = newText, selection = TextRange(newCursorPos))
-    }
+        newLine
+    }.joinToString("\n")
 
-    return null
+    // skip if nothing changes
+    if (totalShift == 0) return currentValue
 
+    // reconstruct the whole text
+    val newText = textBefore + modifiedLines + textAfter
+
+    val newMin = maxOf(startLineIndex, minCursor + firstLineShift).coerceIn(0, newText.length)
+    val newMax = maxOf(newMin, maxCursor + totalShift).coerceIn(0, newText.length)
+
+
+    val isReversed = rawStart > rawEnd
+    val newSelection = if (isReversed) TextRange(newMax, newMin) else TextRange(newMin, newMax)
+
+    return TextFieldValue(text = newText, selection = newSelection)
 }
