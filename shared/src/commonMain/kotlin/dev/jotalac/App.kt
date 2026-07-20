@@ -6,10 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.jotalac.core.navigation.Route
-import dev.jotalac.core.ui.MainLayoutScreen
+import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.ui.EditorScreen
-import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 
 @Composable
 @Preview
@@ -18,9 +17,8 @@ fun App() {
         val navController = rememberNavController()
         NavHost(navController = navController, startDestination = Route.MainApp) {
             composable<Route.MainApp> {
-                MainLayoutScreen {
-                    EditorScreen()
-                }
+                
+                EditorScreen()
             }
         }
     }

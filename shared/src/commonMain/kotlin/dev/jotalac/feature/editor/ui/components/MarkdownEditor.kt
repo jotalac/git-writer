@@ -3,13 +3,16 @@ package dev.jotalac.feature.editor.ui.components
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -22,6 +25,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.EditorScreenContent
@@ -38,6 +42,8 @@ fun MarkdownEditor(
     val focusManager = LocalFocusManager.current
 
     val surfaceFocusRequester = remember { FocusRequester() }
+
+    val lazyListState = rememberLazyListState()
 
     LaunchedEffect(focusedIndex) {
         if (focusedIndex == null) {
@@ -156,6 +162,12 @@ fun MarkdownEditor(
                 cursorTarget = TextRange(0)
                 focusedIndex = markdownBlocks.lastIndex
             },
+            listState = lazyListState
+        )
+
+        AppVerticalScrollbar(
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+            listState = lazyListState
         )
     }
 }
