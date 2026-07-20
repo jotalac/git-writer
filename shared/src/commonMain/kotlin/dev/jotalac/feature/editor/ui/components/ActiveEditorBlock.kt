@@ -68,6 +68,11 @@ fun ActiveEditorBlock(
         bringIntoViewRequester?.bringIntoView()
     }
 
+    fun updateText(newTextFiledValue: TextFieldValue) {
+        textFieldValue = newTextFiledValue
+        onTextChange(newTextFiledValue.text)
+    }
+
     BasicTextField(
         value = textFieldValue,
         onValueChange = {
@@ -95,8 +100,7 @@ fun ActiveEditorBlock(
                         Key.Enter -> {
                             if (event.isShiftPressed) {
                                 // add new line withing the current block
-                                textFieldValue = handleNewLineWithinBlock(textFieldValue)
-                                onTextChange(textFieldValue.text)
+                                updateText(handleNewLineWithinBlock(textFieldValue))
                                 true
                             }
                             else if (event.isCtrlPressed) {
@@ -107,8 +111,8 @@ fun ActiveEditorBlock(
                                 // handle list continuation
                                 val newTextFieldValue = handleMarkdownListContinuation(textFieldValue)
                                 if (newTextFieldValue != null) {
-                                    textFieldValue = newTextFieldValue
-                                    onTextChange(textFieldValue.text)
+                                    updateText(newTextFieldValue)
+
                                     true
                                 } else if (isInsideCodeBlock(textFieldValue.text, textFieldValue.selection.start)) {
                                     // dont break when inside code block
@@ -143,8 +147,8 @@ fun ActiveEditorBlock(
                             }
                         }
                         Key.Tab -> {
-                            textFieldValue = handleIndentation(textFieldValue, event.isShiftPressed)
-                            onTextChange(textFieldValue.text)
+                            updateText(handleIndentation(textFieldValue, event.isShiftPressed))
+
                             true
                         }
                         Key.Backspace -> {
@@ -236,10 +240,10 @@ private fun handleOrderedList(fullText: String, currentLineText: String, lastLin
 }
 
 private fun handleBlockQuotes(fullText: String, currentLineText: String, lastLineIndex: Int, cursorIndex: Int): TextFieldValue? {
-    if (currentLineText== ">") {
+    if (currentLineText.trim() == ">") {
         return exitListContinuation(lastLineIndex, cursorIndex, fullText)
     } else if (currentLineText.startsWith(">")) {
-        val insertText = "\n> "
+        val insertText = "  \n> "
         val newText = insertTextBetween(text = fullText, leftSplitIndex = cursorIndex, insertText = insertText)
 
         val newCursor = TextRange(cursorIndex + insertText.length)
@@ -258,7 +262,7 @@ private fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFi
     val currentLineToCursor = textBeforeCursor.substring(lastLineIndex + 1)
 
     val spacesStart = currentLineToCursor.takeWhile { it == ' ' }.length
-    val cleanCurrentLine = currentLineToCursor.trim()
+    val cleanCurrentLine = currentLineToCursor.trimStart()
 
     return handleUnorderedList(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)
         ?: handleOrderedList(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)

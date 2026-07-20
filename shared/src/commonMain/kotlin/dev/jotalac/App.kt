@@ -25,9 +25,3 @@ fun App() {
         }
     }
 }
-
-@Composable
-@Preview
-fun EmptyEditorPreview() {
-    MarkdownEditor(docTextContent = "")
-}
