@@ -109,34 +109,31 @@ class EditorViewModel : ViewModel() {
                 val text = markdownBlocks[action.index]
                 val currentFocused = action.currentFocusedIndex
 
-                if (text.isBlank()) {
-                    // Block is empty - remove it
+//                if (text.isBlank()) {
+//                    // Block is empty - remove it
+//                    markdownBlocks.removeAt(action.index)
+//                    if (currentFocused != null && currentFocused > action.index) {
+//                        action.onFocusAdjusted(currentFocused - 1)
+//                    }
+//                } else {
+                    // Block has text - check if it needs to be chunked
+                val newChunks = createChunksFromText(text)
+
+                if (newChunks.isEmpty()) {
                     markdownBlocks.removeAt(action.index)
                     if (currentFocused != null && currentFocused > action.index) {
                         action.onFocusAdjusted(currentFocused - 1)
                     }
-                } else {
-                    // Block has text - check if it needs to be chunked
-                    val newChunks = createChunksFromText(text)
+                } else if (newChunks.size > 1) {
+                    // Block split into multiple chunks
+                    markdownBlocks.removeAt(action.index)
+                    markdownBlocks.addAll(action.index, newChunks)
 
-                    if (newChunks.isEmpty()) {
-                        markdownBlocks.removeAt(action.index)
-                        if (currentFocused != null && currentFocused > action.index) {
-                            action.onFocusAdjusted(currentFocused - 1)
-                        }
-                    } else if (newChunks.size > 1) {
-                        // Block split into multiple chunks
-                        markdownBlocks.removeAt(action.index)
-                        markdownBlocks.addAll(action.index, newChunks)
-
-                        if (currentFocused != null && currentFocused > action.index) {
-                            action.onFocusAdjusted(currentFocused + (newChunks.size - 1))
-                        }
+                    if (currentFocused != null && currentFocused > action.index) {
+                        action.onFocusAdjusted(currentFocused + (newChunks.size - 1))
                     }
                 }
-            }
-            else -> {
-                println("Invalid action")
+//                }
             }
         }
     }

@@ -1,6 +1,7 @@
 package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun ActiveEditorBlock(
@@ -81,6 +83,7 @@ fun ActiveEditorBlock(
         },
         modifier = modifier
             .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 8.dp)
             .focusRequester(focusRequester)
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
