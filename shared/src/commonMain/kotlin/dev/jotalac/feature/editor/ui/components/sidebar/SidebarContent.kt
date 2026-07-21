@@ -20,6 +20,7 @@ import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import git_writer.shared.generated.resources.folder_create
 import git_writer.shared.generated.resources.folder_open
+import git_writer.shared.generated.resources.settings
 import git_writer.shared.generated.resources.sidebar_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -72,7 +73,13 @@ private fun SidebarTopActions() {
             SidebarActionButton(
                 onClick = {},
                 icon = Res.drawable.folder_create,
-                contentDescription = "Open folder"
+                contentDescription = "Create folder"
+            )
+
+            SidebarActionButton(
+                onClick = {},
+                icon = Res.drawable.settings,
+                contentDescription = "Open settings"
             )
         }
     }
