@@ -38,9 +38,10 @@ import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.closed_sidebar
 import git_writer.shared.generated.resources.opened_sidebar
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
-fun EditorScreen(viewModel: EditorViewModel = EditorViewModel()) {
+fun EditorScreen(viewModel: EditorViewModel = koinInject()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val blocks = viewModel.markdownBlocks
 

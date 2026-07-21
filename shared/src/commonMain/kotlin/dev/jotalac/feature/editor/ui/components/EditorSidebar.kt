@@ -60,7 +60,7 @@ fun EditorSidebar(
 
                 SidebarDraggableHandle(
                     onDragDelta = { delta ->
-                        sidebarWidth = (sidebarWidth + delta).coerceIn(250.dp, maxSidebarWidth)
+                        sidebarWidth = (sidebarWidth + delta).coerceIn(200.dp, maxSidebarWidth)
                     },
                     density = density,
                 )
