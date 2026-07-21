@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components
+package dev.jotalac.feature.editor.ui.components.markdown_editor
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
@@ -51,7 +52,8 @@ fun RenderedEditorBlock(
                             showHeader = true
                         )
                     }
-                )
+                ),
+                imageTransformer = Coil3ImageTransformerImpl
             )
         }
     }

@@ -31,9 +31,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
 import dev.jotalac.core.ui.theme.AppTheme
-import dev.jotalac.feature.editor.ui.components.EditorSidebar
-import dev.jotalac.feature.editor.ui.components.MarkdownEditor
-import dev.jotalac.feature.editor.ui.components.SidebarContent
+import dev.jotalac.feature.editor.ui.components.sidebar.EditorSidebar
+import dev.jotalac.feature.editor.ui.components.markdown_editor.MarkdownEditor
+import dev.jotalac.feature.editor.ui.components.sidebar.SidebarContent
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.closed_sidebar
 import git_writer.shared.generated.resources.opened_sidebar

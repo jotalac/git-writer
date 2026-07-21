@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components
+package dev.jotalac.feature.editor.ui.components.markdown_editor
 
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -26,9 +26,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
-import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.ui.EditorAction
-import dev.jotalac.feature.editor.ui.EditorScreenContent
 
 @Composable
 fun MarkdownEditor(
@@ -48,6 +46,13 @@ fun MarkdownEditor(
     LaunchedEffect(focusedIndex) {
         if (focusedIndex == null) {
             surfaceFocusRequester.requestFocus()
+        } else {
+            // make sure the currently edited items are loaded in the lazy column
+            val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
+            val isVisible = visibleItems.any { it.index == focusedIndex }
+            if (!isVisible) {
+                lazyListState.scrollToItem(focusedIndex!!)
+            }
         }
     }
 
@@ -89,7 +94,7 @@ fun MarkdownEditor(
                 }
                 false
             },
-        contentAlignment = androidx.compose.ui.Alignment.TopCenter
+        contentAlignment = Alignment.TopCenter
     ) {
         MarkdownEditorBlocksList(
             modifier = Modifier.widthIn(max = 800.dp),

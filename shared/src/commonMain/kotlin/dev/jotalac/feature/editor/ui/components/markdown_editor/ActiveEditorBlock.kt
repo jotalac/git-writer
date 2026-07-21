@@ -1,7 +1,8 @@
-package dev.jotalac.feature.editor.ui.components
+package dev.jotalac.feature.editor.ui.components.markdown_editor
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -10,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -26,6 +26,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 
 @Composable
 fun ActiveEditorBlock(
@@ -40,8 +42,7 @@ fun ActiveEditorBlock(
     onMoveDown: () -> Boolean,
     onBackspaceOnEmpty: () -> Boolean,
     modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() },
-    bringIntoViewRequester: BringIntoViewRequester? = null
+    focusRequester: FocusRequester = remember { FocusRequester() }
 ) {
     var hasFocused by remember { mutableStateOf(false) }
 
@@ -66,8 +67,24 @@ fun ActiveEditorBlock(
         }
     }
 
-    LaunchedEffect(textFieldValue.selection) {
-        bringIntoViewRequester?.bringIntoView()
+    // scroll the viewport to the cursor on typing
+    val localBringIntoViewRequester = remember { BringIntoViewRequester() }
+    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+
+    LaunchedEffect(textFieldValue.selection, textLayoutResult) {
+        textLayoutResult?.let { layoutResult ->
+            try {
+                val cursorRect = layoutResult.getCursorRect(textFieldValue.selection.start)
+                localBringIntoViewRequester.bringIntoView(
+                    cursorRect.copy(
+                        top = cursorRect.top - 40f,
+                        bottom = cursorRect.bottom + 40f
+                    )
+                )
+            } catch (e: Exception) {
+                println(e)
+            }
+        }
     }
 
     fun updateText(newTextFiledValue: TextFieldValue) {
@@ -81,9 +98,11 @@ fun ActiveEditorBlock(
             textFieldValue = it
             onTextChange(it.text)
         },
+        onTextLayout = { textLayoutResult = it },
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 8.dp)
+            .bringIntoViewRequester(localBringIntoViewRequester)
             .focusRequester(focusRequester)
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
