@@ -25,6 +25,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -34,9 +35,13 @@ fun EditorSidebar(
     isVisible: Boolean
 ) {
     var sidebarWidth by remember { mutableStateOf(250.dp) }
-
     // for converting drag pixels to dp
     val density = LocalDensity.current
+
+    // make it max width of the sidebar to 75% of the screen width
+    val windowSize = LocalWindowInfo.current.containerSize
+    val maxSidebarWidth = with(density) { (windowSize.width * 0.75f).toInt().toDp() }
+
 
     AnimatedVisibility(
         visible = isVisible,
@@ -45,7 +50,7 @@ fun EditorSidebar(
     ) {
         Box(
             modifier = Modifier
-                .width(sidebarWidth)
+                .width(sidebarWidth.coerceAtMost(maxSidebarWidth))
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surfaceContainer)
         ) {
@@ -55,7 +60,7 @@ fun EditorSidebar(
 
                 SidebarDraggableHandle(
                     onDragDelta = { delta ->
-                        sidebarWidth = (sidebarWidth + delta).coerceIn(250.dp, 1000.dp)
+                        sidebarWidth = (sidebarWidth + delta).coerceIn(250.dp, maxSidebarWidth)
                     },
                     density = density,
                 )
@@ -66,14 +71,19 @@ fun EditorSidebar(
 }
 
 @Composable
-private fun SidebarContent(
+fun SidebarContent(
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .fillMaxHeight()
     ) {
-        Text("Sidebar Content", modifier = Modifier.align(Alignment.Center))
+        Text(
+            "Sidebar Content",
+            modifier = Modifier
+                .align(Alignment.Center),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
