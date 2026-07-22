@@ -1,3 +1,22 @@
 <resources>
-    <string name="sidebar_title">Explorer</string>
+    <string name="create_notebook_title">Add Notebook</string>
+    <string name="init_notebook">Init</string>
+    <string name="clone_notebook">Clone (git)</string>
+    <string name="notebook_name_placeholder">Notebook name</string>
+    <string name="git_remote_example">git@github.com:user/notes.git</string>
+    <string name="create_notebook_button">Create</string>
+    <string name="clone_notebook_button">Clone</string>
+    <string name="username_placeholder">Username</string>
+    <string name="git_auth_placeholder">Password/Token</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="open_notebook">Open notebook</string>
+    <string name="add_notebook">Add notebook</string>
+    <string name="open_settings">Open settings</string>
+    <string name="plus_icon">Plus icon</string>
+    <string name="git_merge_icon">Git merge icon</string>
+    <string name="git_repository_url_input_label">Git Repository URL</string>
+    <string name="destination_directory_label">Destination directory</string>
+    <string name="browse_destination_button">Browse</string>
+
+
 </resources>

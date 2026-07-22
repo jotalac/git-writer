@@ -2,86 +2,140 @@ package dev.jotalac.feature.editor.ui.components.sidebar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.closed_sidebar
-import git_writer.shared.generated.resources.opened_sidebar
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
+import dev.jotalac.feature.notebooks_management.ui.CreateNotebookDialog
+import git_writer.shared.generated.resources.add_notebook
 import git_writer.shared.generated.resources.folder_create
 import git_writer.shared.generated.resources.folder_open
+import git_writer.shared.generated.resources.open_notebook
+import git_writer.shared.generated.resources.open_settings
 import git_writer.shared.generated.resources.settings
-import git_writer.shared.generated.resources.sidebar_title
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
-private fun SidebarActionButton(
+private fun SidebarButtonWithTooltip(
     onClick: () -> Unit,
     icon: DrawableResource,
     contentDescription: String,
 ) {
-    IconButton(
-        onClick = onClick,
-        modifier = Modifier.size(32.dp)
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            TooltipAnchorPosition.Above,
+            10.dp
+        ),
+        tooltip = {
+            PlainTooltip { Text(contentDescription) }
+        },
+        state = rememberTooltipState()
     ) {
-        Icon(
-            painter = painterResource(icon),
-            contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(25.dp)
-        )
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
 
 @Composable
-private fun SidebarTopActions() {
+private fun SidebarTopActions(
+    onNotebookOpen: () -> Unit,
+    onNotebookCreate: () -> Unit,
+    onSettingsOpen: () -> Unit,
+) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = stringResource(Res.string.sidebar_title).uppercase(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 2.dp)
-        )
-        
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SidebarActionButton(
-                onClick = {},
+            SidebarButtonWithTooltip(
+                onClick = onNotebookOpen,
                 icon = Res.drawable.folder_open,
-                contentDescription = "Open folder"
+                contentDescription = stringResource(Res.string.open_notebook)
             )
 
-            SidebarActionButton(
-                onClick = {},
+            SidebarButtonWithTooltip(
+                onClick = onNotebookCreate,
                 icon = Res.drawable.folder_create,
-                contentDescription = "Create folder"
+                contentDescription = stringResource(Res.string.add_notebook)
             )
 
-            SidebarActionButton(
-                onClick = {},
+            SidebarButtonWithTooltip(
+                onClick = onSettingsOpen,
                 icon = Res.drawable.settings,
-                contentDescription = "Open settings"
+                contentDescription = stringResource(Res.string.open_settings)
             )
         }
+    }
+}
+
+@Composable
+private fun ActiveNotebookName(
+    notebookName: String?
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (notebookName != null) {
+            Icon(
+                painter = painterResource(Res.drawable.folder_open),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+        }
+        Text(
+            text = notebookName ?: "No active notebook",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = if (notebookName != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -90,12 +144,33 @@ private fun SidebarTopActions() {
 fun SidebarContent(
     modifier: Modifier = Modifier
 ) {
+    val notebookPathProvider = koinInject<NotebookPathProvider>()
+    var showCreateDialog by remember { mutableStateOf(false) }
+
+    val defaultBasePath = notebookPathProvider.getDefaultNotebookDirectory()
+
+    if (showCreateDialog) {
+        CreateNotebookDialog(
+            defaultBasePath = defaultBasePath,
+            onDismiss = { showCreateDialog = false }
+        )
+    }
+
+
     Column (
         modifier = modifier
-            .fillMaxHeight(),
+            .fillMaxHeight()
+            .padding(horizontal = 8.dp, vertical = 16.dp)
     ) {
-        SidebarTopActions()
-        
+        SidebarTopActions(
+            onNotebookOpen = {},
+            onNotebookCreate = {showCreateDialog = true},
+            onSettingsOpen = {},
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ActiveNotebookName("Notebook name")
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(

@@ -67,6 +67,12 @@ kotlin {
             implementation(libs.coil.network)
             implementation(libs.ktor.client.core)
 
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.filekit.coil)
+
+
             implementation(libs.multiplatform.markdown.renderer)
             implementation(libs.multiplatform.markdown.renderer.m3)
             implementation(libs.multiplatform.markdown.renderer.coil3)

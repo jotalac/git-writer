@@ -21,6 +21,7 @@ navigationCompose = "2.9.2"
 koin = "4.2.2"
 coil3 = "3.5.0"
 ktor = "3.0.0"
+filekit = "0.14.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -46,6 +47,10 @@ jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:nav
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit"}
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit"}
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit"}
+filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "filekit"}
 
 multiplatform-markdown-renderer = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "markdown-renderer" }
 multiplatform-markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown-renderer" }
