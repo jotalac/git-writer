@@ -71,6 +71,8 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
             implementation(libs.kotlinx.io)
+            implementation(libs.datastore)
+            implementation(libs.datastore.preferences)
 
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)

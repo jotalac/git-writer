@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.ui.CreateNotebookDialog
+import dev.jotalac.feature.notebooks_management.ui.NotebookListDialog
 import git_writer.shared.generated.resources.add_notebook
 import git_writer.shared.generated.resources.folder_create
 import git_writer.shared.generated.resources.folder_open
@@ -144,12 +145,19 @@ private fun ActiveNotebookName(
 fun SidebarContent(
     modifier: Modifier = Modifier
 ) {
-    val notebookPathProvider = koinInject<NotebookPathProvider>()
     var showCreateDialog by remember { mutableStateOf(false) }
+    var showListDialog by remember { mutableStateOf(false) }
+
 
     if (showCreateDialog) {
         CreateNotebookDialog(
-            onDismiss = { showCreateDialog = false }
+            onDismiss = { showCreateDialog = false },
+        )
+    }
+
+    if (showListDialog) {
+        NotebookListDialog(
+            onDismiss = { showListDialog = false }
         )
     }
 
@@ -160,7 +168,7 @@ fun SidebarContent(
             .padding(horizontal = 8.dp, vertical = 16.dp)
     ) {
         SidebarTopActions(
-            onNotebookOpen = {},
+            onNotebookOpen = { showListDialog = true },
             onNotebookCreate = {showCreateDialog = true},
             onSettingsOpen = {},
         )

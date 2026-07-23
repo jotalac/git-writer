@@ -45,22 +45,23 @@ import git_writer.shared.generated.resources.notebook_name_placeholder
 import git_writer.shared.generated.resources.plus
 import git_writer.shared.generated.resources.plus_icon
 import git_writer.shared.generated.resources.username_placeholder
-import dev.jotalac.feature.notebooks_management.ui.NotebookManagementViewModel.NotebookManagementEvent
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.collectAsState
+import dev.jotalac.feature.notebooks_management.domain.Notebook
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import dev.jotalac.feature.notebooks_management.ui.CreateNotebookViewModel.CreateNotebookEvent
 
 @Composable
 fun CreateNotebookDialog(
     onDismiss: () -> Unit,
-    viewModel: NotebookManagementViewModel = koinViewModel()
+    viewModel: CreateNotebookViewModel = koinViewModel()
 ) {
     val scope = rememberCoroutineScope()
     val state by viewModel.uiState.collectAsState()
@@ -82,7 +83,7 @@ fun CreateNotebookDialog(
             )
 
             if (directory != null) {
-                viewModel.onEvent(NotebookManagementEvent.DirectorySelected(directory.absolutePath()))
+                viewModel.onEvent(CreateNotebookEvent.DirectorySelected(directory.absolutePath()))
             }
         }
     }
@@ -106,7 +107,7 @@ fun CreateNotebookDialog(
                 ) {
                     Tab(
                         selected = state.selectedTabIndex == 0,
-                        onClick = { viewModel.onEvent(NotebookManagementEvent.TabSelected(0)) },
+                        onClick = { viewModel.onEvent(CreateNotebookEvent.TabSelected(0)) },
                         text = {
                             TabText(
                                 text = Res.string.init_notebook,
@@ -117,7 +118,7 @@ fun CreateNotebookDialog(
                     )
                     Tab(
                         selected = state.selectedTabIndex == 1,
-                        onClick = { viewModel.onEvent(NotebookManagementEvent.TabSelected(1)) },
+                        onClick = { viewModel.onEvent(CreateNotebookEvent.TabSelected(1)) },
                         text = {
                             TabText(
                                 text = Res.string.clone_notebook,
@@ -134,19 +135,19 @@ fun CreateNotebookDialog(
                     when (state.selectedTabIndex) {
                         0 -> LocalNotebookForm(
                             name = state.notebookName,
-                            onNameChange = { viewModel.onEvent(NotebookManagementEvent.NotebookNameChanged(it)) },
+                            onNameChange = { viewModel.onEvent(CreateNotebookEvent.NotebookNameChanged(it)) },
                             directory = actualDirectory,
                             onBrowseClick = { browseForDirectory() }
                         )
                         1 -> RemoteNotebookForm(
                             name = state.notebookName,
-                            onNameChange = { viewModel.onEvent(NotebookManagementEvent.NotebookNameChanged(it)) },
+                            onNameChange = { viewModel.onEvent(CreateNotebookEvent.NotebookNameChanged(it)) },
                             url = state.remoteUrl,
-                            onUrlChange = { viewModel.onEvent(NotebookManagementEvent.RemoteUrlChanged(it)) },
+                            onUrlChange = { viewModel.onEvent(CreateNotebookEvent.RemoteUrlChanged(it)) },
                             username = state.username,
-                            onUsernameChange = { viewModel.onEvent(NotebookManagementEvent.UsernameChanged(it)) },
+                            onUsernameChange = { viewModel.onEvent(CreateNotebookEvent.UsernameChanged(it)) },
                             password = state.password,
-                            onPasswordChange = { viewModel.onEvent(NotebookManagementEvent.PasswordChanged(it)) },
+                            onPasswordChange = { viewModel.onEvent(CreateNotebookEvent.PasswordChanged(it)) },
                             directory = actualDirectory,
                             onBrowseClick = { browseForDirectory() }
                         )
@@ -166,11 +167,12 @@ fun CreateNotebookDialog(
             Button(
                 onClick = {
                     if (state.selectedTabIndex == 0) {
-                        viewModel.onEvent(NotebookManagementEvent.CreateLocalNotebook(actualDirectory) {
+                        viewModel.onEvent(CreateNotebookEvent.CreateLocalNotebook(actualDirectory) {
                             onDismiss()
                         })
                     } else {
-                        viewModel.onEvent(NotebookManagementEvent.CloneRemoteNotebook(actualDirectory) {
+                        viewModel.onEvent(CreateNotebookEvent.CloneRemoteNotebook(actualDirectory) {
+
                             onDismiss()
                         })
                     }

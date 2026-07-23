@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
 import dev.jotalac.core.ui.theme.AppTheme
+import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.editor.ui.components.sidebar.EditorSidebar
 import dev.jotalac.feature.editor.ui.components.markdown_editor.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.sidebar.SidebarContent
@@ -45,10 +47,7 @@ fun EditorScreen(viewModel: EditorViewModel = koinInject()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val blocks = viewModel.markdownBlocks
 
-    val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
-
     EditorScreenContent(
-        snackbarHostState = snackbarHostState,
         markdownBlocks = blocks,
         filename = state.filename,
         isLoading = state.isLoading,
@@ -58,7 +57,6 @@ fun EditorScreen(viewModel: EditorViewModel = koinInject()) {
 
 @Composable
 fun EditorScreenContent(
-    snackbarHostState: SnackbarHostState,
     markdownBlocks: List<String>,
     filename: String?,
     isLoading: Boolean,
@@ -69,7 +67,6 @@ fun EditorScreenContent(
 
         if (isCompactScreen) {
             CompactEditorLayout(
-                snackbarHostState = snackbarHostState,
                 markdownBlocks = markdownBlocks,
                 filename = filename,
                 isLoading = isLoading,
@@ -77,7 +74,6 @@ fun EditorScreenContent(
             )
         } else {
             ExpandedEditorLayout(
-                snackbarHostState = snackbarHostState,
                 markdownBlocks = markdownBlocks,
                 filename = filename,
                 isLoading = isLoading,
@@ -89,7 +85,6 @@ fun EditorScreenContent(
 
 @Composable
 private fun CompactEditorLayout(
-    snackbarHostState: SnackbarHostState,
     markdownBlocks: List<String>,
     filename: String?,
     isLoading: Boolean,
@@ -108,7 +103,6 @@ private fun CompactEditorLayout(
         }
     ) {
         MainEditorScaffold(
-            snackbarHostState = snackbarHostState,
             filename = filename,
             isSidebarOpen = drawerState.isOpen,
             onToggleSidebar = {
@@ -125,7 +119,6 @@ private fun CompactEditorLayout(
 
 @Composable
 private fun ExpandedEditorLayout(
-    snackbarHostState: SnackbarHostState,
     markdownBlocks: List<String>,
     filename: String?,
     isLoading: Boolean,
@@ -138,7 +131,6 @@ private fun ExpandedEditorLayout(
         
         MainEditorScaffold(
             modifier = Modifier.weight(1f),
-            snackbarHostState = snackbarHostState,
             filename = filename,
             isSidebarOpen = isSidebarVisible,
             onToggleSidebar = {
@@ -155,7 +147,6 @@ private fun ExpandedEditorLayout(
 @Composable
 fun MainEditorScaffold(
     modifier: Modifier = Modifier,
-    snackbarHostState: SnackbarHostState,
     filename: String?,
     isSidebarOpen: Boolean,
     onToggleSidebar: () -> Unit,
@@ -163,6 +154,17 @@ fun MainEditorScaffold(
     markdownBlocks: List<String>,
     onAction: (EditorAction) -> Unit,
 ) {
+
+    val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    val snackbarManager = koinInject<SnackbarManager>()
+
+    LaunchedEffect(Unit) {
+        snackbarManager.messages.collect { message ->
+            snackbarHostState.showSnackbar(message = message)
+        }
+    }
+
+
     CustomScaffold(
         modifier = modifier,
         snackbarHostState = snackbarHostState,
@@ -210,7 +212,6 @@ private fun EditorScreenPreview() {
             filename = null,
             onAction = {},
             isLoading = false,
-            snackbarHostState = SnackbarHostState()
         )
     }
 }
