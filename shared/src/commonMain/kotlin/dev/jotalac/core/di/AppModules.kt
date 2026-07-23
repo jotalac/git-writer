@@ -1,8 +1,8 @@
 package dev.jotalac.core.di
 
+import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import dev.jotalac.core.database.AppDatabase
-import dev.jotalac.core.database.getDatabaseBuilder
 import dev.jotalac.feature.editor.ui.EditorViewModel
 import dev.jotalac.feature.notebooks_management.data.NotebookRepositoryImpl
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -18,9 +18,11 @@ import org.koin.dsl.module
 expect val platformModule: Module
 
 val coreModule = module {
+    includes(platformModule)
+
     //local database
     single {
-        getDatabaseBuilder()
+        get<RoomDatabase.Builder<AppDatabase>>()
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()
@@ -40,7 +42,7 @@ val featureModules = module {
     viewModelOf(::NotebookManagementViewModel)
 }
 
-val appModules = listOf(coreModule, featureModules, platformModule)
+val appModules = listOf(coreModule, featureModules)
 
 fun initKoin() {
     startKoin {

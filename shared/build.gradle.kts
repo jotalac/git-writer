@@ -70,6 +70,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)
+            implementation(libs.kotlinx.io)
 
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)

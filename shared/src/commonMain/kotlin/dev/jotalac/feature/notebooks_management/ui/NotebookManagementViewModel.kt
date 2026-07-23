@@ -56,8 +56,8 @@ class NotebookManagementViewModel(
             is NotebookManagementEvent.UsernameChanged -> _uiState.update { it.copy(username = event.username) }
             is NotebookManagementEvent.PasswordChanged -> _uiState.update { it.copy(password = event.password) }
             is NotebookManagementEvent.DirectorySelected -> _uiState.update { it.copy(selectedDirectory = event.directory) }
-            is NotebookManagementEvent.CreateLocalNotebook -> createLocalNotebook(event.path)
-            is NotebookManagementEvent.CloneRemoteNotebook -> cloneRemoteNotebook(event.path)
+            is NotebookManagementEvent.CreateLocalNotebook -> createLocalNotebook(event.path, event.onSuccess)
+            is NotebookManagementEvent.CloneRemoteNotebook -> cloneRemoteNotebook(event.path, event.onSuccess)
 
         }
     }
@@ -69,7 +69,7 @@ class NotebookManagementViewModel(
         }
     }
 
-    private fun createLocalNotebook(actualDirectory: String) {
+    private fun createLocalNotebook(actualDirectory: String, onSuccess: () -> Unit) {
         val currentState = _uiState.value
 
 
@@ -95,6 +95,7 @@ class NotebookManagementViewModel(
                         errorMessage = null
                     )
                 }
+                onSuccess()
             }.onFailure { error ->
                 _uiState.update {
                     it.copy(
@@ -105,7 +106,7 @@ class NotebookManagementViewModel(
         }
     }
 
-    private fun cloneRemoteNotebook(actualDirectory: String) {
+    private fun cloneRemoteNotebook(actualDirectory: String, onSuccess: () -> Unit) {
         // TODO: Implement remote cloning logic
         val currentState = _uiState.value
         
@@ -117,6 +118,8 @@ class NotebookManagementViewModel(
                 password = "",
             )
         }
+        
+        onSuccess()
         
         println("Cloning remote notebook: ${currentState.remoteUrl} to $actualDirectory")
     }
@@ -132,7 +135,7 @@ class NotebookManagementViewModel(
         data class UsernameChanged(val username: String) : NotebookManagementEvent
         data class PasswordChanged(val password: String) : NotebookManagementEvent
         data class DirectorySelected(val directory: String) : NotebookManagementEvent
-        data class CreateLocalNotebook(val path: String) : NotebookManagementEvent
-        data class CloneRemoteNotebook(val path: String) : NotebookManagementEvent
+        data class CreateLocalNotebook(val path: String, val onSuccess: () -> Unit) : NotebookManagementEvent
+        data class CloneRemoteNotebook(val path: String, val onSuccess: () -> Unit) : NotebookManagementEvent
     }
 }

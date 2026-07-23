@@ -16,6 +16,7 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -151,17 +152,28 @@ fun CreateNotebookDialog(
                         )
                     }
                 }
+                
+                if (state.errorMessage != null) {
+                    Text(
+                        text = state.errorMessage!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
                     if (state.selectedTabIndex == 0) {
-                        viewModel.onEvent(NotebookManagementEvent.CreateLocalNotebook(actualDirectory))
+                        viewModel.onEvent(NotebookManagementEvent.CreateLocalNotebook(actualDirectory) {
+                            onDismiss()
+                        })
                     } else {
-                        viewModel.onEvent(NotebookManagementEvent.CloneRemoteNotebook(actualDirectory))
+                        viewModel.onEvent(NotebookManagementEvent.CloneRemoteNotebook(actualDirectory) {
+                            onDismiss()
+                        })
                     }
-                    onDismiss()
                 },
                 enabled = if (state.selectedTabIndex == 0) {
                     state.notebookName.isNotBlank() && actualDirectory.isNotBlank()

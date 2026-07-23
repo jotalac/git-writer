@@ -24,4 +24,4 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }
 
-expect fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>
+//fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>

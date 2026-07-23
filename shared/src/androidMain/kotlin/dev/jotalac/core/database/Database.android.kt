@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-actual fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
+fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
     val appContext = context.applicationContext
     val dbFile = appContext.getDatabasePath("app_db.db")
     return Room.databaseBuilder<AppDatabase>(

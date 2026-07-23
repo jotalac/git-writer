@@ -1,13 +1,18 @@
 package dev.jotalac.feature.notebooks_management.data
 
+import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.coil.PlatformFileMapper
 import io.github.vinceglb.filekit.createDirectories
+import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.writeString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.io.files.Path
+import kotlin.runCatching
 
 class NotebookRepositoryImpl(
     private val notebookDao: NotebookDao
@@ -51,7 +56,14 @@ class NotebookRepositoryImpl(
 
     override suspend fun deleteNotebook(id: Int): Result<Unit> {
         return runCatching {
-            notebookDao.deleteNotebook(id)
+            val notebook = notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook with id $id not found")
+
+            // delete the directory and all files inside
+            val notebookDirectoryPath = Path(notebook.directoryPath)
+
+            notebookDirectoryPath.deleteRecursively()
+
+            notebookDao.deleteNotebook(notebook.id)
         }
     }
 

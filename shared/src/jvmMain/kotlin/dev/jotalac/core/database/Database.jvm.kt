@@ -7,7 +7,7 @@ import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.path
 import java.io.File
 
-actual fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
+fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
     val appDir = File(FileKit.filesDir.path)
 
     if (!appDir.exists()) {
