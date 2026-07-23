@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import dev.jotalac.core.di.initFileKitJvm
 import dev.jotalac.core.di.initKoin
 
 fun main() {
@@ -26,21 +27,10 @@ fun main() {
             title = "git-writer",
             undecorated = false,
         ) {
-            // for custom title bar
-//            Column(modifier = Modifier.fillMaxSize()) {
-//                WindowDraggableArea {
-//                    Box(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .background(MaterialTheme.colors.background)
-//                            .height(50.dp)
-//                    ) {
-//
-//                    }
-//                }
-//                App()
-//            }
-                App()
+
+            initFileKitJvm("git-writer")
+
+            App()
         }
     }
 }

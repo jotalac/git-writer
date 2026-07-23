@@ -1,7 +1,14 @@
 package dev.jotalac.core.di
 
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import dev.jotalac.core.database.AppDatabase
+import dev.jotalac.core.database.getDatabaseBuilder
 import dev.jotalac.feature.editor.ui.EditorViewModel
+import dev.jotalac.feature.notebooks_management.data.NotebookRepositoryImpl
+import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.NotebookManagementViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
@@ -10,12 +17,30 @@ import org.koin.dsl.module
 // platform specific module
 expect val platformModule: Module
 
+val coreModule = module {
+    //local database
+    single {
+        getDatabaseBuilder()
+            .setDriver(BundledSQLiteDriver())
+            .setQueryCoroutineContext(Dispatchers.IO)
+            .build()
+    }
+
+    single { get<AppDatabase>().getNotebooksDao()}
+
+}
+
 val featureModules = module {
+    //notebook management
+    single<NotebookRepository> {
+        NotebookRepositoryImpl(notebookDao = get())
+    }
+
     viewModelOf(::EditorViewModel)
     viewModelOf(::NotebookManagementViewModel)
 }
 
-val appModules = listOf(featureModules, platformModule)
+val appModules = listOf(coreModule, featureModules, platformModule)
 
 fun initKoin() {
     startKoin {

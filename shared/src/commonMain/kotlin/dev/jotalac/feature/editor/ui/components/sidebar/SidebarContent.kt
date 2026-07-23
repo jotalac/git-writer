@@ -147,11 +147,8 @@ fun SidebarContent(
     val notebookPathProvider = koinInject<NotebookPathProvider>()
     var showCreateDialog by remember { mutableStateOf(false) }
 
-    val defaultBasePath = notebookPathProvider.getDefaultNotebookDirectory()
-
     if (showCreateDialog) {
         CreateNotebookDialog(
-            defaultBasePath = defaultBasePath,
             onDismiss = { showCreateDialog = false }
         )
     }

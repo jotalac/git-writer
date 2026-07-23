@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
@@ -25,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -34,11 +31,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import dev.jotalac.core.utils.toSafeFileName
 import org.jetbrains.compose.resources.painterResource
 import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.browse_destination_button
 import git_writer.shared.generated.resources.cancel_button
 import git_writer.shared.generated.resources.clone_notebook
 import git_writer.shared.generated.resources.create_notebook_title
-import git_writer.shared.generated.resources.destination_directory_label
 import git_writer.shared.generated.resources.git_auth_placeholder
 import git_writer.shared.generated.resources.git_merge
 import git_writer.shared.generated.resources.git_merge_icon
@@ -49,6 +44,7 @@ import git_writer.shared.generated.resources.notebook_name_placeholder
 import git_writer.shared.generated.resources.plus
 import git_writer.shared.generated.resources.plus_icon
 import git_writer.shared.generated.resources.username_placeholder
+import dev.jotalac.feature.notebooks_management.ui.NotebookManagementViewModel.NotebookManagementEvent
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
@@ -62,19 +58,18 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CreateNotebookDialog(
-    defaultBasePath: String,
     onDismiss: () -> Unit,
     viewModel: NotebookManagementViewModel = koinViewModel()
 ) {
     val scope = rememberCoroutineScope()
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
     val actualDirectory by remember(state.notebookName, state.selectedDirectory) {
         derivedStateOf {
             if (state.selectedDirectory != null) {
                 "${state.selectedDirectory}/${state.notebookName.toSafeFileName()}"
             } else {
-                "$defaultBasePath/${state.notebookName.toSafeFileName()}"
+                "${state.defaultBasePath}/${state.notebookName.toSafeFileName()}"
             }
         }
     }
@@ -82,11 +77,11 @@ fun CreateNotebookDialog(
     fun browseForDirectory() {
         scope.launch {
             val directory = FileKit.openDirectoryPicker(
-                directory = PlatformFile(if (state.selectedDirectory != null) state.selectedDirectory!! else defaultBasePath)
+                directory = PlatformFile(if (state.selectedDirectory != null) state.selectedDirectory!! else state.defaultBasePath)
             )
 
             if (directory != null) {
-                viewModel.onDirectorySelected(directory.absolutePath())
+                viewModel.onEvent(NotebookManagementEvent.DirectorySelected(directory.absolutePath()))
             }
         }
     }
@@ -110,7 +105,7 @@ fun CreateNotebookDialog(
                 ) {
                     Tab(
                         selected = state.selectedTabIndex == 0,
-                        onClick = { viewModel.onTabSelected(0) },
+                        onClick = { viewModel.onEvent(NotebookManagementEvent.TabSelected(0)) },
                         text = {
                             TabText(
                                 text = Res.string.init_notebook,
@@ -121,7 +116,7 @@ fun CreateNotebookDialog(
                     )
                     Tab(
                         selected = state.selectedTabIndex == 1,
-                        onClick = { viewModel.onTabSelected(1) },
+                        onClick = { viewModel.onEvent(NotebookManagementEvent.TabSelected(1)) },
                         text = {
                             TabText(
                                 text = Res.string.clone_notebook,
@@ -138,19 +133,19 @@ fun CreateNotebookDialog(
                     when (state.selectedTabIndex) {
                         0 -> LocalNotebookForm(
                             name = state.notebookName,
-                            onNameChange = { viewModel.onNotebookNameChange(it) },
+                            onNameChange = { viewModel.onEvent(NotebookManagementEvent.NotebookNameChanged(it)) },
                             directory = actualDirectory,
                             onBrowseClick = { browseForDirectory() }
                         )
                         1 -> RemoteNotebookForm(
                             name = state.notebookName,
-                            onNameChange = { viewModel.onNotebookNameChange(it) },
+                            onNameChange = { viewModel.onEvent(NotebookManagementEvent.NotebookNameChanged(it)) },
                             url = state.remoteUrl,
-                            onUrlChange = { viewModel.onRemoteUrlChange(it) },
+                            onUrlChange = { viewModel.onEvent(NotebookManagementEvent.RemoteUrlChanged(it)) },
                             username = state.username,
-                            onUsernameChange = { viewModel.onUsernameChange(it) },
+                            onUsernameChange = { viewModel.onEvent(NotebookManagementEvent.UsernameChanged(it)) },
                             password = state.password,
-                            onPasswordChange = { viewModel.onPasswordChange(it) },
+                            onPasswordChange = { viewModel.onEvent(NotebookManagementEvent.PasswordChanged(it)) },
                             directory = actualDirectory,
                             onBrowseClick = { browseForDirectory() }
                         )
@@ -162,9 +157,9 @@ fun CreateNotebookDialog(
             Button(
                 onClick = {
                     if (state.selectedTabIndex == 0) {
-                        viewModel.createLocalNotebook(actualDirectory)
+                        viewModel.onEvent(NotebookManagementEvent.CreateLocalNotebook(actualDirectory))
                     } else {
-                        viewModel.cloneRemoteNotebook(actualDirectory)
+                        viewModel.onEvent(NotebookManagementEvent.CloneRemoteNotebook(actualDirectory))
                     }
                     onDismiss()
                 },
@@ -280,39 +275,13 @@ private fun RemoteNotebookForm(
     }
 }
 
+// don't pick custom directory on mobile - everything lives in the default app folder
 @Composable
-private fun DirectoryPickerRow(
+expect fun DirectoryPickerRow(
     directory: String?,
     onBrowseClick: () -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(Res.string.destination_directory_label),
-            style = MaterialTheme.typography.labelMedium
-        )
+)
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = if (!directory.isNullOrBlank()) directory else "No directory selected",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (directory.isNullOrBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 12.dp)
-            )
-
-            TextButton(onClick = onBrowseClick) {
-                Text(stringResource(Res.string.browse_destination_button))
-            }
-        }
-    }
-}
 
 @Composable
 private fun ResponsiveRow(

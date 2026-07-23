@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 kotlin {
@@ -66,6 +68,8 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.coil.network)
             implementation(libs.ktor.client.core)
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
 
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)
@@ -86,4 +90,13 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
+
+    add("kspCommonMainMetadata", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
+    add("kspJvm", libs.room.compiler)
+    add("kspAndroid", libs.room.compiler)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }

@@ -12,19 +12,7 @@ class IosNotebookPathProvider : NotebookPathProvider {
         val paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
         val documentDirectory = paths.first() as String
 
-        val path =  "$documentDirectory/git-writer-notebooks"
+        return  "$documentDirectory/git-writer-notebooks"
 
-        val fileManager = NSFileManager.defaultManager
-
-        if (!fileManager.fileExistsAtPath(path)) {
-            fileManager.createDirectoryAtPath(
-                path = path,
-                withIntermediateDirectories = true,
-                attributes = null,
-                error = null
-            )
-        }
-
-        return path
     }
 }
