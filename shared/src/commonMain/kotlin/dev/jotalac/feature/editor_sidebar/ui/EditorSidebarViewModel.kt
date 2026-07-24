@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
-import kotlin.collections.emptyList
 
 data class SidebarState(
     val activeNotebook: Notebook? = null,
@@ -33,7 +32,7 @@ class EditorSidebarViewModel(
 
     init {
         viewModelScope.launch {
-            notebookRepository.activeNotebook.collect { notebook ->
+            notebookRepository.activeNotebookState.collect { notebook ->
                 if (notebook != null) {
 
                     // load the file tree when some notebook is active
@@ -58,6 +57,16 @@ class EditorSidebarViewModel(
                         )
                     }
                 }
+            }
+        }
+    }
+
+    fun setActiveNote(notePath: String) {
+        viewModelScope.launch {
+            val result = notebookRepository.activateNote(notePath)
+
+            result.onFailure {
+                println("Failed to open note: $it")
             }
         }
     }

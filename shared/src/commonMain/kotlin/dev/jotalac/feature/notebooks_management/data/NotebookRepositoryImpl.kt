@@ -1,6 +1,6 @@
 package dev.jotalac.feature.notebooks_management.data
 
-import dev.jotalac.core.database.AppPreferencesManager
+import dev.jotalac.core.database.ActiveNotebookManager
 import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -21,7 +21,7 @@ import kotlin.runCatching
 
 class NotebookRepositoryImpl(
     private val notebookDao: NotebookDao,
-    private val preferencesManager: AppPreferencesManager
+    private val activeNotebookManager: ActiveNotebookManager
 ) : NotebookRepository {
     override fun getAllNotebooks(): Flow<List<Notebook>> {
         return notebookDao.getNotebooksAsFlow().map { entityList ->
@@ -78,8 +78,8 @@ class NotebookRepositoryImpl(
 
             notebookDao.deleteNotebook(notebook.id)
 
-            if (preferencesManager.activeNotebookIdFlow.firstOrNull() == id) {
-                preferencesManager.clearActiveNotebook()
+            if (activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notebookId == id) {
+                activeNotebookManager.clearActiveNotebook()
             }
         }
     }
@@ -93,7 +93,19 @@ class NotebookRepositoryImpl(
                 throw IllegalStateException("Notebook directory doesn't exist anymore (consider deleting the notebook)")
             }
 
-            preferencesManager.setActiveNotebook(id)
+            activeNotebookManager.setActiveNotebook(id)
+        }
+    }
+
+    override suspend fun activateNote(notePath: String): Result<Unit> {
+        return runCatching {
+            activeNotebookManager.setActiveNotePath(notePath)
+        }
+    }
+
+    override suspend fun closeActiveNote(): Result<Unit> {
+        return runCatching {
+            activeNotebookManager.clearActiveNote()
         }
     }
 
@@ -104,13 +116,17 @@ class NotebookRepositoryImpl(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override val activeNotebook: Flow<Notebook?> = preferencesManager.activeNotebookIdFlow
-        .flatMapLatest { activeId ->
-            if (activeId == null) {
+    override val activeNotebookState: Flow<Notebook?> = activeNotebookManager.activeNotebookStateFlow
+        .flatMapLatest { notebookState ->
+            if (notebookState?.notebookId == null) {
                 flowOf(null)
             } else {
-                getNotebookByIdAsFlow(activeId)
+                getNotebookByIdAsFlow(notebookState.notebookId)
             }
         }
+
+    override val activeNotePath: Flow<String?> = activeNotebookManager.activeNotebookStateFlow.map {
+        it?.notePath
+    }
 
 }

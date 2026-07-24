@@ -3,6 +3,7 @@ package dev.jotalac.feature.editor_sidebar.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import git_writer.shared.generated.resources.Res
 import org.jetbrains.compose.resources.DrawableResource
@@ -31,8 +33,11 @@ import dev.jotalac.feature.notebooks_management.ui.NotebookListDialog
 import git_writer.shared.generated.resources.add_notebook
 import git_writer.shared.generated.resources.folder_create
 import git_writer.shared.generated.resources.folder_open
+import git_writer.shared.generated.resources.no_active_notebook_label
 import git_writer.shared.generated.resources.open_notebook
 import git_writer.shared.generated.resources.open_settings
+import git_writer.shared.generated.resources.opened_book
+import git_writer.shared.generated.resources.opened_sidebar
 import git_writer.shared.generated.resources.settings
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -61,7 +66,7 @@ private fun SidebarButtonWithTooltip(
             Icon(
                 painter = painterResource(icon),
                 contentDescription = contentDescription,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -76,33 +81,33 @@ private fun SidebarTopActions(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                shape = RoundedCornerShape(8.dp)
+
+            )
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        SidebarButtonWithTooltip(
+            onClick = onNotebookOpen,
+            icon = Res.drawable.folder_open,
+            contentDescription = stringResource(Res.string.open_notebook)
+        )
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SidebarButtonWithTooltip(
-                onClick = onNotebookOpen,
-                icon = Res.drawable.folder_open,
-                contentDescription = stringResource(Res.string.open_notebook)
-            )
+        SidebarButtonWithTooltip(
+            onClick = onNotebookCreate,
+            icon = Res.drawable.folder_create,
+            contentDescription = stringResource(Res.string.add_notebook)
+        )
 
-            SidebarButtonWithTooltip(
-                onClick = onNotebookCreate,
-                icon = Res.drawable.folder_create,
-                contentDescription = stringResource(Res.string.add_notebook)
-            )
-
-            SidebarButtonWithTooltip(
-                onClick = onSettingsOpen,
-                icon = Res.drawable.settings,
-                contentDescription = stringResource(Res.string.open_settings)
-            )
-        }
+        SidebarButtonWithTooltip(
+            onClick = onSettingsOpen,
+            icon = Res.drawable.settings,
+            contentDescription = stringResource(Res.string.open_settings)
+        )
     }
 }
 
@@ -113,9 +118,8 @@ private fun ActiveNotebookName(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -123,7 +127,7 @@ private fun ActiveNotebookName(
     ) {
         if (notebookName != null) {
             Icon(
-                painter = painterResource(Res.drawable.folder_open),
+                painter = painterResource(Res.drawable.opened_book),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(20.dp)
@@ -131,7 +135,7 @@ private fun ActiveNotebookName(
             Spacer(modifier = Modifier.width(12.dp))
         }
         Text(
-            text = notebookName ?: "No active notebook",
+            text = notebookName ?: stringResource(Res.string.no_active_notebook_label),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = if (notebookName != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
@@ -177,7 +181,7 @@ fun SidebarContent(
             onNotebookCreate = {showCreateDialog = true},
             onSettingsOpen = {},
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
         ActiveNotebookName(state.activeNotebook?.name)
 
@@ -192,14 +196,7 @@ fun SidebarContent(
             SidebarFileTree(
                 visibleItems = visibleItems,
                 onFolderToggle = { viewModel.toggleFolder(it) },
-                onFileOpen = { println("Opened file: $it") },
-            )
-        } else {
-            Text(
-                text = "No notebook opened",
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                onFileOpen = { viewModel.setActiveNote(it) },
             )
         }
     }

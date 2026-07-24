@@ -4,20 +4,29 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
+import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.exists
+import io.github.vinceglb.filekit.isRegularFile
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.readString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 data class EditorScreenState(
-    val filename: String? = null,
-    val isLoading: Boolean = true,
+    val activeFilename: String? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null,
 )
 
-class EditorViewModel : ViewModel() {
+class EditorViewModel(
+    private val notebookRepository: NotebookRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorScreenState())
     val uiState: StateFlow<EditorScreenState> = _uiState.asStateFlow()
@@ -26,46 +35,54 @@ class EditorViewModel : ViewModel() {
 
     // load the file data
     init {
-        val receivedFilename = "test.md"
-        _uiState.update { currentState ->
-            currentState.copy(
-                filename = receivedFilename,
-            )
-        }
-
         viewModelScope.launch {
-            loadFileContent(receivedFilename)
-
+            notebookRepository.activeNotePath.collect { notePath ->
+                if (notePath != null) {
+                    //load file content
+                    loadFileContent(notePath)
+                } else {
+                    // 'unload' the file
+                    markdownBlocks.clear()
+                    _uiState.update {
+                        it.copy(activeFilename = null)
+                    }
+                }
+            }
         }
 
     }
 
-    suspend fun loadFileContent(filename: String) {
-        val rawText = """
-        # Hello Markdown
+    suspend fun loadFileContent(filePath: String) {
+        _uiState.update { it.copy(isLoading = true) }
 
-        This is a simple markdown example with:
+        val file = PlatformFile(filePath)
 
-        - Bullet points
-        - **Bold text**
-        - *Italic text*
+        // check if the file is valid before loading it
+        if (!file.exists() || !file.isRegularFile()) {
+            _uiState.update {
+                it.copy(error = "Error loading file - $filePath", isLoading = false)
+            }
+            return
+        }
 
-        ```kotlin
-        val myValue = 10
-        fun thisIsFunction()
-        ```
+        val fileContent = file.readString()
 
-        [Check out this link](https://github.com/mikepenz/multiplatform-markdown-renderer)
-        """.trimIndent()
-
-        val initialChunks = chunkMarkdownIntoBlocks(rawText)
+        val initialChunks = chunkMarkdownIntoBlocks(fileContent)
         markdownBlocks.clear()
         markdownBlocks.addAll(initialChunks)
 
-        delay(1000.milliseconds)
+        _uiState.update { it.copy(isLoading = false, activeFilename = file.name) }
 
-        _uiState.update { it.copy(isLoading = false) }
+    }
 
+    fun closeActiveNote() {
+        viewModelScope.launch {
+            val result = notebookRepository.closeActiveNote()
+
+            result.onFailure {
+                println("Failed to close active note - $it")
+            }
+        }
     }
 
     fun onAction(action: EditorAction) {

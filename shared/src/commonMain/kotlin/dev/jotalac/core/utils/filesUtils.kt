@@ -44,7 +44,7 @@ fun Path.traverse() : List<FileNode> {
             )
         } else {
             //check if the file is allowed file type
-            if (ALLOWED_FILE_EXTENSIONS.any { childName.endsWith(it) }) {
+            if (ALLOWED_FILE_EXTENSIONS.any { childName.lowercase().endsWith(it) }) {
                 FileNode.File(
                     name = childName,
                     path = childPath.toString(),

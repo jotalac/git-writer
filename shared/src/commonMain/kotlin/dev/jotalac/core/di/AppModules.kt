@@ -3,7 +3,7 @@ package dev.jotalac.core.di
 import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import dev.jotalac.core.database.AppDatabase
-import dev.jotalac.core.database.AppPreferencesManager
+import dev.jotalac.core.database.ActiveNotebookManager
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.editor.ui.EditorViewModel
 import dev.jotalac.feature.editor_sidebar.ui.EditorSidebarViewModel
@@ -36,14 +36,14 @@ val coreModule = module {
 
     single { SnackbarManager() }
 
-    single { AppPreferencesManager(dataStore = get()) }
+    single { ActiveNotebookManager(dataStore = get()) }
 
 }
 
 val featureModules = module {
     //notebook management
     single<NotebookRepository> {
-        NotebookRepositoryImpl(notebookDao = get(), preferencesManager = get())
+        NotebookRepositoryImpl(notebookDao = get(), activeNotebookManager = get())
     }
 
     viewModelOf(::EditorViewModel)

@@ -1,6 +1,8 @@
 <resources>
     <string name="create_notebook_title">Add Notebook</string>
     <string name="init_notebook">Init</string>
+    <string name="empty_notebook_label">Notebook is empty</string>
+    <string name="no_active_notebook_label">No active notebook</string>
     <string name="open_notebook_title">Open notebook</string>
     <string name="clone_notebook">Clone (git)</string>
     <string name="no_saved_notebooks_msg">No notebooks available</string>
@@ -20,6 +22,7 @@
     <string name="git_repository_url_input_label">Git Repository URL</string>
     <string name="destination_directory_label">Destination directory</string>
     <string name="browse_destination_button">Browse</string>
+    <string name="no_file_loaded_msg">No file loaded</string>
 
 
 </resources>
