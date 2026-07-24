@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components.markdown_editor
+package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

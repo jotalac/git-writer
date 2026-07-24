@@ -6,6 +6,7 @@ import dev.jotalac.core.database.AppDatabase
 import dev.jotalac.core.database.AppPreferencesManager
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.editor.ui.EditorViewModel
+import dev.jotalac.feature.editor_sidebar.ui.EditorSidebarViewModel
 import dev.jotalac.feature.notebooks_management.data.NotebookRepositoryImpl
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.CreateNotebookViewModel
@@ -42,12 +43,13 @@ val coreModule = module {
 val featureModules = module {
     //notebook management
     single<NotebookRepository> {
-        NotebookRepositoryImpl(notebookDao = get())
+        NotebookRepositoryImpl(notebookDao = get(), preferencesManager = get())
     }
 
     viewModelOf(::EditorViewModel)
     viewModelOf(::CreateNotebookViewModel)
     viewModelOf(::NotebookListViewModel)
+    viewModelOf(::EditorSidebarViewModel)
 }
 
 val appModules = listOf(coreModule, featureModules)

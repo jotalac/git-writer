@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components.markdown_editor
+package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -109,7 +109,8 @@ fun MarkdownEditor(
                 onAction(EditorAction.UpdateBlock(index, text))
             },
             onBlockFocusLost = { index, text ->
-                onAction(EditorAction.EvaluateBlockOnFocusLost(
+                onAction(
+                    EditorAction.EvaluateBlockOnFocusLost(
                     index = index,
                     currentFocusedIndex = focusedIndex,
                     onFocusAdjusted = {

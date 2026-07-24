@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components.sidebar
+package dev.jotalac.feature.editor_sidebar.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,7 +25,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.feature.notebooks_management.ui.CreateNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.NotebookListDialog
 import git_writer.shared.generated.resources.add_notebook
@@ -35,7 +35,8 @@ import git_writer.shared.generated.resources.open_notebook
 import git_writer.shared.generated.resources.open_settings
 import git_writer.shared.generated.resources.settings
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+
 
 @Composable
 private fun SidebarButtonWithTooltip(
@@ -143,10 +144,13 @@ private fun ActiveNotebookName(
 
 @Composable
 fun SidebarContent(
+    viewModel: EditorSidebarViewModel = koinViewModel(),
     modifier: Modifier = Modifier
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showListDialog by remember { mutableStateOf(false) }
+
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
 
     if (showCreateDialog) {
@@ -157,6 +161,7 @@ fun SidebarContent(
 
     if (showListDialog) {
         NotebookListDialog(
+            activeNotebookId = state.activeNotebook?.id,
             onDismiss = { showListDialog = false }
         )
     }
@@ -174,16 +179,28 @@ fun SidebarContent(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        ActiveNotebookName("Notebook name")
+        ActiveNotebookName(state.activeNotebook?.name)
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "No files opened",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-        )
+
+        //display the folders content
+        if (state.fileTree != null) {
+            val visibleItems = remember(state.fileTree, state.expandedFolders) {
+                viewModel.getVisibleNodes(state.fileTree!!, state.expandedFolders)
+            }
+            SidebarFileTree(
+                visibleItems = visibleItems,
+                onFolderToggle = { viewModel.toggleFolder(it) },
+                onFileOpen = { println("Opened file: $it") },
+            )
+        } else {
+            Text(
+                text = "No notebook opened",
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            )
+        }
     }
 }

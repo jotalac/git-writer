@@ -1,7 +1,7 @@
 package dev.jotalac.feature.notebooks_management.domain
 
 data class Notebook(
-    val id: Int = 0,
+    val id: Long = 0,
     val name: String,
     val directoryPath: String,
     val remoteUrl: String?,

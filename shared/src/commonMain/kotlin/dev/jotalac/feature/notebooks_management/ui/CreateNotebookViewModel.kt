@@ -81,7 +81,7 @@ class CreateNotebookViewModel(
 
             result.onSuccess { notebook ->
                 // activate the notebook in repository
-                // notebookRepositroy.activate(notebook.id)
+                 notebookRepository.activateNotebook(notebook.id)
 
                 //reset the dialog values
                 _uiState.update {

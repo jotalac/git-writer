@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components.sidebar
+package dev.jotalac.feature.editor_sidebar.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -9,15 +9,10 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +31,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun EditorSidebar(
-    isVisible: Boolean
+    isVisible: Boolean,
 ) {
     var sidebarWidth by remember { mutableStateOf(250.dp) }
     // for converting drag pixels to dp

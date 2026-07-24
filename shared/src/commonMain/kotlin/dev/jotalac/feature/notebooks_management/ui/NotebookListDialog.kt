@@ -1,5 +1,6 @@
 package dev.jotalac.feature.notebooks_management.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,8 +14,8 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,6 +49,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun NotebookListDialog(
     onDismiss: () -> Unit,
+    activeNotebookId: Long? = null,
     viewModel: NotebookListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -79,6 +83,7 @@ fun NotebookListDialog(
                         ) {
                             items(state.notebooks) { notebook ->
                                 NotebookListItem(
+                                    isActive = activeNotebookId == notebook.id,
                                     notebook = notebook,
                                     onItemClick = {
                                         viewModel.onEvent(NotebookListEvent.OpenNotebook(notebook.id) {
@@ -119,6 +124,7 @@ fun NotebookListDialog(
 
 @Composable
 private fun NotebookListItem(
+    isActive: Boolean,
     notebook: Notebook,
     onItemClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -126,10 +132,12 @@ private fun NotebookListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (isActive) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
             .clickable {
                 onItemClick()
             }
-            .padding(8.dp),
+            .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -149,6 +157,7 @@ private fun NotebookListItem(
                 overflow = TextOverflow.Ellipsis
             )
         }
+
         IconButton(
             onClick = { onDeleteClick() }
         ) {
@@ -159,5 +168,4 @@ private fun NotebookListItem(
             )
         }
     }
-    HorizontalDivider()
 }

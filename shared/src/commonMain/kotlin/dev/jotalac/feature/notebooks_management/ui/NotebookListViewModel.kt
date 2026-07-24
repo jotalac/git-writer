@@ -2,6 +2,7 @@ package dev.jotalac.feature.notebooks_management.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.jotalac.core.database.AppPreferencesManager
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -44,20 +45,30 @@ class NotebookListViewModel(
         }
     }
 
-    private fun openNotebook(id: Int, onSuccess: () -> Unit) {
+    private fun openNotebook(id: Long, onSuccess: () -> Unit) {
         // Add activation logic here if needed, e.g.,
-        // notebookRepository.activateNotebook(id)
+        viewModelScope.launch {
+         val result = notebookRepository.activateNotebook(id)
 
-        snackbarManager.showMessage("Notebook changed")
-        onSuccess()
+            result
+                .onSuccess {
+                    onSuccess()
+                    _uiState.update { it.copy(errorMessage = null) }
+                }
+                .onFailure { error ->
+                    _uiState.update { it.copy(errorMessage = error.message ?: "Failed to open notebook") }
+                }
+        }
+
     }
 
-    private fun deleteNotebook(id: Int) {
+    private fun deleteNotebook(id: Long) {
         viewModelScope.launch {
             val result = notebookRepository.deleteNotebook(id)
             result
                 .onSuccess {
                     snackbarManager.showMessage("Notebook deleted successfully")
+                    _uiState.update { it.copy(errorMessage = null) }
 
                 }
                 .onFailure { error ->
@@ -67,7 +78,7 @@ class NotebookListViewModel(
     }
 
     sealed interface NotebookListEvent {
-        data class OpenNotebook(val id: Int, val onSuccess: () -> Unit) : NotebookListEvent
-        data class DeleteNotebook(val id: Int) : NotebookListEvent
+        data class OpenNotebook(val id: Long, val onSuccess: () -> Unit) : NotebookListEvent
+        data class DeleteNotebook(val id: Long) : NotebookListEvent
     }
 }

@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "notebooks")
 data class NotebookEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Long,
     val name: String,
     val directoryPath: String,
     val remoteUrl: String?,

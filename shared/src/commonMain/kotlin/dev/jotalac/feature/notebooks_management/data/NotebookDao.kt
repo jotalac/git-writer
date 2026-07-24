@@ -16,11 +16,15 @@ interface NotebookDao {
     fun getNotebooksAsFlow(): Flow<List<NotebookEntity>>
 
     @Query("SELECT * FROM notebooks WHERE id = :id")
-    suspend fun getNotebookById(id: Int): NotebookEntity?
+    fun getNotebookByIdAsFlow(id: Long): Flow<NotebookEntity?>
+
+
+    @Query("SELECT * FROM notebooks WHERE id = :id")
+    suspend fun getNotebookById(id: Long): NotebookEntity?
 
     @Upsert
     suspend fun upsertNotebook(notebook: NotebookEntity): Long
 
     @Query("DELETE FROM notebooks WHERE id = :id")
-    suspend fun deleteNotebook(id: Int)
+    suspend fun deleteNotebook(id: Long)
 }

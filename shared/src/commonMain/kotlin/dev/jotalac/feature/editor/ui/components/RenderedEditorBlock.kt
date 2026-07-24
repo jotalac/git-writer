@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components.markdown_editor
+package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
