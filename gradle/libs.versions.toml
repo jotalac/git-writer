@@ -69,6 +69,7 @@ multiplatform-markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-mark
 multiplatform-markdown-renderer-coil3 = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdown-renderer" }
 multiplatform-markdown-renderer-code = { module = "com.mikepenz:multiplatform-markdown-renderer-code", version.ref = "markdown-renderer" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil3" }
+coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil3" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }

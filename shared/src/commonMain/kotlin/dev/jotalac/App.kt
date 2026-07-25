@@ -10,9 +10,13 @@ import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.ui.EditorScreen
 
+import dev.jotalac.core.utils.ConfigureAppImageLoader
+
 @Composable
 @Preview
 fun App() {
+    ConfigureAppImageLoader()
+
     AppTheme {
         val navController = rememberNavController()
         NavHost(navController = navController, startDestination = Route.MainApp) {

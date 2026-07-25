@@ -3,6 +3,7 @@ package dev.jotalac.feature.editor.ui
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.PlatformFile
@@ -20,6 +21,8 @@ import kotlin.time.Duration.Companion.seconds
 
 data class EditorScreenState(
     val activeFilename: String? = null,
+    val activeNotePath: String? = null,
+    val isImage: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
 )
@@ -44,7 +47,7 @@ class EditorViewModel(
                     // 'unload' the file
                     markdownBlocks.clear()
                     _uiState.update {
-                        it.copy(activeFilename = null)
+                        it.copy(activeFilename = null, activeNotePath = null, isImage = false)
                     }
                 }
             }
@@ -53,7 +56,7 @@ class EditorViewModel(
     }
 
     suspend fun loadFileContent(filePath: String) {
-        _uiState.update { it.copy(isLoading = true) }
+        _uiState.update { it.copy(isLoading = true, activeNotePath = filePath) }
 
         val file = PlatformFile(filePath)
 
@@ -65,14 +68,21 @@ class EditorViewModel(
             return
         }
 
-        val fileContent = file.readString()
+        val filename = file.name
+        val isImage = isImageFile(filename)
 
-        val initialChunks = chunkMarkdownIntoBlocks(fileContent)
-        markdownBlocks.clear()
-        markdownBlocks.addAll(initialChunks)
-
-        _uiState.update { it.copy(isLoading = false, activeFilename = file.name) }
-
+        if (isImage) {
+            markdownBlocks.clear()
+        } else {
+            val fileContent = file.readString()
+            val initialChunks = chunkMarkdownIntoBlocks(fileContent)
+            markdownBlocks.clear()
+            markdownBlocks.addAll(initialChunks)
+        }
+        
+        _uiState.update { 
+            it.copy(isLoading = false, activeFilename = filename, isImage = isImage) 
+        }
     }
 
     fun closeActiveNote() {

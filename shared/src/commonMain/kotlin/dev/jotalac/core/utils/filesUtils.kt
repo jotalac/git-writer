@@ -54,4 +54,10 @@ fun Path.traverse() : List<FileNode> {
     }.sortedWith(compareBy<FileNode> { it is FileNode.File}.thenBy { it.name })
 }
 
-val ALLOWED_FILE_EXTENSIONS = listOf(".md", ".png", ".jpg", ".svg")
+val IMAGE_FILE_EXTENSIONS = listOf(".png", ".jpg", ".jpeg", ".svg")
+val ALLOWED_FILE_EXTENSIONS = listOf(".md") + IMAGE_FILE_EXTENSIONS
+
+fun isImageFile(filename: String): Boolean {
+    val lowerName = filename.lowercase()
+    return IMAGE_FILE_EXTENSIONS.any { lowerName.endsWith(it) }
+}

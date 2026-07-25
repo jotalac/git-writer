@@ -67,6 +67,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.coil.network)
+            implementation(libs.coil.svg)
             implementation(libs.ktor.client.core)
             implementation(libs.room.runtime)
             implementation(libs.sqlite.bundled)

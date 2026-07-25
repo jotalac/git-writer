@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,9 +38,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.key.Key.Companion.R
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
@@ -60,6 +63,9 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import coil3.compose.AsyncImage
+import io.github.vinceglb.filekit.PlatformFile
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
@@ -73,6 +79,8 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
             CompactEditorLayout(
                 markdownBlocks = blocks,
                 filename = state.activeFilename,
+                activeNotePath = state.activeNotePath,
+                isImage = state.isImage,
                 isLoading = state.isLoading,
                 onNoteClose = viewModel::closeActiveNote,
                 onAction = viewModel::onAction
@@ -81,6 +89,8 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
             ExpandedEditorLayout(
                 markdownBlocks = blocks,
                 filename = state.activeFilename,
+                activeNotePath = state.activeNotePath,
+                isImage = state.isImage,
                 isLoading = state.isLoading,
                 onNoteClose = viewModel::closeActiveNote,
                 onAction = viewModel::onAction
@@ -93,6 +103,8 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
 private fun CompactEditorLayout(
     markdownBlocks: List<String>,
     filename: String?,
+    activeNotePath: String?,
+    isImage: Boolean,
     isLoading: Boolean,
     onNoteClose: () -> Unit,
     onAction: (EditorAction) -> Unit
@@ -111,6 +123,8 @@ private fun CompactEditorLayout(
     ) {
         MainEditorScaffold(
             filename = filename,
+            activeNotePath = activeNotePath,
+            isImage = isImage,
             isSidebarOpen = drawerState.isOpen,
             onToggleSidebar = {
                 scope.launch {
@@ -129,11 +143,13 @@ private fun CompactEditorLayout(
 private fun ExpandedEditorLayout(
     markdownBlocks: List<String>,
     filename: String?,
+    activeNotePath: String?,
+    isImage: Boolean,
     isLoading: Boolean,
     onNoteClose: () -> Unit,
     onAction: (EditorAction) -> Unit
 ) {
-    var isSidebarVisible by remember { mutableStateOf(false) }
+    var isSidebarVisible by remember { mutableStateOf(true) }
 
     Row(modifier = Modifier.fillMaxSize()) {
         EditorSidebar(isVisible = isSidebarVisible)
@@ -141,6 +157,8 @@ private fun ExpandedEditorLayout(
         MainEditorScaffold(
             modifier = Modifier.weight(1f),
             filename = filename,
+            activeNotePath = activeNotePath,
+            isImage = isImage,
             isSidebarOpen = isSidebarVisible,
             onToggleSidebar = {
                 isSidebarVisible = !isSidebarVisible
@@ -158,6 +176,8 @@ private fun ExpandedEditorLayout(
 fun MainEditorScaffold(
     modifier: Modifier = Modifier,
     filename: String?,
+    activeNotePath: String?,
+    isImage: Boolean,
     isSidebarOpen: Boolean,
     onToggleSidebar: () -> Unit,
     onNoteClose: () -> Unit,
@@ -181,21 +201,24 @@ fun MainEditorScaffold(
         snackbarHostState = snackbarHostState,
         topAppBar = {
             TopAppBar(
-                modifier = Modifier.heightIn(max = 70.dp),
+//                modifier = Modifier.heightIn(max = 70.dp),
                 title = {
                     if (filename != null) {
                         Row(
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceContainer),
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                .padding(start = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 filename,
-                                modifier = Modifier
-                                    .padding(start = 16.dp),
-                                color = MaterialTheme.colorScheme.onBackground
+                                modifier = Modifier.weight(1f, fill = false),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.bodyMedium
                             )
 
                             IconButton(
@@ -226,24 +249,48 @@ fun MainEditorScaffold(
                 .padding(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
-            if (isLoading) {
-                // how loading indicator when file is loading
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LoadingIndicator(modifier = Modifier.size(150.dp))
-                }
-            } else if (filename == null) {
-                NoFileOpenedMessage()
-            } else {
-                // show editor if file is opened
-                MarkdownEditor(
-                    markdownBlocks = markdownBlocks,
-                    onAction = onAction,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+            EditorContent(
+                isLoading = isLoading,
+                filename = filename,
+                isImage = isImage,
+                activeNotePath = activeNotePath,
+                markdownBlocks = markdownBlocks,
+                onAction = onAction
+            )
         }
+    }
+}
+
+@Composable
+private fun EditorContent(
+    isLoading: Boolean,
+    filename: String?,
+    isImage: Boolean,
+    activeNotePath: String?,
+    markdownBlocks: List<String>,
+    onAction: (EditorAction) -> Unit
+) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            LoadingIndicator(modifier = Modifier.size(150.dp))
+        }
+    } else if (filename == null) {
+        NoFileOpenedMessage()
+    } else if (isImage && activeNotePath != null) {
+        AsyncImage(
+            model = PlatformFile(activeNotePath),
+            contentDescription = filename,
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            contentScale = ContentScale.Inside
+        )
+    } else {
+        MarkdownEditor(
+            markdownBlocks = markdownBlocks,
+            onAction = onAction,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
