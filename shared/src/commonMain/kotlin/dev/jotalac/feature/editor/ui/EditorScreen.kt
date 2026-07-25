@@ -37,7 +37,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.Key.Companion.R
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,7 +78,30 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val blocks = viewModel.markdownBlocks
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .onPreviewKeyEvent { event ->
+                //handle global editor shortcuts
+                if (event.type != KeyEventType.KeyDown) {
+                    return@onPreviewKeyEvent false
+                }
+
+                when (event.key) {
+                    Key.W -> {
+                        if (event.isCtrlPressed) {
+                            viewModel.closeActiveNote()
+                            return@onPreviewKeyEvent true
+                        }
+                        false
+                    }
+                    else -> false
+
+                }
+
+
+            }
+    ) {
         val isCompactScreen = maxWidth < 600.dp
 
         if (isCompactScreen) {

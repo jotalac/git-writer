@@ -9,13 +9,18 @@ import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
+import kotlin.time.Duration.Companion.milliseconds
 
 data class SidebarState(
     val activeNotebook: Notebook? = null,
@@ -29,25 +34,19 @@ class EditorSidebarViewModel(
     private val _uiState = MutableStateFlow(SidebarState())
     val uiState: StateFlow<SidebarState> = _uiState.asStateFlow()
 
+    private var filesRefreshJob: Job? = null
+
 
     init {
         viewModelScope.launch {
-            notebookRepository.activeNotebookState.collect { notebook ->
+            notebookRepository.activeNotebookState
+                .distinctUntilChanged()
+                .collectLatest { notebook ->
                 if (notebook != null) {
 
-                    // load the file tree when some notebook is active
-                    val notebookPath = Path(notebook.directoryPath)
-                    val filesTree = withContext(Dispatchers.IO) {
-                        notebookPath.buildFileTree()
-                    }
+                    _uiState.update { it.copy(activeNotebook = notebook, expandedFolders = emptySet()) }
 
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            activeNotebook = notebook,
-                            fileTree = filesTree,
-                            expandedFolders = emptySet()
-                        )
-                    }
+                    refreshFileTree()
                 } else {
                     _uiState.update { currentState ->
                         currentState.copy(
@@ -57,6 +56,34 @@ class EditorSidebarViewModel(
                         )
                     }
                 }
+            }
+        }
+    }
+
+
+    fun onWindowFocusChanged(hasFocus: Boolean) {
+        // debounce the file tree reload on fast alt-tabs
+        if (hasFocus) {
+            filesRefreshJob?.cancel()
+
+            filesRefreshJob = viewModelScope.launch {
+                delay(300.milliseconds)
+                refreshFileTree()
+            }
+        }
+    }
+
+    private fun refreshFileTree() {
+        val activeNotebook = _uiState.value.activeNotebook ?: return
+
+        viewModelScope.launch {
+            val notebookPath = Path(activeNotebook.directoryPath)
+            val filesTree = withContext(Dispatchers.IO) {
+                notebookPath.buildFileTree()
+            }
+
+            _uiState.update { currentState ->
+                currentState.copy(fileTree = filesTree)
             }
         }
     }
