@@ -1,20 +1,24 @@
 package dev.jotalac.feature.editor.ui
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
+import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.isRegularFile
 import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.readString
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
@@ -27,8 +31,10 @@ data class EditorScreenState(
     val error: String? = null,
 )
 
+@OptIn(FlowPreview::class)
 class EditorViewModel(
     private val notebookRepository: NotebookRepository,
+    private val editorRepository: EditorRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorScreenState())
@@ -36,10 +42,15 @@ class EditorViewModel(
 
     val markdownBlocks = mutableStateListOf<String>()
 
-    // load the file data
+
     init {
+        // load the file data
         viewModelScope.launch {
+            // handle the file changing rendering
             notebookRepository.activeNotePath.collect { notePath ->
+                //save old files
+                saveNotesContent(markdownBlocks)
+
                 if (notePath != null) {
                     //load file content
                     loadFileContent(notePath)
@@ -51,6 +62,18 @@ class EditorViewModel(
                     }
                 }
             }
+
+
+        }
+
+        // handle file saving
+        viewModelScope.launch {
+            snapshotFlow { markdownBlocks.toList() }
+                .debounce(1.seconds) // save every 1s debounced
+                .distinctUntilChanged() // dont do anything when the content didnt changed
+                .collectLatest { currentBlocks ->
+                    saveNotesContent(currentBlocks)
+                }
         }
 
     }
@@ -74,14 +97,25 @@ class EditorViewModel(
         if (isImage) {
             markdownBlocks.clear()
         } else {
-            val fileContent = file.readString()
-            val initialChunks = chunkMarkdownIntoBlocks(fileContent)
+            val loadResult = editorRepository.loadMarkdownFileBlocks(file)
             markdownBlocks.clear()
-            markdownBlocks.addAll(initialChunks)
+            loadResult.onSuccess { blocks ->  markdownBlocks.addAll(blocks) }
         }
         
         _uiState.update { 
             it.copy(isLoading = false, activeFilename = filename, isImage = isImage) 
+        }
+    }
+
+    private suspend fun saveNotesContent(currentBlocks: List<String>) {
+        val currentState = _uiState.value
+
+        if (currentState.activeNotePath != null &&
+            !currentState.isLoading &&
+            !currentState.isImage
+        ) {
+            val contentToSave = currentBlocks.joinToString("\n\n")
+            editorRepository.saveFile(contentToSave, currentState.activeNotePath)
         }
     }
 

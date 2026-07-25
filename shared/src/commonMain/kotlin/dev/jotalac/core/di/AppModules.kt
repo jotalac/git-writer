@@ -5,6 +5,8 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import dev.jotalac.core.database.AppDatabase
 import dev.jotalac.core.database.ActiveNotebookManager
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.feature.editor.data.EditorRepositoryImpl
+import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor.ui.EditorViewModel
 import dev.jotalac.feature.editor_sidebar.ui.EditorSidebarViewModel
 import dev.jotalac.feature.notebooks_management.data.NotebookRepositoryImpl
@@ -44,6 +46,10 @@ val featureModules = module {
     //notebook management
     single<NotebookRepository> {
         NotebookRepositoryImpl(notebookDao = get(), activeNotebookManager = get())
+    }
+    //files management
+    single<EditorRepository> {
+        EditorRepositoryImpl()
     }
 
     viewModelOf(::EditorViewModel)
