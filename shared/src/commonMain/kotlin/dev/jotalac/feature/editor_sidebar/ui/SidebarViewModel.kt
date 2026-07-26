@@ -134,5 +134,13 @@ class EditorSidebarViewModel(
         return result
     }
 
+    fun collapseAllFolders() {
+        _uiState.update {
+            it.copy(
+                expandedFolders = emptySet(),
+            )
+        }
+    }
+
 
 }

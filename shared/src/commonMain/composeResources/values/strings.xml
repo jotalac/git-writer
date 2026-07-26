@@ -23,6 +23,10 @@
     <string name="destination_directory_label">Destination directory</string>
     <string name="browse_destination_button">Browse</string>
     <string name="no_file_loaded_msg">No file loaded</string>
+    <string name="create_new_file">Add note</string>
+    <string name="create_new_folder">Create folder</string>
+    <string name="collapse_folders">Collapse folders</string>
+    <string name="expand_folders">Expand folders</string>
 
 
 </resources>
