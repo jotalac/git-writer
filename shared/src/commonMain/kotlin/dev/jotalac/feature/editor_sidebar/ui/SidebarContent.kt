@@ -94,6 +94,7 @@ fun SidebarContent(
             }
             SidebarFileTree(
                 visibleItems = visibleItems,
+                rootPath = state.fileTree!!.path,
                 onFolderToggle = { viewModel.toggleFolder(it) },
                 onFileOpen = { viewModel.setActiveNote(it) },
                 isCreatingItem = isCreatingItem,
@@ -106,7 +107,10 @@ fun SidebarContent(
                         viewModel.addFolder(name)
                     }
                 },
-                onItemCreateCanceled = { isCreatingItem = false }
+                onItemCreateCanceled = { isCreatingItem = false },
+                onMoveItem = { sourcePath, targetPath ->
+                    viewModel.moveItem(sourcePath, targetPath)
+                }
             )
         }
     }

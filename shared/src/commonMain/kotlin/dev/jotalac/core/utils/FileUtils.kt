@@ -4,6 +4,15 @@ import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
+fun String.toSafeFileName(): String {
+    val invalidCharacters = Regex("[\\\\/:*?\"<>|]")
+
+    return this
+        .replace(invalidCharacters, "_")
+        .trim()
+        .trimEnd('.')
+}
+
 // do something like `rm -rf` on the specified path
 fun Path.deleteRecursively() {
     val metadata = SystemFileSystem.metadataOrNull(this) ?: return

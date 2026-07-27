@@ -38,134 +38,225 @@ import git_writer.shared.generated.resources.empty_notebook_label
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+import androidx.compose.ui.draw.alpha
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.LazyListItemInfo
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntSize
+
 @Composable
 fun SidebarFileTree(
     visibleItems: List<FlatFileNode>,
+    rootPath: String,
     onFolderToggle: (String) -> Unit,
     onFileOpen: (String) -> Unit,
     isCreatingItem: Boolean = false,
     creatingItemType: FileType = FileType.FILE,
-    onItemSubmit: (String) -> Unit = {},
-    onItemCreateCanceled: () -> Unit = {},
+    onItemSubmit: (String) -> Unit,
+    onItemCreateCanceled: () -> Unit,
+    onMoveItem: (String, String) -> Unit,
     ) {
     val listState = rememberLazyListState()
+    val dragDropState = remember { DragDropState() }
+    var treeGlobalPosition by remember { mutableStateOf(Offset.Zero) }
+    var treeSize by remember { mutableStateOf(IntSize.Zero) }
+    
+    val currentDropTarget = computeCurrentDropTarget(
+        isDragging = dragDropState.isDragging,
+        dragPosition = dragDropState.dragPosition,
+        treeGlobalPosition = treeGlobalPosition,
+        treeSize = treeSize,
+        visibleItemsInfo = listState.layoutInfo.visibleItemsInfo,
+        visibleItems = visibleItems,
+        rootPath = rootPath
+    )
+    
+    dragDropState.dropTargetResolver = { currentDropTarget }
+    
+    val isRootTarget = dragDropState.isDragging && currentDropTarget == rootPath
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .padding(8.dp)
+    val rootBorder = if (isRootTarget) Modifier.border(2.dp, MaterialTheme.colorScheme.primary.copy(0.5f), RoundedCornerShape(8.dp)) else Modifier
+    val highlightFill = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+    val highlightStroke = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
 
-    ) {
-        if (visibleItems.isEmpty()) {
-            Text(
-                text = stringResource(Res.string.empty_notebook_label),
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-            )
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxSize(), state = listState) {
-                if (isCreatingItem) {
-                    item {
-                        NewItemRow(
-                            onSubmit = onItemSubmit,
-                            onCancel = onItemCreateCanceled,
-                            itemType = creatingItemType,
+    CompositionLocalProvider(LocalDragDropState provides dragDropState) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(8.dp))
+                .then(rootBorder)
+                .background(if (isRootTarget) highlightFill else MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(8.dp)
+                .onGloballyPositioned { 
+                    treeGlobalPosition = it.boundsInWindow().topLeft 
+                    treeSize = it.size
+                }
+                .padding(bottom = 20.dp)
+        ) {
+            if (visibleItems.isEmpty()) {
+                Text(
+                    text = stringResource(Res.string.empty_notebook_label),
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                )
+            } else {
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().drawBehind {
+                        val target = currentDropTarget
+                        if (target != null && target != rootPath) {
+                            val itemsInfo = listState.layoutInfo.visibleItemsInfo
+                            val matchingItems = itemsInfo.filter { itemInfo ->
+                                val path = itemInfo.key as? String ?: return@filter false
+                                val separator = if (path.contains("\\")) "\\" else "/"
+                                path == target || path.startsWith(target + separator)
+                            }
+                            
+                            if (matchingItems.isNotEmpty()) {
+                                val firstItem = matchingItems.first()
+                                val lastItem = matchingItems.last()
+                                val top = firstItem.offset.toFloat()
+                                val bottom = (lastItem.offset + lastItem.size).toFloat()
+                                
+                                drawRoundRect(
+                                    color = highlightFill,
+                                    topLeft = Offset(x = 0f, y = top),
+                                    size = Size(width = size.width, height = bottom - top),
+                                    cornerRadius = CornerRadius(8.dp.toPx())
+                                )
+                                drawRoundRect(
+                                    color = highlightStroke,
+                                    topLeft = Offset(x = 0f, y = top),
+                                    size = Size(width = size.width, height = bottom - top),
+                                    cornerRadius = CornerRadius(8.dp.toPx()),
+                                    style = Stroke(width = 2.dp.toPx())
+                                )
+                            }
+                        }
+                    },
+                    state = listState
+                ) {
+                    if (isCreatingItem) {
+                        item {
+                            NewItemRow(
+                                onSubmit = onItemSubmit,
+                                onCancel = onItemCreateCanceled,
+                                itemType = creatingItemType,
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
+                    }
+                    items(
+                        items = visibleItems,
+                        key = { flatNode -> flatNode.node.path },
+                        contentType = { flatNode -> if (flatNode.node is FileNode.Directory) 1 else 0 }
+                    ) { flatNode ->
+                        FileTreeRow(
+                            flatNode = flatNode,
                             modifier = Modifier.animateItem(),
+                            onClick = {
+                                when (val node = flatNode.node) {
+                                    is FileNode.Directory -> { onFolderToggle(node.path) }
+                                    is FileNode.File -> { onFileOpen(node.path) }
+                                }
+                            },
+                            onMoveItem = onMoveItem
                         )
                     }
                 }
-                items(
-                    items = visibleItems,
-                    key = { flatNode -> flatNode.node.path },
-                    contentType = { flatNode -> if (flatNode.node is FileNode.Directory) 1 else 0 }
-                ) { flatNode ->
-                    FileTreeRow(
-                        flatNode = flatNode,
-                        modifier = Modifier.animateItem(),
-                        onClick = {
-                            when (val node = flatNode.node) {
-                                is FileNode.Directory -> { onFolderToggle(node.path) }
-                                is FileNode.File -> { onFileOpen(node.path) }
-                            }
-                        }
-                    )
-                }
+                AppVerticalScrollbar(
+                    modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                    listState = listState
+                )
             }
-            AppVerticalScrollbar(
-                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                listState = listState
+            
+            DragShadow(
+                dragDropState = dragDropState,
+                treeGlobalPosition = treeGlobalPosition,
+                treeSize = treeSize
             )
         }
     }
 }
 
+private fun computeCurrentDropTarget(
+    isDragging: Boolean,
+    dragPosition: Offset,
+    treeGlobalPosition: Offset,
+    treeSize: IntSize,
+    visibleItemsInfo: List<LazyListItemInfo>,
+    visibleItems: List<FlatFileNode>,
+    rootPath: String
+): String? {
+    if (!isDragging) return null
+    
+    val localDragY = dragPosition.y - treeGlobalPosition.y
+    val localDragX = dragPosition.x - treeGlobalPosition.x
+    val isInsideTree = localDragX >= 0 && localDragX <= treeSize.width && localDragY >= 0 && localDragY <= treeSize.height
+    
+    if (!isInsideTree) return null
+
+    val hoveredRowPath = visibleItemsInfo.firstOrNull {
+        localDragY >= it.offset && localDragY <= (it.offset + it.size)
+    }?.key as? String
+
+    val hoveredNode = visibleItems.find { it.node.path == hoveredRowPath } ?: return rootPath
+    
+    val separator = if (hoveredNode.node.path.contains("\\")) "\\" else "/"
+    return if (hoveredNode.node is FileNode.Directory) {
+        hoveredNode.node.path
+    } else {
+        hoveredNode.node.path.substringBeforeLast(separator)
+    }
+}
+
 @Composable
-fun FileTreeRow(
-    flatNode: FlatFileNode,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+private fun DragShadow(
+    dragDropState: DragDropState,
+    treeGlobalPosition: Offset,
+    treeSize: IntSize,
 ) {
-    val indentPadding = (flatNode.depth * 12).dp
-    val rotation by animateFloatAsState(targetValue = if (flatNode.isExpanded) 90f else 0f)
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 1.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .clickable(onClick = onClick)
-            .padding(start = indentPadding + 4.dp, top = 6.dp, bottom = 6.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        when (flatNode.node) {
-            is FileNode.Directory -> {
-                Icon(
-                    painter = painterResource(Res.drawable.arrow_right),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(14.dp)
-                        .graphicsLayer { rotationZ = rotation },
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = flatNode.node.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            is FileNode.File -> {
-                Spacer(modifier = Modifier.width(20.dp))
-
-                val lastDotIndex = flatNode.node.name.lastIndexOf('.')
-                val filename = flatNode.node.name.substring(0, lastDotIndex)
-                val fileExtension = flatNode.node.name.substring(lastDotIndex + 1)
-
-                Text(
-                    text = filename,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // display file type if it is not markdown file
-                if (fileExtension.lowercase() != "md") {
-                    Text(
-                        text = fileExtension.uppercase(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+    if (!dragDropState.isDragging || dragDropState.draggedNode == null) return
+    
+    val node = dragDropState.draggedNode!!
+    val localOffset = dragDropState.dragPosition - treeGlobalPosition
+    val shadowX = localOffset.x - dragDropState.dragOffsetWithinNode.x
+    val shadowY = localOffset.y - dragDropState.dragOffsetWithinNode.y
+    val shadowWidth = with(LocalDensity.current) { (treeSize.width).toDp() - 16.dp }
+    
+    FileTreeRow(
+        flatNode = node,
+        modifier = Modifier
+            .width(shadowWidth)
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints)
+                layout(placeable.width, placeable.height) {
+                    placeable.placeWithLayer(
+                        x = shadowX.toInt(),
+                        y = shadowY.toInt(),
+                        layerBlock = {
+                            alpha = 0.8f
+                            shadowElevation = 8f
+                        }
                     )
-
                 }
             }
-        }
-    }
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(6.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp)),
+        onClick = {},
+        onMoveItem = { _, _ -> }
+    )
 }

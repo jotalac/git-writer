@@ -7,4 +7,5 @@ interface EditorRepository {
     suspend fun saveFile(fileContent: String, filePath: String): Result<Unit>
     suspend fun addNote(filename: String, filePath: String): Result<Unit>
     suspend fun addFolder(folderName: String, filePath: String): Result<Unit>
+    suspend fun moveItem(sourcePath: String, destinationDirectoryPath: String): Result<Unit>
 }

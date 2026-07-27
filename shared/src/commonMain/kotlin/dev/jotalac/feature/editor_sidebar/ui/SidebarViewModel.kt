@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.buildFileTree
+import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
@@ -147,7 +148,7 @@ class EditorSidebarViewModel(
         val finalFilename = if (filename.lowercase().endsWith(".md")) filename else "$filename.md"
 
         viewModelScope.launch {
-            val result = editorRepository.addNote(finalFilename, _uiState.value.fileTree!!.path)
+            val result = editorRepository.addNote(finalFilename.toSafeFileName(), _uiState.value.fileTree!!.path)
 
             result.onSuccess {
                 refreshFileTree()
@@ -161,12 +162,24 @@ class EditorSidebarViewModel(
         if (_uiState.value.fileTree == null || folderName.isBlank()) return
 
         viewModelScope.launch {
-            val result = editorRepository.addFolder(folderName, _uiState.value.fileTree!!.path)
+            val result = editorRepository.addFolder(folderName.toSafeFileName(), _uiState.value.fileTree!!.path)
 
             result.onSuccess {
                 refreshFileTree()
             }.onFailure {
                 snackbarManager.showMessage(it.message ?: "Failed to add folder")
+            }
+        }
+    }
+
+    fun moveItem(sourcePath: String, destinationDirectoryPath: String) {
+        viewModelScope.launch {
+            val result = editorRepository.moveItem(sourcePath, destinationDirectoryPath)
+
+            result.onSuccess {
+                refreshFileTree()
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to move item")
             }
         }
     }
