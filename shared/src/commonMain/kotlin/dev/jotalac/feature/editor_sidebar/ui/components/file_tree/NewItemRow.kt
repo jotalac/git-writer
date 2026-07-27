@@ -31,11 +31,18 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import dev.jotalac.feature.editor_sidebar.domain.FileType
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.create_directory_input_placeholder
+import git_writer.shared.generated.resources.create_file_input_placeholder
+import git_writer.shared.generated.resources.create_new_file
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun NewFileRow(
+fun NewItemRow(
     onSubmit: (String) -> Unit,
     onCancel: () -> Unit,
+    itemType: FileType,
     modifier: Modifier = Modifier
 ) {
     var text by remember { mutableStateOf("") }
@@ -51,7 +58,7 @@ fun NewFileRow(
             .fillMaxWidth()
             .padding(end = 16.dp)
             .clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outlineVariant,
@@ -98,7 +105,9 @@ fun NewFileRow(
             decorationBox = { innerTextField ->
                 if (text.isEmpty()) {
                     Text(
-                        text = "File name...",
+                        text = if (itemType == FileType.FILE)
+                            stringResource(Res.string.create_file_input_placeholder)
+                        else stringResource(Res.string.create_directory_input_placeholder),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )

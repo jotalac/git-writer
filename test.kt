@@ -1,4 +1,6 @@
 import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+
 fun main() {
-    val p = Path("dir", "file.txt")
+    SystemFileSystem.createDirectories(Path("testDir"))
 }

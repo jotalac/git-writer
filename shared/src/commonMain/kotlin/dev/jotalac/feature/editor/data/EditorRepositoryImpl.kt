@@ -3,6 +3,8 @@ package dev.jotalac.feature.editor.data
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.createDirectories
+import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.readString
 import io.github.vinceglb.filekit.writeString
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +49,20 @@ class EditorRepositoryImpl : EditorRepository {
                 SystemFileSystem.sink(newFile).buffered().use { buffer ->
                     buffer.writeString("")
                 }
+            }
+        }
+    }
+
+    override suspend fun addFolder(folderName: String, filePath: String): Result<Unit> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                val newFolder = PlatformFile(PlatformFile(filePath), folderName)
+
+                if (newFolder.exists()) {
+                    throw IllegalStateException("Folder '$folderName' already exists")
+                }
+
+                newFolder.createDirectories()
             }
         }
     }

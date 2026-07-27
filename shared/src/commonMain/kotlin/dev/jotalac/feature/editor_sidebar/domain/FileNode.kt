@@ -1,5 +1,6 @@
 package dev.jotalac.feature.editor_sidebar.domain
 
+
 sealed class FileNode {
     abstract val name: String
     abstract val path: String

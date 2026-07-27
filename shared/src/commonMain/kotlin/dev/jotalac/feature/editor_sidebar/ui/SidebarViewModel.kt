@@ -157,6 +157,20 @@ class EditorSidebarViewModel(
         }
     }
 
+    fun addFolder(folderName: String) {
+        if (_uiState.value.fileTree == null || folderName.isBlank()) return
+
+        viewModelScope.launch {
+            val result = editorRepository.addFolder(folderName, _uiState.value.fileTree!!.path)
+
+            result.onSuccess {
+                refreshFileTree()
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to add folder")
+            }
+        }
+    }
+
     fun toggleFolderCollapse() {
         if (_uiState.value.expandedFolders.isNotEmpty()) {
             // collapse

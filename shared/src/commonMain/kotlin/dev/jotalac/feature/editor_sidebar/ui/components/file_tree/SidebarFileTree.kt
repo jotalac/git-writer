@@ -2,7 +2,6 @@ package dev.jotalac.feature.editor_sidebar.ui.components.file_tree
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -29,25 +28,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.text.input.ImeAction
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
+import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.arrow_right
@@ -60,9 +43,10 @@ fun SidebarFileTree(
     visibleItems: List<FlatFileNode>,
     onFolderToggle: (String) -> Unit,
     onFileOpen: (String) -> Unit,
-    isCreatingNote: Boolean = false,
-    onNoteCreated: (String) -> Unit = {},
-    onNoteCreateCanceled: () -> Unit = {},
+    isCreatingItem: Boolean = false,
+    creatingItemType: FileType = FileType.FILE,
+    onItemSubmit: (String) -> Unit = {},
+    onItemCreateCanceled: () -> Unit = {},
     ) {
     val listState = rememberLazyListState()
 
@@ -83,12 +67,13 @@ fun SidebarFileTree(
             )
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize(), state = listState) {
-                if (isCreatingNote) {
+                if (isCreatingItem) {
                     item {
-                        NewFileRow(
-                            onSubmit = onNoteCreated,
-                            onCancel = onNoteCreateCanceled,
-                            modifier = Modifier.animateItem()
+                        NewItemRow(
+                            onSubmit = onItemSubmit,
+                            onCancel = onItemCreateCanceled,
+                            itemType = creatingItemType,
+                            modifier = Modifier.animateItem(),
                         )
                     }
                 }

@@ -27,6 +27,7 @@
     <string name="create_new_folder">Create folder</string>
     <string name="collapse_folders">Collapse folders</string>
     <string name="expand_folders">Expand folders</string>
-
+    <string name="create_file_input_placeholder">File name...</string>
+    <string name="create_directory_input_placeholder">Folder name...</string>
 
 </resources>

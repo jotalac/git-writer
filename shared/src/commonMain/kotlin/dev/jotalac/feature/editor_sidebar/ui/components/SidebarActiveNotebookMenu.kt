@@ -44,6 +44,7 @@ fun ActiveNotebookMenu(
     anyFolderExpanded: Boolean,
     onCollapseToggled: () -> Unit,
     onAddNoteClick: () -> Unit,
+    onAddFolderClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -63,7 +64,7 @@ fun ActiveNotebookMenu(
     ) {
         ActiveNotebookName(notebookName)
         Spacer(Modifier.height(12.dp))
-        ActiveNotebookActions(anyFolderExpanded, onCollapseToggled, onAddNoteClick)
+        ActiveNotebookActions(anyFolderExpanded, onCollapseToggled, onAddNoteClick, onAddFolderClick)
     }
 }
 
@@ -90,7 +91,8 @@ private fun ActiveNotebookName(notebookName: String?) {
 private fun ActiveNotebookActions(
     anyFolderExpanded: Boolean,
     onCollapseToggled: () -> Unit,
-    onAddNoteClick: () -> Unit
+    onAddNoteClick: () -> Unit,
+    onAddFolderClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().offset(x = (-4).dp),
@@ -105,7 +107,7 @@ private fun ActiveNotebookActions(
 
         )
         SidebarButtonWithTooltip(
-            onClick = {},
+            onClick = onAddFolderClick,
             icon = Res.drawable.folder_create,
             contentDescription = stringResource(Res.string.create_new_folder),
             tint = MaterialTheme.colorScheme.secondary

@@ -12,14 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.jotalac.feature.editor_sidebar.domain.FileNode
+import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.ui.components.ActiveNotebookMenu
 import dev.jotalac.feature.editor_sidebar.ui.components.SidebarGlobalActions
 import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.SidebarFileTree
 import dev.jotalac.feature.notebooks_management.ui.CreateNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.NotebookListDialog
 import org.koin.compose.viewmodel.koinViewModel
-
-
 
 
 @Composable
@@ -29,7 +29,8 @@ fun SidebarContent(
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showListDialog by remember { mutableStateOf(false) }
-    var isCreatingNote by remember { mutableStateOf(false) }
+    var isCreatingItem by remember { mutableStateOf(false) }
+    var creatingItemType by remember { mutableStateOf(FileType.FILE) }
 
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,7 +65,7 @@ fun SidebarContent(
     ) {
         SidebarGlobalActions(
             onNotebookOpen = { showListDialog = true },
-            onNotebookCreate = {showCreateDialog = true},
+            onNotebookCreate = { showCreateDialog = true },
             onSettingsOpen = {},
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -73,7 +74,14 @@ fun SidebarContent(
             notebookName = state.activeNotebook?.name,
             onCollapseToggled = viewModel::toggleFolderCollapse,
             anyFolderExpanded = state.expandedFolders.isNotEmpty(),
-            onAddNoteClick = { isCreatingNote = true }
+            onAddNoteClick = {
+                isCreatingItem = true
+                creatingItemType = FileType.FILE
+                             },
+            onAddFolderClick = {
+                isCreatingItem = true
+                creatingItemType = FileType.DIRECTORY
+                               },
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -88,12 +96,17 @@ fun SidebarContent(
                 visibleItems = visibleItems,
                 onFolderToggle = { viewModel.toggleFolder(it) },
                 onFileOpen = { viewModel.setActiveNote(it) },
-                isCreatingNote = isCreatingNote,
-                onNoteCreated = { filename ->
-                    isCreatingNote = false
-                    viewModel.addNote(filename)
+                isCreatingItem = isCreatingItem,
+                creatingItemType = creatingItemType,
+                onItemSubmit = { name ->
+                    isCreatingItem = false
+                    if (creatingItemType == FileType.FILE) {
+                        viewModel.addNote(name)
+                    } else {
+                        viewModel.addFolder(name)
+                    }
                 },
-                onNoteCreateCanceled = { isCreatingNote = false }
+                onItemCreateCanceled = { isCreatingItem = false }
             )
         }
     }
