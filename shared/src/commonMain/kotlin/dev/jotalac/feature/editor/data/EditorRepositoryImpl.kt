@@ -35,4 +35,20 @@ class EditorRepositoryImpl : EditorRepository {
         }
     }
 
+    override suspend fun addNote(filename: String, filePath: String): Result<Unit> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                val newFile = Path(Path(filePath), filename)
+
+                if (SystemFileSystem.exists(newFile)) {
+                    throw IllegalStateException("File '$filename' already exists")
+                }
+                
+                SystemFileSystem.sink(newFile).buffered().use { buffer ->
+                    buffer.writeString("")
+                }
+            }
+        }
+    }
+
 }

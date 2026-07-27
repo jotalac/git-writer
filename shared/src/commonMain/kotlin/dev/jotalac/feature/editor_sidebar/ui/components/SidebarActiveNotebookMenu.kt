@@ -36,11 +36,14 @@ import git_writer.shared.generated.resources.note_add
 import git_writer.shared.generated.resources.opened_book
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.random.Random
 
 @Composable
 fun ActiveNotebookMenu(
     notebookName: String?,
+    anyFolderExpanded: Boolean,
     onCollapseToggled: () -> Unit,
+    onAddNoteClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -60,7 +63,7 @@ fun ActiveNotebookMenu(
     ) {
         ActiveNotebookName(notebookName)
         Spacer(Modifier.height(12.dp))
-        ActiveNotebookActions(false, onCollapseToggled)
+        ActiveNotebookActions(anyFolderExpanded, onCollapseToggled, onAddNoteClick)
     }
 }
 
@@ -71,14 +74,7 @@ private fun ActiveNotebookName(notebookName: String?) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (notebookName != null) {
-            Icon(
-                painter = painterResource(Res.drawable.opened_book),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+
         Text(
             text = notebookName ?: stringResource(Res.string.no_active_notebook_label),
             style = MaterialTheme.typography.titleMedium,
@@ -93,7 +89,8 @@ private fun ActiveNotebookName(notebookName: String?) {
 @Composable
 private fun ActiveNotebookActions(
     anyFolderExpanded: Boolean,
-    onCollapseToggled: () -> Unit
+    onCollapseToggled: () -> Unit,
+    onAddNoteClick: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().offset(x = (-4).dp),
@@ -101,19 +98,23 @@ private fun ActiveNotebookActions(
         verticalAlignment = Alignment.CenterVertically
     ) {
         SidebarButtonWithTooltip(
-            onClick = {},
+            onClick = onAddNoteClick,
             icon = Res.drawable.note_add,
             contentDescription = stringResource(Res.string.create_new_file),
+            tint = MaterialTheme.colorScheme.secondary
+
         )
         SidebarButtonWithTooltip(
             onClick = {},
             icon = Res.drawable.folder_create,
-            contentDescription = stringResource(Res.string.create_new_folder)
+            contentDescription = stringResource(Res.string.create_new_folder),
+            tint = MaterialTheme.colorScheme.secondary
         )
         SidebarButtonWithTooltip(
             onClick = onCollapseToggled,
             icon = if (anyFolderExpanded) Res.drawable.collapse_all else Res.drawable.expand_all,
-            contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(Res.string.expand_folders)
+            contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(Res.string.expand_folders),
+            tint = MaterialTheme.colorScheme.secondary
         )
     }
 }

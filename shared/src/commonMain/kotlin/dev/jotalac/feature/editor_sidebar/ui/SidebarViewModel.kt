@@ -2,11 +2,16 @@ package dev.jotalac.feature.editor_sidebar.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.buildFileTree
+import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.writeString
+import io.ktor.client.request.invoke
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
@@ -30,6 +35,8 @@ data class SidebarState(
 
 class EditorSidebarViewModel(
     private val notebookRepository: NotebookRepository,
+    private val editorRepository: EditorRepository,
+    private val snackbarManager: SnackbarManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SidebarState())
     val uiState: StateFlow<SidebarState> = _uiState.asStateFlow()
@@ -134,11 +141,46 @@ class EditorSidebarViewModel(
         return result
     }
 
-    fun collapseAllFolders() {
-        _uiState.update {
-            it.copy(
-                expandedFolders = emptySet(),
-            )
+    fun addNote(filename: String) {
+        if (_uiState.value.fileTree == null || filename.isBlank()) return
+
+        val finalFilename = if (filename.lowercase().endsWith(".md")) filename else "$filename.md"
+
+        viewModelScope.launch {
+            val result = editorRepository.addNote(finalFilename, _uiState.value.fileTree!!.path)
+
+            result.onSuccess {
+                refreshFileTree()
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to add note")
+            }
+        }
+    }
+
+    fun toggleFolderCollapse() {
+        if (_uiState.value.expandedFolders.isNotEmpty()) {
+            // collapse
+            _uiState.update {
+                it.copy(
+                    expandedFolders = emptySet(),
+                )
+            }
+        } else {
+            // expand
+            _uiState.update { currentState ->
+                val allDirs = mutableSetOf<String>()
+                fun traverse(node: FileNode.Directory) {
+                    allDirs.add(node.path)
+                    node.children.forEach { child ->
+                        if (child is FileNode.Directory) {
+                            traverse(child)
+                        }
+                    }
+                }
+                currentState.fileTree?.let { traverse(it) }
+                
+                currentState.copy(expandedFolders = allDirs)
+            }
         }
     }
 
