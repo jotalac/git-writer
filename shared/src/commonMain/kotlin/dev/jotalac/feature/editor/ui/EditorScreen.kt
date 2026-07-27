@@ -82,19 +82,20 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { event ->
-                //handle global editor shortcuts
-                if (event.type != KeyEventType.KeyDown) {
+                //handle global editor shortcuts - later refactor all the keyshortcuts to separate file
+                if (event.type != KeyEventType.KeyDown || !event.isCtrlPressed) {
                     return@onPreviewKeyEvent false
                 }
 
                 when (event.key) {
                     Key.W -> {
-                        if (event.isCtrlPressed) {
-                            viewModel.closeActiveNote()
-                            return@onPreviewKeyEvent true
-                        }
-                        false
+                        viewModel.closeActiveNote()
+                        true
                     }
+//                    Key.N -> {
+//                        viewModel.
+//                        true
+//                    }
                     else -> false
 
                 }

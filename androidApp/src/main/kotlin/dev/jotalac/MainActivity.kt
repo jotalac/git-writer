@@ -15,7 +15,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        initKoinAndroid(this.applicationContext)
         initFileKitAndroid(this)
 
         setContent {
