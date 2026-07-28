@@ -1,24 +1,18 @@
 package dev.jotalac.feature.editor_sidebar.ui.components.file_tree
 
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
-import androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation
-import androidx.compose.foundation.gestures.drag
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.composed
+import androidx.compose.foundation.gestures.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalHapticFeedback
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 
 class DragDropState {
@@ -26,7 +20,7 @@ class DragDropState {
     var draggedNode by mutableStateOf<FlatFileNode?>(null)
     var dragPosition by mutableStateOf(Offset.Zero)
     var dragOffsetWithinNode by mutableStateOf(Offset.Zero)
-    
+
     var dropTargetResolver: (() -> String?)? = null
 
     fun onDragStart(node: FlatFileNode, position: Offset, offsetWithinNode: Offset) {
@@ -60,15 +54,17 @@ fun Modifier.dragSource(
     dragDropState: DragDropState,
     onDragEnd: (String?) -> Unit
 ): Modifier = composed {
+    val haptic = LocalHapticFeedback.current
     var globalPosition by remember { mutableStateOf(Offset.Zero) }
-    
+
     this.onGloballyPositioned { coordinates ->
         globalPosition = coordinates.boundsInWindow().topLeft
     }.pointerInput(node) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
-            
+
             suspend fun AwaitPointerEventScope.handleDrag(startChange: PointerInputChange) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 dragDropState.onDragStart(node, globalPosition + startChange.position, startChange.position)
                 drag(startChange.id) { change ->
                     dragDropState.onDrag(globalPosition + change.position)
@@ -77,7 +73,7 @@ fun Modifier.dragSource(
                 val targetPath = dragDropState.onDragEnd()
                 onDragEnd(targetPath)
             }
-            
+
             if (down.type == PointerType.Mouse) {
                 var dragEvent: PointerInputChange? = null
                 awaitTouchSlopOrCancellation(down.id) { change, _ ->
@@ -85,7 +81,7 @@ fun Modifier.dragSource(
                     change.consume()
                 }
                 if (dragEvent != null) {
-                    handleDrag(dragEvent!!)
+                    handleDrag(dragEvent)
                 }
             } else {
                 val longPress = awaitLongPressOrCancellation(down.id)
