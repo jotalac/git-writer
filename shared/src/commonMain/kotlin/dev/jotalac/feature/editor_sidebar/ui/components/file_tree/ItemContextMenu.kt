@@ -13,13 +13,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.domain.FileType
+import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-
-import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 
 @Composable
 fun ItemContextMenu(
@@ -130,12 +130,14 @@ private fun FileContextMenuContent(
         onDismissRequest = onDismissRequest,
     )
 
-    ContextMenuItem(
-        text = stringResource(Res.string.copy_contect_menu_item),
-        iconPainter = Res.drawable.copy,
-        onClick = { onAction(SidebarAction.CopyItemPath(itemPath)) },
-        onDismissRequest = onDismissRequest,
-    )
+    if (isDesktopPlatform) {
+        ContextMenuItem(
+            text = stringResource(Res.string.copy_contect_menu_item),
+            iconPainter = Res.drawable.copy,
+            onClick = { onAction(SidebarAction.CopyItemPath(itemPath)) },
+            onDismissRequest = onDismissRequest,
+        )
+    }
 }
 
 @Composable
@@ -174,13 +176,14 @@ private fun FolderContextMenuContent(
         itemColor = MaterialTheme.colorScheme.error
     )
 
-    HorizontalDivider()
+    if (isDesktopPlatform) {
+        HorizontalDivider()
 
-    ContextMenuItem(
-        text = stringResource(Res.string.copy_contect_menu_item),
-        iconPainter = Res.drawable.copy,
-        onClick = { onAction(SidebarAction.CopyItemPath(itemPath)) },
-        onDismissRequest = onDismissRequest,
-    )
+        ContextMenuItem(
+            text = stringResource(Res.string.copy_contect_menu_item),
+            iconPainter = Res.drawable.copy,
+            onClick = { onAction(SidebarAction.CopyItemPath(itemPath)) },
+            onDismissRequest = onDismissRequest,
+        )
+    }
 }
-

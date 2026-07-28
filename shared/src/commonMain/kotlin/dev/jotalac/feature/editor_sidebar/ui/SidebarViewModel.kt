@@ -31,7 +31,7 @@ class EditorSidebarViewModel(
     val uiState: StateFlow<SidebarState> = _uiState.asStateFlow()
 
     private var filesRefreshJob: Job? = null
-
+    
 
     init {
         viewModelScope.launch {
@@ -65,10 +65,10 @@ class EditorSidebarViewModel(
             is SidebarAction.RenameItem -> renameItem(action.path, action.newName)
             is SidebarAction.OpenNote -> setActiveNote(action.notePath)
             is SidebarAction.SetRenameItem -> setRenameItem(action.path)
-            is SidebarAction.DuplicateNote -> { /* TODO */
-            }
+            is SidebarAction.DuplicateNote -> duplicateNote(action.notePath)
 
-            is SidebarAction.CopyItemPath -> { /* TODO */
+            is SidebarAction.CopyItemPath -> {
+                snackbarManager.showMessage("Path copied to clipboard")
             }
         }
     }
@@ -81,6 +81,14 @@ class EditorSidebarViewModel(
         viewModelScope.launch {
             val result = editorRepository.deleteItem(path)
             result.onSuccess {
+                // close the editor file if it was deleted
+                val currentActiveNotePath = notebookRepository.activeNotePath.firstOrNull()
+                if (currentActiveNotePath != null && (currentActiveNotePath == path || currentActiveNotePath.startsWith(
+                        "$path/"
+                    ))
+                ) {
+                    notebookRepository.closeActiveNote()
+                }
                 refreshFileTree()
             }.onFailure {
                 snackbarManager.showMessage(it.message ?: "Failed to delete item")
@@ -157,6 +165,12 @@ class EditorSidebarViewModel(
         }
     }
 
+    private fun duplicateNote(notePath: String) {
+        val fileName = notePath.substringAfterLast("/")
+
+        addNote(notePath.substringBeforeLast("/"), fileName.substringBeforeLast("."))
+    }
+
     private fun refreshFileTree() {
         val activeNotebook = _uiState.value.activeNotebook ?: return
 
@@ -219,16 +233,24 @@ class EditorSidebarViewModel(
         return result
     }
 
-    private fun addNote(parentPath: String?) {
+    fun expandFolder(path: String) {
+        _uiState.update { currentState ->
+            if (currentState.expandedFolders.contains(path)) currentState
+            else currentState.copy(expandedFolders = currentState.expandedFolders + path)
+        }
+    }
+
+    private fun addNote(parentPath: String?, defaultName: String = "untitled") {
         val rootPath = _uiState.value.fileTree?.path ?: return
         val targetPath = parentPath ?: rootPath
-        val filename = getUniqueName("untitled", false, targetPath)
+        val filename = getUniqueName(defaultName, false, targetPath)
 
         viewModelScope.launch {
             val result = editorRepository.addNote(filename.toSafeFileName(), targetPath)
 
             result.onSuccess {
                 val newPath = Path(Path(targetPath), filename.toSafeFileName()).toString()
+                expandFolder(targetPath)
                 refreshFileTree()
                 setRenameItem(newPath)
             }.onFailure {
@@ -247,7 +269,7 @@ class EditorSidebarViewModel(
 
             result.onSuccess {
                 val newPath = Path(Path(targetPath), folderName.toSafeFileName()).toString()
-                toggleFolder(targetPath) // expand parent if not expanded
+                expandFolder(targetPath)
                 refreshFileTree()
                 setRenameItem(newPath)
             }.onFailure {

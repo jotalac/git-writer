@@ -4,15 +4,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.jotalac.feature.editor_sidebar.domain.FileType
+import dev.jotalac.core.utils.buildClipEntry
 import dev.jotalac.feature.editor_sidebar.ui.components.ActiveNotebookMenu
 import dev.jotalac.feature.editor_sidebar.ui.components.SidebarGlobalActions
 import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.FileTree
 import dev.jotalac.feature.notebooks_management.ui.CreateNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.NotebookListDialog
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 
@@ -25,6 +27,9 @@ fun SidebarContent(
     var showListDialog by remember { mutableStateOf(false) }
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val clipboardManager = LocalClipboard.current
+    val scope = rememberCoroutineScope()
 
     //refresh the files tree on window focus change
     val windowInfo = LocalWindowInfo.current
@@ -69,7 +74,7 @@ fun SidebarContent(
             onAddFolderClick = { viewModel.onAction(SidebarAction.AddFolder()) },
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
 
         //display the folders content
@@ -77,12 +82,20 @@ fun SidebarContent(
             val visibleItems = remember(state.fileTree, state.expandedFolders) {
                 viewModel.getVisibleNodes(state.fileTree!!, state.expandedFolders)
             }
+
             FileTree(
                 visibleItems = visibleItems,
                 rootPath = state.fileTree!!.path,
                 onFolderToggle = { viewModel.toggleFolder(it) },
                 itemToRename = state.itemToRename,
-                onAction = viewModel::onAction
+                onAction = { action ->
+                    if (action is SidebarAction.CopyItemPath) {
+                        scope.launch {
+                            clipboardManager.setClipEntry(buildClipEntry(action.path))
+                        }
+                    }
+                    viewModel.onAction(action)
+                }
             )
         }
     }

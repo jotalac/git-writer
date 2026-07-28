@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
-import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 import git_writer.shared.generated.resources.Res
@@ -54,7 +53,8 @@ fun FileTree(
         treeSize = treeSize,
         visibleItemsInfo = listState.layoutInfo.visibleItemsInfo,
         visibleItems = visibleItems,
-        rootPath = rootPath
+        rootPath = rootPath,
+        draggedNodePath = dragDropState.draggedNode?.node?.path
     )
 
     dragDropState.dropTargetResolver = { currentDropTarget }
@@ -64,7 +64,7 @@ fun FileTree(
     val rootBorder = if (isRootTarget) Modifier.border(
         2.dp,
         MaterialTheme.colorScheme.primary.copy(0.5f),
-        RoundedCornerShape(8.dp)
+        RoundedCornerShape(12.dp)
     ) else Modifier
     val highlightFill = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
     val highlightStroke = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
@@ -73,9 +73,14 @@ fun FileTree(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .then(rootBorder)
                 .background(if (isRootTarget) highlightFill else MaterialTheme.colorScheme.surfaceContainerHigh)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(12.dp)
+                )
                 .padding(8.dp)
                 .onGloballyPositioned {
                     treeGlobalPosition = it.boundsInWindow().topLeft
@@ -113,13 +118,13 @@ fun FileTree(
                                     color = highlightFill,
                                     topLeft = Offset(x = 0f, y = top),
                                     size = Size(width = size.width, height = bottom - top),
-                                    cornerRadius = CornerRadius(8.dp.toPx())
+                                    cornerRadius = CornerRadius(12.dp.toPx())
                                 )
                                 drawRoundRect(
                                     color = highlightStroke,
                                     topLeft = Offset(x = 0f, y = top),
                                     size = Size(width = size.width, height = bottom - top),
-                                    cornerRadius = CornerRadius(8.dp.toPx()),
+                                    cornerRadius = CornerRadius(12.dp.toPx()),
                                     style = Stroke(width = 2.dp.toPx())
                                 )
                             }
@@ -173,7 +178,8 @@ private fun computeCurrentDropTarget(
     treeSize: IntSize,
     visibleItemsInfo: List<LazyListItemInfo>,
     visibleItems: List<FlatFileNode>,
-    rootPath: String
+    rootPath: String,
+    draggedNodePath: String?
 ): String? {
     if (!isDragging) return null
 
@@ -191,11 +197,19 @@ private fun computeCurrentDropTarget(
     val hoveredNode = visibleItems.find { it.node.path == hoveredRowPath } ?: return rootPath
 
     val separator = if (hoveredNode.node.path.contains("\\")) "\\" else "/"
-    return if (hoveredNode.node is FileNode.Directory) {
+    val target = if (hoveredNode.node is FileNode.Directory) {
         hoveredNode.node.path
     } else {
         hoveredNode.node.path.substringBeforeLast(separator)
     }
+
+    if (draggedNodePath != null) {
+        if (target == draggedNodePath || target.startsWith(draggedNodePath + separator)) {
+            return null
+        }
+    }
+
+    return target
 }
 
 @Composable

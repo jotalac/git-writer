@@ -10,6 +10,7 @@ import io.github.vinceglb.filekit.readString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -29,6 +30,8 @@ class EditorRepositoryImpl : EditorRepository {
         return runCatching {
             withContext(Dispatchers.IO) {
                 val filePath = Path(filePath)
+
+                if (!SystemFileSystem.exists(filePath)) throw IOException("File doesn't exist")
 
                 SystemFileSystem.sink(filePath).buffered().use { buffer ->
                     buffer.writeString(fileContent)
@@ -68,7 +71,12 @@ class EditorRepositoryImpl : EditorRepository {
     }
 
     override suspend fun moveItem(sourcePath: String, destinationDirectoryPath: String): Result<Unit> {
+        // if the source and destination are the same - dont do anything
         if (sourcePath.substringBeforeLast("/") == destinationDirectoryPath) return Result.success(Unit)
+        // if the folder 
+        if (destinationDirectoryPath == sourcePath || destinationDirectoryPath.startsWith("$sourcePath/")) {
+            return Result.failure(IllegalStateException("Cannot move a folder into itself or its subfolder."))
+        }
 
         return runCatching {
             withContext(Dispatchers.IO) {
