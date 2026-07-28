@@ -1,13 +1,12 @@
 package dev.jotalac.feature.editor.data
 
+import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.createDirectories
-import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.readString
-import io.github.vinceglb.filekit.writeString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -46,7 +45,7 @@ class EditorRepositoryImpl : EditorRepository {
                 if (SystemFileSystem.exists(newFile)) {
                     throw IllegalStateException("File '$filename' already exists")
                 }
-                
+
                 SystemFileSystem.sink(newFile).buffered().use { buffer ->
                     buffer.writeString("")
                 }
@@ -82,6 +81,30 @@ class EditorRepositoryImpl : EditorRepository {
                 }
 
                 SystemFileSystem.atomicMove(source, destFile)
+            }
+        }
+    }
+
+    override suspend fun renameItem(sourcePath: String, newName: String): Result<Unit> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                val source = Path(sourcePath)
+                val destDir = source.parent ?: throw IllegalStateException("Invalid path")
+                val destFile = Path(destDir, newName)
+
+                if (SystemFileSystem.exists(destFile)) {
+                    throw IllegalStateException("A file or folder named '$newName' already exists.")
+                }
+
+                SystemFileSystem.atomicMove(source, destFile)
+            }
+        }
+    }
+
+    override suspend fun deleteItem(path: String): Result<Unit> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                Path(path).deleteRecursively()
             }
         }
     }

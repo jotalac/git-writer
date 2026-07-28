@@ -2,12 +2,7 @@ package dev.jotalac.feature.editor_sidebar.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
@@ -28,9 +23,6 @@ fun SidebarContent(
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showListDialog by remember { mutableStateOf(false) }
-    var isCreatingItem by remember { mutableStateOf(false) }
-    var creatingItemType by remember { mutableStateOf(FileType.FILE) }
-
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -57,7 +49,7 @@ fun SidebarContent(
     }
 
 
-    Column (
+    Column(
         modifier = modifier
             .fillMaxHeight()
             .padding(horizontal = 8.dp, vertical = 16.dp)
@@ -73,14 +65,8 @@ fun SidebarContent(
             notebookName = state.activeNotebook?.name,
             onCollapseToggled = viewModel::toggleFolderCollapse,
             anyFolderExpanded = state.expandedFolders.isNotEmpty(),
-            onAddNoteClick = {
-                isCreatingItem = true
-                creatingItemType = FileType.FILE
-                             },
-            onAddFolderClick = {
-                isCreatingItem = true
-                creatingItemType = FileType.DIRECTORY
-                               },
+            onAddNoteClick = { viewModel.onAction(SidebarAction.AddNote()) },
+            onAddFolderClick = { viewModel.onAction(SidebarAction.AddFolder()) },
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -95,21 +81,8 @@ fun SidebarContent(
                 visibleItems = visibleItems,
                 rootPath = state.fileTree!!.path,
                 onFolderToggle = { viewModel.toggleFolder(it) },
-                onFileOpen = { viewModel.setActiveNote(it) },
-                isCreatingItem = isCreatingItem,
-                creatingItemType = creatingItemType,
-                onItemSubmit = { name ->
-                    isCreatingItem = false
-                    if (creatingItemType == FileType.FILE) {
-                        viewModel.addNote(name)
-                    } else {
-                        viewModel.addFolder(name)
-                    }
-                },
-                onItemCreateCanceled = { isCreatingItem = false },
-                onMoveItem = { sourcePath, targetPath ->
-                    viewModel.moveItem(sourcePath, targetPath)
-                }
+                itemToRename = state.itemToRename,
+                onAction = viewModel::onAction
             )
         }
     }

@@ -10,21 +10,8 @@ import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.writeString
-import io.ktor.client.request.invoke
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlinx.io.files.Path
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -32,6 +19,7 @@ data class SidebarState(
     val activeNotebook: Notebook? = null,
     val fileTree: FileNode.Directory? = null,
     val expandedFolders: Set<String> = emptySet(),
+    val itemToRename: String? = null
 )
 
 class EditorSidebarViewModel(
@@ -50,24 +38,112 @@ class EditorSidebarViewModel(
             notebookRepository.activeNotebookState
                 .distinctUntilChanged()
                 .collectLatest { notebook ->
-                if (notebook != null) {
+                    if (notebook != null) {
 
-                    _uiState.update { it.copy(activeNotebook = notebook, expandedFolders = emptySet()) }
+                        _uiState.update { it.copy(activeNotebook = notebook, expandedFolders = emptySet()) }
 
-                    refreshFileTree()
-                } else {
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            activeNotebook = null,
-                            fileTree = null,
-                            expandedFolders = emptySet()
-                        )
+                        refreshFileTree()
+                    } else {
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                activeNotebook = null,
+                                fileTree = null,
+                                expandedFolders = emptySet()
+                            )
+                        }
                     }
                 }
+        }
+    }
+
+    fun onAction(action: SidebarAction) {
+        when (action) {
+            is SidebarAction.MoveItem -> moveItem(action.sourcePath, action.destinationDirectoryPath)
+            is SidebarAction.AddNote -> addNote(action.path)
+            is SidebarAction.AddFolder -> addFolder(action.folderPath)
+            is SidebarAction.DeleteItem -> deleteItem(action.path)
+            is SidebarAction.RenameItem -> renameItem(action.path, action.newName)
+            is SidebarAction.OpenNote -> setActiveNote(action.notePath)
+            is SidebarAction.SetRenameItem -> setRenameItem(action.path)
+            is SidebarAction.DuplicateNote -> { /* TODO */
+            }
+
+            is SidebarAction.CopyItemPath -> { /* TODO */
             }
         }
     }
 
+    private fun setRenameItem(path: String?) {
+        _uiState.update { it.copy(itemToRename = path) }
+    }
+
+    private fun deleteItem(path: String) {
+        viewModelScope.launch {
+            val result = editorRepository.deleteItem(path)
+            result.onSuccess {
+                refreshFileTree()
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to delete item")
+            }
+        }
+    }
+
+    private fun renameItem(path: String, newName: String) {
+        if (newName.isBlank()) {
+            setRenameItem(null)
+            return
+        }
+        val node = findNode(path)
+        val finalName = if (node is FileNode.File && !newName.endsWith(".md")) "$newName.md" else newName
+
+        //check if the original and final names are the same
+        if (node?.path?.substringAfterLast("/") == finalName) {
+            setRenameItem(null)
+            return
+        }
+
+        viewModelScope.launch {
+            val result = editorRepository.renameItem(path, finalName.toSafeFileName())
+            result.onSuccess {
+                setRenameItem(null)
+                refreshFileTree()
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to rename item")
+            }
+        }
+    }
+
+    private fun findNode(path: String, root: FileNode? = _uiState.value.fileTree): FileNode? {
+        if (root == null) return null
+        if (root.path == path) return root
+        if (root is FileNode.Directory) {
+            for (child in root.children) {
+                val found = findNode(path, child)
+                if (found != null) return found
+            }
+        }
+        return null
+    }
+
+    private fun getUniqueName(baseName: String, isFolder: Boolean, parentPath: String?): String {
+        val rootNode = _uiState.value.fileTree ?: return baseName
+        val targetPath = parentPath ?: rootNode.path
+        val targetDir = findNode(targetPath) as? FileNode.Directory ?: rootNode
+
+        val extension = if (!isFolder) ".md" else ""
+
+        fun exists(name: String): Boolean {
+            return targetDir.children.any { it.name == name }
+        }
+
+        var counter = 0
+        var candidate = "$baseName$extension"
+        while (exists(candidate)) {
+            counter++
+            candidate = "$baseName $counter$extension"
+        }
+        return candidate
+    }
 
     fun onWindowFocusChanged(hasFocus: Boolean) {
         // debounce the file tree reload on fast alt-tabs
@@ -125,6 +201,7 @@ class EditorSidebarViewModel(
                 is FileNode.File -> {
                     result.add(FlatFileNode(node, depth))
                 }
+
                 is FileNode.Directory -> {
                     val isExpanded = expandedPaths.contains(node.path)
                     result.add(FlatFileNode(node, depth, isExpanded))
@@ -142,37 +219,44 @@ class EditorSidebarViewModel(
         return result
     }
 
-    fun addNote(filename: String) {
-        if (_uiState.value.fileTree == null || filename.isBlank()) return
-
-        val finalFilename = if (filename.lowercase().endsWith(".md")) filename else "$filename.md"
+    private fun addNote(parentPath: String?) {
+        val rootPath = _uiState.value.fileTree?.path ?: return
+        val targetPath = parentPath ?: rootPath
+        val filename = getUniqueName("untitled", false, targetPath)
 
         viewModelScope.launch {
-            val result = editorRepository.addNote(finalFilename.toSafeFileName(), _uiState.value.fileTree!!.path)
+            val result = editorRepository.addNote(filename.toSafeFileName(), targetPath)
 
             result.onSuccess {
+                val newPath = Path(Path(targetPath), filename.toSafeFileName()).toString()
                 refreshFileTree()
+                setRenameItem(newPath)
             }.onFailure {
                 snackbarManager.showMessage(it.message ?: "Failed to add note")
             }
         }
     }
 
-    fun addFolder(folderName: String) {
-        if (_uiState.value.fileTree == null || folderName.isBlank()) return
+    private fun addFolder(parentPath: String?) {
+        val rootPath = _uiState.value.fileTree?.path ?: return
+        val targetPath = parentPath ?: rootPath
+        val folderName = getUniqueName("untitled", true, targetPath)
 
         viewModelScope.launch {
-            val result = editorRepository.addFolder(folderName.toSafeFileName(), _uiState.value.fileTree!!.path)
+            val result = editorRepository.addFolder(folderName.toSafeFileName(), targetPath)
 
             result.onSuccess {
+                val newPath = Path(Path(targetPath), folderName.toSafeFileName()).toString()
+                toggleFolder(targetPath) // expand parent if not expanded
                 refreshFileTree()
+                setRenameItem(newPath)
             }.onFailure {
                 snackbarManager.showMessage(it.message ?: "Failed to add folder")
             }
         }
     }
 
-    fun moveItem(sourcePath: String, destinationDirectoryPath: String) {
+    private fun moveItem(sourcePath: String, destinationDirectoryPath: String) {
         viewModelScope.launch {
             val result = editorRepository.moveItem(sourcePath, destinationDirectoryPath)
 
@@ -205,7 +289,7 @@ class EditorSidebarViewModel(
                     }
                 }
                 currentState.fileTree?.let { traverse(it) }
-                
+
                 currentState.copy(expandedFolders = allDirs)
             }
         }
