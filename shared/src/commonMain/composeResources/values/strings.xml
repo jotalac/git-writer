@@ -35,5 +35,6 @@
     <string name="duplicate_contect_menu_item">Duplicate</string>
     <string name="note_add_contect_menu_item">Add note</string>
     <string name="folder_add_contect_menu_item">Add folder</string>
+    <string name="add_new_block_message">Tap to add new text...</string>
 
 </resources>

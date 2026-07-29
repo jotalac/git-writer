@@ -1,15 +1,21 @@
 package dev.jotalac.feature.editor.ui.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
@@ -17,18 +23,26 @@ import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.x_icon
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun RenderedEditorBlock(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDeleteClick: () -> Unit,
 ) {
-    Box(
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-            .defaultMinSize(minHeight = 24.dp)
+            .padding(horizontal = 8.dp, vertical = 12.dp)
+            .hoverable(interactionSource)
     ) {
+        // the displayed text content
         if (text.isBlank()) {
             Text(
                 text = " ",
@@ -42,7 +56,7 @@ fun RenderedEditorBlock(
 
             Markdown(
                 content = text,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 components = markdownComponents(
                     codeFence = {
                         MarkdownHighlightedCodeFence(
@@ -56,5 +70,15 @@ fun RenderedEditorBlock(
                 imageTransformer = Coil3ImageTransformerImpl
             )
         }
+
+        // the delete button
+        Icon(
+            painter = painterResource(Res.drawable.x_icon),
+            contentDescription = "Delete Block",
+            modifier = Modifier
+                .alpha(if (isHovered) 1f else 0f)
+                .padding(start = 10.dp)
+                .clickable(onClick = onDeleteClick),
+        )
     }
 }

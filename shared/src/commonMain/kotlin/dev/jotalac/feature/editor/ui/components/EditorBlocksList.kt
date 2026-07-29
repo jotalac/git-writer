@@ -1,23 +1,20 @@
 package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.add_new_block_message
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MarkdownEditorBlocksList(
@@ -34,6 +31,7 @@ fun MarkdownEditorBlocksList(
     onMoveDown: (index: Int) -> Boolean,
     onBackspaceOnEmpty: (index: Int) -> Boolean,
     onAddBlockAtEnd: () -> Unit,
+    onBlockDelete: (index: Int) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState()
 ) {
@@ -49,7 +47,6 @@ fun MarkdownEditorBlocksList(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
                 ) {
                     if (focusedIndex == index) {
                         ActiveEditorBlock(
@@ -69,7 +66,8 @@ fun MarkdownEditorBlocksList(
                             text = block,
                             modifier = Modifier.clickable {
                                 onBlockFocus(index, null)
-                            }
+                            },
+                            onDeleteClick = { onBlockDelete(index) }
                         )
                     }
                 }
@@ -85,7 +83,7 @@ fun MarkdownEditorBlocksList(
                         }
                 ) {
                     Text(
-                        text = "Tap to add new text...",
+                        text = stringResource(Res.string.add_new_block_message),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                         style = MaterialTheme.typography.bodyLarge
                     )

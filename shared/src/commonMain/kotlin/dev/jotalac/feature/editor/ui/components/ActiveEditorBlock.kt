@@ -3,31 +3,20 @@ package dev.jotalac.feature.editor.ui.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.isCtrlPressed
-import androidx.compose.ui.input.key.isShiftPressed
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 
 @Composable
 fun ActiveEditorBlock(
@@ -119,13 +108,13 @@ fun ActiveEditorBlock(
                             onEscape()
                             true
                         }
+
                         Key.Enter -> {
                             if (event.isShiftPressed) {
                                 // add new line withing the current block
                                 updateText(handleNewLineWithinBlock(textFieldValue))
                                 true
-                            }
-                            else if (event.isCtrlPressed) {
+                            } else if (event.isCtrlPressed) {
                                 // exit the current block and create new
                                 onAddBlockBelow()
                                 true
@@ -146,6 +135,7 @@ fun ActiveEditorBlock(
                                 }
                             }
                         }
+
                         Key.DirectionUp -> {
                             val cursorStart = textFieldValue.selection.start
                             val firstNewline = textFieldValue.text.indexOf('\n')
@@ -157,6 +147,7 @@ fun ActiveEditorBlock(
                                 false
                             }
                         }
+
                         Key.DirectionDown -> {
                             val cursorStart = textFieldValue.selection.start
                             val lastNewline = textFieldValue.text.lastIndexOf('\n')
@@ -168,11 +159,13 @@ fun ActiveEditorBlock(
                                 false
                             }
                         }
+
                         Key.Tab -> {
                             updateText(handleIndentation(textFieldValue, event.isShiftPressed))
 
                             true
                         }
+
                         Key.Backspace -> {
                             if (textFieldValue.text.isBlank()) {
                                 onBackspaceOnEmpty()
@@ -180,6 +173,7 @@ fun ActiveEditorBlock(
                                 false
                             }
                         }
+
                         else -> false
                     }
                 } else {
@@ -205,7 +199,12 @@ private fun isInsideCodeBlock(text: String, cursorIndex: Int): Boolean {
 
 private val numberedListRegex = Regex("^(\\d+)\\. ")
 
-private fun insertTextBetween(text: String, leftSplitIndex: Int, rightSplitIndex: Int = leftSplitIndex, insertText: String = ""): String {
+private fun insertTextBetween(
+    text: String,
+    leftSplitIndex: Int,
+    rightSplitIndex: Int = leftSplitIndex,
+    insertText: String = ""
+): String {
     return text.substring(0, leftSplitIndex) + insertText + text.substring(rightSplitIndex)
 }
 
@@ -214,7 +213,7 @@ private fun handleNewLineWithinBlock(currentValue: TextFieldValue): TextFieldVal
     val cursorIndex = currentValue.selection.start
     val newText = insertTextBetween(text = text, leftSplitIndex = cursorIndex, insertText = "  \n")
 
-    return TextFieldValue(text=newText, selection = TextRange(cursorIndex + 3))
+    return TextFieldValue(text = newText, selection = TextRange(cursorIndex + 3))
 }
 
 private fun exitListContinuation(lastLineIndex: Int, cursorIndex: Int, text: String): TextFieldValue {
@@ -226,7 +225,13 @@ private fun exitListContinuation(lastLineIndex: Int, cursorIndex: Int, text: Str
     return TextFieldValue(text = cleanText, selection = TextRange(newCursorPos))
 }
 
-private fun handleUnorderedList(fullText: String, currentLineText: String, lastLineIndex: Int, cursorIndex: Int, startSpaces: Int): TextFieldValue? {
+private fun handleUnorderedList(
+    fullText: String,
+    currentLineText: String,
+    lastLineIndex: Int,
+    cursorIndex: Int,
+    startSpaces: Int
+): TextFieldValue? {
     if (currentLineText == "- ") {
         return exitListContinuation(lastLineIndex, cursorIndex, fullText)
     } else if (currentLineText.startsWith("- ")) {
@@ -240,7 +245,13 @@ private fun handleUnorderedList(fullText: String, currentLineText: String, lastL
     return null
 }
 
-private fun handleOrderedList(fullText: String, currentLineText: String, lastLineIndex: Int, cursorIndex: Int, spacesStart: Int): TextFieldValue? {
+private fun handleOrderedList(
+    fullText: String,
+    currentLineText: String,
+    lastLineIndex: Int,
+    cursorIndex: Int,
+    spacesStart: Int
+): TextFieldValue? {
     val numberMatch = numberedListRegex.find(currentLineText)
 
     if (numberMatch != null && currentLineText == numberMatch.value) {
@@ -261,7 +272,12 @@ private fun handleOrderedList(fullText: String, currentLineText: String, lastLin
     return null
 }
 
-private fun handleBlockQuotes(fullText: String, currentLineText: String, lastLineIndex: Int, cursorIndex: Int): TextFieldValue? {
+private fun handleBlockQuotes(
+    fullText: String,
+    currentLineText: String,
+    lastLineIndex: Int,
+    cursorIndex: Int
+): TextFieldValue? {
     if (currentLineText.trim() == ">") {
         return exitListContinuation(lastLineIndex, cursorIndex, fullText)
     } else if (currentLineText.startsWith(">")) {

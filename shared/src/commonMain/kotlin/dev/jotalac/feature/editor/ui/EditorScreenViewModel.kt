@@ -13,13 +13,7 @@ import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.isRegularFile
 import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
@@ -99,11 +93,11 @@ class EditorViewModel(
         } else {
             val loadResult = editorRepository.loadMarkdownFileBlocks(file)
             markdownBlocks.clear()
-            loadResult.onSuccess { blocks ->  markdownBlocks.addAll(blocks) }
+            loadResult.onSuccess { blocks -> markdownBlocks.addAll(blocks) }
         }
-        
-        _uiState.update { 
-            it.copy(isLoading = false, activeFilename = filename, isImage = isImage) 
+
+        _uiState.update {
+            it.copy(isLoading = false, activeFilename = filename, isImage = isImage)
         }
     }
 
@@ -138,19 +132,28 @@ class EditorViewModel(
                     markdownBlocks.add(action.index, "")
                 }
             }
+
             is EditorAction.UpdateBlock -> {
+                if (action.index !in markdownBlocks.indices) return
                 markdownBlocks[action.index] = action.newText
             }
+
             is EditorAction.RemoveBlock -> {
+                if (action.index !in markdownBlocks.indices) return
                 markdownBlocks.removeAt(action.index)
             }
+
             is EditorAction.AddBlocks -> {
                 markdownBlocks.addAll(action.index, action.newBlocks)
             }
+
             is EditorAction.BlockTurnedIntoMoreBlocks -> {
+                if (action.index !in markdownBlocks.indices) return
                 addNewSplitBlocks(action.index, action.newBlocks)
             }
+
             is EditorAction.SplitBlock -> {
+                if (action.index !in markdownBlocks.indices) return
                 val text = markdownBlocks[action.index]
                 val textBefore = text.substring(0, action.cursorStart)
                 val textAfter = text.substring(action.cursorStart)
@@ -164,6 +167,7 @@ class EditorViewModel(
                 val focusIndex = action.index + chunksAfter.size
                 action.onFocusCalculated(focusIndex)
             }
+
             is EditorAction.EvaluateBlockOnFocusLost -> {
                 if (action.index >= markdownBlocks.size) return
 
@@ -177,7 +181,7 @@ class EditorViewModel(
 //                        action.onFocusAdjusted(currentFocused - 1)
 //                    }
 //                } else {
-                    // Block has text - check if it needs to be chunked
+                // Block has text - check if it needs to be chunked
                 val newChunks = createChunksFromText(text)
 
                 if (newChunks.isEmpty()) {
@@ -215,7 +219,6 @@ class EditorViewModel(
             chunks
         }
     }
-
 
 
 }

@@ -6,21 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
@@ -76,17 +67,19 @@ fun MarkdownEditor(
                     addNewBlockAtEnd()
                 }
             }
-            .onPreviewKeyEvent{ event ->
+            .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && focusedIndex == null) {
                     when (event.key) {
                         Key.DirectionUp -> {
                             focusedIndex = markdownBlocks.lastIndex
                             cursorTarget = TextRange(markdownBlocks[focusedIndex!!].length)
                         }
+
                         Key.DirectionDown -> {
                             focusedIndex = 0
                             cursorTarget = TextRange(markdownBlocks[focusedIndex!!].length)
                         }
+
                         Key.Enter -> {
                             addNewBlockAtEnd()
                         }
@@ -106,36 +99,42 @@ fun MarkdownEditor(
                 focusedIndex = index
             },
             onBlockChange = { index, text ->
-                onAction(EditorAction.UpdateBlock(index, text))
+                if (focusedIndex == index) {
+                    onAction(EditorAction.UpdateBlock(index, text))
+                }
             },
             onBlockFocusLost = { index, text ->
                 onAction(
                     EditorAction.EvaluateBlockOnFocusLost(
-                    index = index,
-                    currentFocusedIndex = focusedIndex,
-                    onFocusAdjusted = {
-                        focusedIndex = index
-                    }
-                ))
+                        index = index,
+                        currentFocusedIndex = focusedIndex,
+                        onFocusAdjusted = {
+                            focusedIndex = index
+                        }
+                    ))
             },
             onEscape = {
                 focusManager.clearFocus()
                 focusedIndex = null
             },
             onAddBlockBelow = { index ->
-                onAction(EditorAction.AddBlock(index + 1))
-                cursorTarget = TextRange(0)
-                focusedIndex = index + 1
+                if (focusedIndex == index) {
+                    onAction(EditorAction.AddBlock(index + 1))
+                    cursorTarget = TextRange(0)
+                    focusedIndex = index + 1
+                }
             },
             onSplitBlock = { index, cursorStart ->
-                // when enter is presses in the active editing text
-                onAction(EditorAction.SplitBlock(index, cursorStart, { newFocusIndex ->
-                    cursorTarget = TextRange(0)
-                    focusedIndex = newFocusIndex
-                }))
+                if (focusedIndex == index) {
+                    // when enter is presses in the active editing text
+                    onAction(EditorAction.SplitBlock(index, cursorStart, { newFocusIndex ->
+                        cursorTarget = TextRange(0)
+                        focusedIndex = newFocusIndex
+                    }))
+                }
             },
             onMoveUp = { index ->
-                if (index > 0) {
+                if (focusedIndex == index && index > 0) {
                     cursorTarget = TextRange(markdownBlocks[index - 1].length)
                     focusedIndex = index - 1
                     true
@@ -144,7 +143,7 @@ fun MarkdownEditor(
                 }
             },
             onMoveDown = { index ->
-                if (index < markdownBlocks.size - 1) {
+                if (focusedIndex == index && index < markdownBlocks.size - 1) {
                     cursorTarget = TextRange(markdownBlocks[index + 1].length)
                     focusedIndex = index + 1
                     true
@@ -153,20 +152,28 @@ fun MarkdownEditor(
                 }
             },
             onBackspaceOnEmpty = { index ->
-                onAction(EditorAction.RemoveBlock(index))
-                focusedIndex = if (markdownBlocks.isNotEmpty()) {
-                    val newIndex = maxOf(0, index - 1)
-                    cursorTarget = TextRange(markdownBlocks[newIndex].length)
-                    newIndex
+                if (focusedIndex == index) {
+                    onAction(EditorAction.RemoveBlock(index))
+                    focusedIndex = if (markdownBlocks.isNotEmpty()) {
+                        val newIndex = maxOf(0, index - 1)
+                        cursorTarget = TextRange(markdownBlocks[newIndex].length)
+                        newIndex
+                    } else {
+                        null
+                    }
+                    true
                 } else {
-                    null
+                    false
                 }
-                true
             },
             onAddBlockAtEnd = {
                 onAction(EditorAction.AddBlock())
                 cursorTarget = TextRange(0)
                 focusedIndex = markdownBlocks.lastIndex
+            },
+            onBlockDelete = { index ->
+                onAction(EditorAction.RemoveBlock(index))
+                focusedIndex = null
             },
             listState = lazyListState
         )
