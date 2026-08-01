@@ -168,6 +168,12 @@ class EditorViewModel(
                 action.onFocusCalculated(focusIndex)
             }
 
+            is EditorAction.MergeWithPrevBlock -> {
+                if (action.index !in markdownBlocks.indices || action.index <= 0) return
+                markdownBlocks[action.index - 1] = markdownBlocks[action.index - 1] + markdownBlocks[action.index]
+                markdownBlocks.removeAt(action.index)
+            }
+
             is EditorAction.EvaluateBlockOnFocusLost -> {
                 if (action.index >= markdownBlocks.size) return
 

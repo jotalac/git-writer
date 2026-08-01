@@ -154,6 +154,7 @@ fun MarkdownEditor(
             onBackspaceOnEmpty = { index ->
                 if (focusedIndex == index) {
                     onAction(EditorAction.RemoveBlock(index))
+
                     focusedIndex = if (markdownBlocks.isNotEmpty()) {
                         val newIndex = maxOf(0, index - 1)
                         cursorTarget = TextRange(markdownBlocks[newIndex].length)
@@ -164,6 +165,16 @@ fun MarkdownEditor(
                     true
                 } else {
                     false
+                }
+            },
+            onBackspaceOnStart = { index ->
+                if (focusedIndex != index || index <= 0) true
+                else {
+                    val originalBlockLength = markdownBlocks[index - 1].length
+                    onAction(EditorAction.MergeWithPrevBlock(index))
+                    focusedIndex = index - 1
+                    cursorTarget = TextRange(originalBlockLength)
+                    true
                 }
             },
             onAddBlockAtEnd = {

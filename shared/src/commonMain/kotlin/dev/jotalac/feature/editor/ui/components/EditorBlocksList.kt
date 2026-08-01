@@ -30,6 +30,7 @@ fun MarkdownEditorBlocksList(
     onMoveUp: (index: Int) -> Boolean,
     onMoveDown: (index: Int) -> Boolean,
     onBackspaceOnEmpty: (index: Int) -> Boolean,
+    onBackspaceOnStart: (index: Int) -> Boolean,
     onAddBlockAtEnd: () -> Unit,
     onBlockDelete: (index: Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -59,7 +60,8 @@ fun MarkdownEditorBlocksList(
                             onSplitBlock = { cursor -> onSplitBlock(index, cursor) },
                             onMoveUp = { onMoveUp(index) },
                             onMoveDown = { onMoveDown(index) },
-                            onBackspaceOnEmpty = { onBackspaceOnEmpty(index) }
+                            onBackspaceOnEmpty = { onBackspaceOnEmpty(index) },
+                            onBackspaceOnStart = { onBackspaceOnStart(index) },
                         )
                     } else {
                         RenderedEditorBlock(

@@ -79,6 +79,7 @@ fun RenderedEditorBlock(
                 .alpha(if (isHovered) 1f else 0f)
                 .padding(start = 10.dp)
                 .clickable(onClick = onDeleteClick),
+            tint = MaterialTheme.colorScheme.outline
         )
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CancellationException
 
 @Composable
 fun ActiveEditorBlock(
@@ -30,6 +31,7 @@ fun ActiveEditorBlock(
     onMoveUp: () -> Boolean,
     onMoveDown: () -> Boolean,
     onBackspaceOnEmpty: () -> Boolean,
+    onBackspaceOnStart: () -> Boolean,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() }
 ) {
@@ -70,6 +72,8 @@ fun ActiveEditorBlock(
                         bottom = cursorRect.bottom + 40f
                     )
                 )
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 println(e)
             }
@@ -169,6 +173,9 @@ fun ActiveEditorBlock(
                         Key.Backspace -> {
                             if (textFieldValue.text.isBlank()) {
                                 onBackspaceOnEmpty()
+                            } else if (textFieldValue.selection.start == 0 && textFieldValue.selection.start == textFieldValue.selection.end) {
+                                onBackspaceOnStart()
+                                true
                             } else {
                                 false
                             }
