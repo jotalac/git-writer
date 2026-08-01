@@ -31,7 +31,7 @@ class EditorSidebarViewModel(
     val uiState: StateFlow<SidebarState> = _uiState.asStateFlow()
 
     private var filesRefreshJob: Job? = null
-    
+
 
     init {
         viewModelScope.launch {
@@ -101,8 +101,9 @@ class EditorSidebarViewModel(
             setRenameItem(null)
             return
         }
+        val fileExtension = Path(path).name.substringAfterLast('.')
         val node = findNode(path)
-        val finalName = if (node is FileNode.File && !newName.endsWith(".md")) "$newName.md" else newName
+        val finalName = if (node is FileNode.File) "$newName.$fileExtension" else newName
 
         //check if the original and final names are the same
         if (node?.path?.substringAfterLast("/") == finalName) {

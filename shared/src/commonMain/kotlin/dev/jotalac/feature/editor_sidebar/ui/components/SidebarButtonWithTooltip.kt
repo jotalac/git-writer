@@ -1,15 +1,7 @@
 package dev.jotalac.feature.editor_sidebar.ui.components
 
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +15,7 @@ fun SidebarButtonWithTooltip(
     icon: DrawableResource,
     contentDescription: String,
     tint: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+    enabled: Boolean = true,
 ) {
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
@@ -36,12 +29,13 @@ fun SidebarButtonWithTooltip(
     ) {
         IconButton(
             onClick = onClick,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(32.dp),
+            enabled = enabled
         ) {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = contentDescription,
-                tint = tint,
+                tint = if (enabled) tint else MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(24.dp)
             )
         }

@@ -2,18 +2,8 @@ package dev.jotalac.feature.editor_sidebar.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,22 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.collapse_all
-import git_writer.shared.generated.resources.collapse_folders
-import git_writer.shared.generated.resources.create_new_file
-import git_writer.shared.generated.resources.create_new_folder
-import git_writer.shared.generated.resources.expand_all
-import git_writer.shared.generated.resources.expand_folders
-import git_writer.shared.generated.resources.folder_create
-import git_writer.shared.generated.resources.no_active_notebook_label
-import git_writer.shared.generated.resources.note_add
-import git_writer.shared.generated.resources.opened_book
-import org.jetbrains.compose.resources.painterResource
+import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
-import kotlin.random.Random
 
 @Composable
 fun ActiveNotebookMenu(
@@ -64,7 +41,13 @@ fun ActiveNotebookMenu(
     ) {
         ActiveNotebookName(notebookName)
         Spacer(Modifier.height(12.dp))
-        ActiveNotebookActions(anyFolderExpanded, onCollapseToggled, onAddNoteClick, onAddFolderClick)
+        ActiveNotebookActions(
+            anyFolderExpanded,
+            notebookName == null,
+            onCollapseToggled,
+            onAddNoteClick,
+            onAddFolderClick
+        )
     }
 }
 
@@ -90,6 +73,7 @@ private fun ActiveNotebookName(notebookName: String?) {
 @Composable
 private fun ActiveNotebookActions(
     anyFolderExpanded: Boolean,
+    isNotebookNull: Boolean,
     onCollapseToggled: () -> Unit,
     onAddNoteClick: () -> Unit,
     onAddFolderClick: () -> Unit,
@@ -103,20 +87,24 @@ private fun ActiveNotebookActions(
             onClick = onAddNoteClick,
             icon = Res.drawable.note_add,
             contentDescription = stringResource(Res.string.create_new_file),
-            tint = MaterialTheme.colorScheme.secondary
-
+            tint = MaterialTheme.colorScheme.secondary,
+            enabled = !isNotebookNull
         )
         SidebarButtonWithTooltip(
             onClick = onAddFolderClick,
             icon = Res.drawable.folder_create,
             contentDescription = stringResource(Res.string.create_new_folder),
-            tint = MaterialTheme.colorScheme.secondary
+            tint = MaterialTheme.colorScheme.secondary,
+            enabled = !isNotebookNull
         )
         SidebarButtonWithTooltip(
             onClick = onCollapseToggled,
             icon = if (anyFolderExpanded) Res.drawable.collapse_all else Res.drawable.expand_all,
-            contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(Res.string.expand_folders),
-            tint = MaterialTheme.colorScheme.secondary
+            contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(
+                Res.string.expand_folders
+            ),
+            tint = MaterialTheme.colorScheme.secondary,
+            enabled = !isNotebookNull
         )
     }
 }
