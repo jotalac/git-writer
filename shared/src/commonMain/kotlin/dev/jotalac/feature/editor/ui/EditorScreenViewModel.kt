@@ -17,6 +17,7 @@ import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
@@ -211,8 +212,8 @@ class EditorViewModel(
 //                }
             }
 
-            is EditorAction.PasteImageFromClipboard -> {
-                savePastedImage(action.imageBytes, action.focusedIndex, action.onFocusCalculated)
+            is EditorAction.PasteImages -> {
+                savePastedImages(action.imageBytesList, action.focusedIndex, action.onFocusCalculated)
             }
         }
     }
@@ -234,9 +235,8 @@ class EditorViewModel(
         }
     }
 
-    fun savePastedImage(imageBytes: ByteArray, focusedIndex: Int, onFocusCalculated: (Int) -> Unit) {
-        val extension = imageBytes.detectImageExtension()
-        val filename = "pasted_image_${Clock.System.now().epochSeconds}$extension"
+    fun savePastedImages(imageBytesList: List<ByteArray>, focusedIndex: Int, onFocusCalculated: (Int) -> Unit) {
+        if (imageBytesList.isEmpty()) return
 
         viewModelScope.launch {
             val notebookRootPath = notebookRepository.activeNotebookState.firstOrNull()?.directoryPath
@@ -246,32 +246,47 @@ class EditorViewModel(
                 return@launch
             }
 
-            val result = editorRepository.savePastedImage(notebookRootPath, imageBytes, filename)
-            if (result.isFailure) {
-                snackbarManager.showMessage("Failed to save pasted image")
-                return@launch
+            val savedMarkdownSyntaxes = mutableListOf<String>()
+            val now = Clock.System.now().toEpochMilliseconds()
+
+            for ((index, imageBytes) in imageBytesList.withIndex()) {
+                val extension = imageBytes.detectImageExtension()
+                val randomSuffix = Random.nextInt(1000, 9999)
+                val filename = "pasted_image_${now}_${index}_$randomSuffix$extension"
+
+                val result = editorRepository.savePastedImage(notebookRootPath, imageBytes, filename)
+                if (result.isFailure) {
+                    snackbarManager.showMessage("Failed to save one or more pasted images")
+                } else {
+                    val relativePath = "images/$filename"
+                    savedMarkdownSyntaxes.add("![pasted image]($relativePath)")
+                }
             }
 
-            val relativePath = "images/$filename"
-            val markdownSyntax = "![pasted image]($relativePath)"
+            if (savedMarkdownSyntaxes.isEmpty()) return@launch
 
-            if (focusedIndex in markdownBlocks.indices) {
-                if (markdownBlocks[focusedIndex].isBlank()) {
-                    markdownBlocks[focusedIndex] = markdownSyntax
-                    markdownBlocks.add(focusedIndex + 1, "")
-                    onFocusCalculated(focusedIndex + 1)
-                } else {
-                    markdownBlocks.add(focusedIndex + 1, markdownSyntax)
-                    if (focusedIndex + 1 == markdownBlocks.lastIndex) {
-                        markdownBlocks.add("")
-                    }
-                    onFocusCalculated(focusedIndex + 2)
+            var insertIndex = if (focusedIndex in markdownBlocks.indices) focusedIndex else markdownBlocks.size
+            if (insertIndex in markdownBlocks.indices && markdownBlocks[insertIndex].isBlank()) {
+                markdownBlocks[insertIndex] = savedMarkdownSyntaxes.first()
+                for (syntax in savedMarkdownSyntaxes.drop(1)) {
+                    insertIndex++
+                    markdownBlocks.add(insertIndex, syntax)
                 }
             } else {
-                markdownBlocks.add(markdownSyntax)
-                markdownBlocks.add("")
-                onFocusCalculated(markdownBlocks.lastIndex)
+                for (syntax in savedMarkdownSyntaxes) {
+                    insertIndex = if (insertIndex in markdownBlocks.indices) insertIndex + 1 else markdownBlocks.size
+                    markdownBlocks.add(insertIndex, syntax)
+                }
             }
+
+            val targetFocusIndex: Int
+            if (insertIndex + 1 < markdownBlocks.size && markdownBlocks[insertIndex + 1].isBlank()) {
+                targetFocusIndex = insertIndex + 1
+            } else {
+                targetFocusIndex = insertIndex + 1
+                markdownBlocks.add(targetFocusIndex, "")
+            }
+            onFocusCalculated(targetFocusIndex)
         }
     }
 }

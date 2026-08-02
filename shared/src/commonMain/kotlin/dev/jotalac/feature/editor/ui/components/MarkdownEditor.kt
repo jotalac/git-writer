@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
+import dev.jotalac.core.utils.onExternalImageDrop
 import dev.jotalac.feature.editor.ui.EditorAction
 
 @Composable
@@ -28,6 +29,7 @@ fun MarkdownEditor(
 
     var focusedIndex by remember { mutableStateOf<Int?>(null) }
     var cursorTarget by remember { mutableStateOf<TextRange?>(null) }
+    var isDraggingImageOver by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
     val surfaceFocusRequester = remember { FocusRequester() }
@@ -67,6 +69,22 @@ fun MarkdownEditor(
                     addNewBlockAtEnd()
                 }
             }
+            .onExternalImageDrop(
+                onDragOverChange = { isDraggingImageOver = it },
+                onImageDropped = { imageBytesList ->
+                    val targetIndex = focusedIndex ?: (if (markdownBlocks.isNotEmpty()) markdownBlocks.lastIndex else 0)
+                    onAction(
+                        EditorAction.PasteImages(
+                            imageBytesList = imageBytesList,
+                            focusedIndex = targetIndex,
+                            onFocusCalculated = { newFocusIndex ->
+                                cursorTarget = TextRange(0)
+                                focusedIndex = newFocusIndex
+                            }
+                        )
+                    )
+                }
+            )
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && focusedIndex == null) {
                     when (event.key) {
@@ -190,10 +208,11 @@ fun MarkdownEditor(
                 val currentIndex = focusedIndex
                 if (currentIndex != null) {
                     onAction(
-                        EditorAction.PasteImageFromClipboard(
-                            imageBytes = imageBytes,
+                        EditorAction.PasteImages(
+                            imageBytesList = listOf(imageBytes),
                             focusedIndex = currentIndex,
                             onFocusCalculated = { newFocusIndex ->
+                                cursorTarget = TextRange(0)
                                 focusedIndex = newFocusIndex
                             }
                         )
@@ -208,6 +227,10 @@ fun MarkdownEditor(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
             listState = lazyListState
         )
+
+        if (isDraggingImageOver) {
+            ImageDropOverlay()
+        }
     }
 }
 
