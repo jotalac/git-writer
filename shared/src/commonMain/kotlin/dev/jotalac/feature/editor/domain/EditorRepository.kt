@@ -10,4 +10,5 @@ interface EditorRepository {
     suspend fun moveItem(sourcePath: String, destinationDirectoryPath: String): Result<Unit>
     suspend fun renameItem(sourcePath: String, newName: String): Result<Unit>
     suspend fun deleteItem(path: String): Result<Unit>
+    suspend fun savePastedImage(notebookRootPath: String, imageBytes: ByteArray, filename: String): Result<Unit>
 }

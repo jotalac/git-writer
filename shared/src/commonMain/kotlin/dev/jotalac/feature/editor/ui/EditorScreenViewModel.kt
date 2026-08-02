@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.core.utils.detectImageExtension
 import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
@@ -15,6 +17,7 @@ import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 data class EditorScreenState(
@@ -29,6 +32,7 @@ data class EditorScreenState(
 class EditorViewModel(
     private val notebookRepository: NotebookRepository,
     private val editorRepository: EditorRepository,
+    private val snackbarManager: SnackbarManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorScreenState())
@@ -206,6 +210,10 @@ class EditorViewModel(
                 }
 //                }
             }
+
+            is EditorAction.PasteImageFromClipboard -> {
+                savePastedImage(action.imageBytes, action.focusedIndex, action.onFocusCalculated)
+            }
         }
     }
 
@@ -226,5 +234,44 @@ class EditorViewModel(
         }
     }
 
+    fun savePastedImage(imageBytes: ByteArray, focusedIndex: Int, onFocusCalculated: (Int) -> Unit) {
+        val extension = imageBytes.detectImageExtension()
+        val filename = "pasted_image_${Clock.System.now().epochSeconds}$extension"
 
+        viewModelScope.launch {
+            val notebookRootPath = notebookRepository.activeNotebookState.firstOrNull()?.directoryPath
+
+            if (notebookRootPath == null) {
+                snackbarManager.showMessage("Failed to paste image: no active notebook")
+                return@launch
+            }
+
+            val result = editorRepository.savePastedImage(notebookRootPath, imageBytes, filename)
+            if (result.isFailure) {
+                snackbarManager.showMessage("Failed to save pasted image")
+                return@launch
+            }
+
+            val relativePath = "images/$filename"
+            val markdownSyntax = "![pasted image]($relativePath)"
+
+            if (focusedIndex in markdownBlocks.indices) {
+                if (markdownBlocks[focusedIndex].isBlank()) {
+                    markdownBlocks[focusedIndex] = markdownSyntax
+                    markdownBlocks.add(focusedIndex + 1, "")
+                    onFocusCalculated(focusedIndex + 1)
+                } else {
+                    markdownBlocks.add(focusedIndex + 1, markdownSyntax)
+                    if (focusedIndex + 1 == markdownBlocks.lastIndex) {
+                        markdownBlocks.add("")
+                    }
+                    onFocusCalculated(focusedIndex + 2)
+                }
+            } else {
+                markdownBlocks.add(markdownSyntax)
+                markdownBlocks.add("")
+                onFocusCalculated(markdownBlocks.lastIndex)
+            }
+        }
+    }
 }

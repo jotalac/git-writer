@@ -16,4 +16,9 @@ sealed interface EditorAction {
     ) : EditorAction
 
     data class MergeWithPrevBlock(val index: Int) : EditorAction
+    data class PasteImageFromClipboard(
+        val imageBytes: ByteArray,
+        val focusedIndex: Int,
+        val onFocusCalculated: (newFocusIndex: Int) -> Unit
+    ) : EditorAction
 }

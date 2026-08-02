@@ -17,7 +17,12 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.utils.getImageBytesFromClipboard
+import dev.jotalac.core.utils.hasClipboardImage
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ActiveEditorBlock(
@@ -32,9 +37,11 @@ fun ActiveEditorBlock(
     onMoveDown: () -> Boolean,
     onBackspaceOnEmpty: () -> Boolean,
     onBackspaceOnStart: () -> Boolean,
+    onImagePasted: (ByteArray) -> Unit,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() }
 ) {
+    val scope = rememberCoroutineScope()
     var hasFocused by remember { mutableStateOf(false) }
 
     var textFieldValue by remember {
@@ -179,6 +186,21 @@ fun ActiveEditorBlock(
                             } else {
                                 false
                             }
+                        }
+
+                        Key.V -> {
+                            if (!(event.isCtrlPressed || event.isMetaPressed)) return@onPreviewKeyEvent false
+                            if (!hasClipboardImage()) return@onPreviewKeyEvent false
+
+                            scope.launch(Dispatchers.Default) {
+                                val imageBytes = getImageBytesFromClipboard()
+                                if (imageBytes != null) {
+                                    withContext(Dispatchers.Main) {
+                                        onImagePasted(imageBytes)
+                                    }
+                                }
+                            }
+                            true
                         }
 
                         else -> false

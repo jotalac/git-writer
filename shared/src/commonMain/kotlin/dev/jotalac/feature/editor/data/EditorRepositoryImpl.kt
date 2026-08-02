@@ -3,10 +3,7 @@ package dev.jotalac.feature.editor.data
 import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.createDirectories
-import io.github.vinceglb.filekit.exists
-import io.github.vinceglb.filekit.readString
+import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -113,6 +110,24 @@ class EditorRepositoryImpl : EditorRepository {
         return runCatching {
             withContext(Dispatchers.IO) {
                 Path(path).deleteRecursively()
+            }
+        }
+    }
+
+    override suspend fun savePastedImage(
+        notebookRootPath: String,
+        imageBytes: ByteArray,
+        filename: String
+    ): Result<Unit> {
+        return runCatching {
+            withContext(Dispatchers.IO) {
+                val imageDir = PlatformFile(PlatformFile(notebookRootPath), "images")
+                if (!imageDir.exists()) {
+                    imageDir.createDirectories()
+                }
+
+                val imageFile = PlatformFile(imageDir, filename)
+                imageFile.write(imageBytes)
             }
         }
     }

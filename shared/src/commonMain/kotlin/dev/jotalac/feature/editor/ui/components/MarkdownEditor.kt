@@ -186,6 +186,21 @@ fun MarkdownEditor(
                 onAction(EditorAction.RemoveBlock(index))
                 focusedIndex = null
             },
+            onImagePasted = { imageBytes ->
+                val currentIndex = focusedIndex
+                if (currentIndex != null) {
+                    onAction(
+                        EditorAction.PasteImageFromClipboard(
+                            imageBytes = imageBytes,
+                            focusedIndex = currentIndex,
+                            onFocusCalculated = { newFocusIndex ->
+                                focusedIndex = newFocusIndex
+                            }
+                        )
+                    )
+                }
+            },
+
             listState = lazyListState
         )
 

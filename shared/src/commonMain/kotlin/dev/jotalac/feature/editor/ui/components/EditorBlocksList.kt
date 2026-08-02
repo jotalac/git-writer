@@ -33,6 +33,7 @@ fun MarkdownEditorBlocksList(
     onBackspaceOnStart: (index: Int) -> Boolean,
     onAddBlockAtEnd: () -> Unit,
     onBlockDelete: (index: Int) -> Unit,
+    onImagePasted: (ByteArray) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState()
 ) {
@@ -62,6 +63,7 @@ fun MarkdownEditorBlocksList(
                             onMoveDown = { onMoveDown(index) },
                             onBackspaceOnEmpty = { onBackspaceOnEmpty(index) },
                             onBackspaceOnStart = { onBackspaceOnStart(index) },
+                            onImagePasted = { byteArray -> onImagePasted(byteArray) },
                         )
                     } else {
                         RenderedEditorBlock(

@@ -63,10 +63,25 @@ fun Path.traverse() : List<FileNode> {
     }.sortedWith(compareBy<FileNode> { it is FileNode.File}.thenBy { it.name })
 }
 
-val IMAGE_FILE_EXTENSIONS = listOf(".png", ".jpg", ".jpeg", ".svg")
+val IMAGE_FILE_EXTENSIONS = listOf(".png", ".jpg", ".jpeg", ".svg", ".gif", ".webp")
 val ALLOWED_FILE_EXTENSIONS = listOf(".md") + IMAGE_FILE_EXTENSIONS
 
 fun isImageFile(filename: String): Boolean {
     val lowerName = filename.lowercase()
     return IMAGE_FILE_EXTENSIONS.any { lowerName.endsWith(it) }
+}
+
+fun ByteArray.detectImageExtension(): String {
+    if (size >= 3 && this[0] == 0xFF.toByte() && this[1] == 0xD8.toByte() && this[2] == 0xFF.toByte()) {
+        return ".jpg"
+    }
+    if (size >= 3 && this[0] == 0x47.toByte() && this[1] == 0x49.toByte() && this[2] == 0x46.toByte()) {
+        return ".gif"
+    }
+    if (size >= 12 && this[0] == 0x52.toByte() && this[1] == 0x49.toByte() && this[2] == 0x46.toByte() && this[3] == 0x46.toByte() &&
+        this[8] == 0x57.toByte() && this[9] == 0x45.toByte() && this[10] == 0x42.toByte() && this[11] == 0x50.toByte()
+    ) {
+        return ".webp"
+    }
+    return ".png"
 }

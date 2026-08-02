@@ -45,8 +45,9 @@ fun getAsyncImageLoader(
                 } else {
                     val notebookRoot = getActiveNotebookDirectory()
                     if (notebookRoot != null) {
+                        val cleanRoot = notebookRoot.trimEnd('/', '\\')
                         val relativePath = cleanPath.removePrefix("./").removePrefix(".\\")
-                        "$notebookRoot/$relativePath"
+                        "$cleanRoot/$relativePath"
                     } else {
                         cleanPath
                     }
