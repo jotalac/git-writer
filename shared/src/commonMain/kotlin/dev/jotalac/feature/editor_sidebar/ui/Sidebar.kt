@@ -28,12 +28,14 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.theme.dimensions
 
 @Composable
 fun EditorSidebar(
     isVisible: Boolean,
 ) {
-    var sidebarWidth by remember { mutableStateOf(250.dp) }
+    val initialWidth = MaterialTheme.dimensions.navDrawerWidth
+    var sidebarWidth by remember(initialWidth) { mutableStateOf(initialWidth) }
     // for converting drag pixels to dp
     val density = LocalDensity.current
 

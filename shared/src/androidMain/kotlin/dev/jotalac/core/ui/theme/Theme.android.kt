@@ -21,3 +21,5 @@ actual fun determineColorScheme(
         else -> lightScheme
     }
 }
+
+actual fun determineAppDimensions(): AppDimensions = MobileDimensions

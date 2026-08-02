@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
@@ -78,7 +79,7 @@ private fun ContextMenuItem(
                     painter = painterResource(iconPainter),
                     contentDescription = text,
                     modifier = Modifier
-                        .size(15.dp),
+                        .size(MaterialTheme.dimensions.iconMedium),
                     tint = itemColor ?: MaterialTheme.colorScheme.onSurface
                 )
                 Text(

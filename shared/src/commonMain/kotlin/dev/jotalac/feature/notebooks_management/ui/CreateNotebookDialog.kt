@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.toSafeFileName
 import org.jetbrains.compose.resources.painterResource
 import git_writer.shared.generated.resources.Res
@@ -204,7 +205,7 @@ private fun TabText(
         Icon(
             painter = painterResource(icon),
             contentDescription = stringResource(contentDescription),
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(MaterialTheme.dimensions.iconMedium)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(stringResource(text))

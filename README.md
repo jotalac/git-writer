@@ -2,12 +2,12 @@
 
 ## TODO
 
-- drag and drop images
-- display images with relative path
-- ctrl + v for image pasting
+- shortcuts for bold, italic, ...
+- short menu on mobile bor adding images, bold, header, ...
+- make ui bigger on mobile
 - fix scrolling in the editor - the lazy column is broken for the scrolling with scrollbar especially with images
-- renaming image fails - it is no longer saved as image
+- when renaming image resource - refactor the notes to use the new image name? - probably not gonna do this
 
--
+
 - ![img.png](img.png)
 - ![img_1.png](img_1.png)

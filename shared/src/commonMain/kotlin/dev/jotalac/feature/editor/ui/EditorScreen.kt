@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import dev.jotalac.core.ui.theme.dimensions
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -146,7 +147,7 @@ private fun CompactEditorLayout(
         drawerState = drawerState,
         gesturesEnabled = true,
         drawerContent = {
-            ModalDrawerSheet(modifier = Modifier.width(300.dp)) {
+            ModalDrawerSheet(modifier = Modifier.width(MaterialTheme.dimensions.navDrawerWidth)) {
                 SidebarContent()
             }
         }
@@ -257,7 +258,8 @@ fun MainEditorScaffold(
                                 Icon(
                                     painter = painterResource(Res.drawable.x_icon),
                                     contentDescription = "close icon",
-                                    tint = MaterialTheme.colorScheme.outline
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(MaterialTheme.dimensions.iconMedium)
                                 )
                             }
                         }

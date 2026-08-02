@@ -11,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import dev.jotalac.core.ui.theme.dimensions
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -34,12 +35,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.arrow_right
+import git_writer.shared.generated.resources.more_vert
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -89,7 +92,7 @@ fun FileTreeRow(
                     enabled = !isRenaming,
                     onClick = onClick
                 )
-                .padding(start = (flatNode.depth * 12).dp + 4.dp, top = 6.dp, bottom = 6.dp, end = 8.dp)
+                .padding(start = (MaterialTheme.dimensions.listItemIndentPerLevel * flatNode.depth) + 4.dp, top = MaterialTheme.dimensions.listItemPaddingVertical, bottom = MaterialTheme.dimensions.listItemPaddingVertical, end = 8.dp)
                 .alpha(if (isDragged) 0.5f else 1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -113,6 +116,21 @@ fun FileTreeRow(
                     )
                 }
             }
+
+            if (!isDesktopPlatform) {
+                Icon(
+                    painter = painterResource(Res.drawable.more_vert),
+                    tint = MaterialTheme.colorScheme.outline,
+                    contentDescription = "open context menu",
+                    modifier = Modifier
+                        .size(MaterialTheme.dimensions.iconMedium)
+                        .clickable(
+                            enabled = true,
+                            onClick = { showMenu = true }
+                        )
+                )
+            }
+
         }
 
         ItemContextMenu(
@@ -140,7 +158,7 @@ private fun RowScope.DirectoryContent(
         painter = painterResource(Res.drawable.arrow_right),
         contentDescription = null,
         modifier = Modifier
-            .size(14.dp)
+            .size(MaterialTheme.dimensions.iconSmall)
             .graphicsLayer { rotationZ = rotation },
         tint = MaterialTheme.colorScheme.onSurfaceVariant
     )
@@ -150,6 +168,7 @@ private fun RowScope.DirectoryContent(
         RenameTextField(
             initialText = baseName,
             textStyle = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = MaterialTheme.dimensions.listItemTextSize,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             ),
@@ -160,7 +179,9 @@ private fun RowScope.DirectoryContent(
     } else {
         Text(
             text = baseName,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = MaterialTheme.dimensions.listItemTextSize
+            ),
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -183,6 +204,7 @@ private fun RowScope.FileContent(
         RenameTextField(
             initialText = baseName,
             textStyle = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = MaterialTheme.dimensions.listItemTextSize,
                 color = MaterialTheme.colorScheme.onSurface
             ),
             onSubmit = { newName -> onAction(SidebarAction.RenameItem(newName, node.path)) },
@@ -194,7 +216,9 @@ private fun RowScope.FileContent(
             text = baseName,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = MaterialTheme.dimensions.listItemTextSize
+            ),
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
@@ -204,7 +228,9 @@ private fun RowScope.FileContent(
     if (fileExtension.isNotEmpty() && fileExtension.lowercase() != "md") {
         Text(
             text = fileExtension.uppercase(),
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodySmall.copy(
+                fontSize = MaterialTheme.dimensions.badgeTextSize
+            ),
             color = MaterialTheme.colorScheme.outline
         )
     }

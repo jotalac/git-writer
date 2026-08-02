@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
@@ -255,6 +256,8 @@ expect fun determineColorScheme(
     dynamicColor: Boolean
 ): ColorScheme
 
+expect fun determineAppDimensions(): AppDimensions
+
 @Composable
 fun AppTheme(
 //    darkTheme: Boolean = isSystemInDarkTheme(),
@@ -266,11 +269,14 @@ fun AppTheme(
       isDark = darkTheme,
       dynamicColor = dynamicColor
   )
+  val dimensions = determineAppDimensions()
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    typography = AppTypography,
-    content = content
-  )
+  CompositionLocalProvider(LocalAppDimensions provides dimensions) {
+    MaterialTheme(
+      colorScheme = colorScheme,
+      typography = AppTypography,
+      content = content
+    )
+  }
 }
 

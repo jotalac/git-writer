@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.theme.dimensions
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -29,14 +30,14 @@ fun SidebarButtonWithTooltip(
     ) {
         IconButton(
             onClick = onClick,
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(MaterialTheme.dimensions.buttonCompact),
             enabled = enabled
         ) {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = contentDescription,
                 tint = if (enabled) tint else MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(MaterialTheme.dimensions.iconLarge)
             )
         }
     }
