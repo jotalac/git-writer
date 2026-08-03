@@ -23,7 +23,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ItemContextMenu(
+fun FileContextMenu(
     showMenu: Boolean,
     menuOffset: DpOffset,
     itemType: FileType,
@@ -96,7 +96,7 @@ private fun ContextMenuItem(
         },
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
         modifier = modifier
-            .height(32.dp)
+            .height(MaterialTheme.dimensions.contextMenuItemHeight)
             .clip(RoundedCornerShape(6.dp))
             .padding(3.dp)
     )

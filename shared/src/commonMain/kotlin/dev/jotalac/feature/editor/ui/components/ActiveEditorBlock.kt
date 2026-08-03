@@ -288,9 +288,9 @@ private fun handleOrderedList(
 
     } else if (numberMatch != null) {
         // todo - when new item is inserted in the middle change the lines count afterwards
-        val currentNumberString = numberMatch.groupValues[1]
-        val nextNumber = currentNumberString.toInt() + 1
-        val insertText = "\n" + " ".repeat(spacesStart) + "$nextNumber. "
+//        val currentNumberString = numberMatch.groupValues[1]
+//        val nextNumber = currentNumberString.toInt() + 1
+        val insertText = "\n" + " ".repeat(spacesStart) + "1. "
 
         val newText = insertTextBetween(text = fullText, leftSplitIndex = cursorIndex, insertText = insertText)
         val newCursorPos = cursorIndex + insertText.length

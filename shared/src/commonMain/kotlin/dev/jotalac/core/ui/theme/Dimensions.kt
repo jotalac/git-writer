@@ -21,7 +21,8 @@ data class AppDimensions(
     val listItemTextSize: TextUnit,
     val badgeTextSize: TextUnit,
     val listItemPaddingVertical: Dp,
-    val listItemIndentPerLevel: Dp
+    val listItemIndentPerLevel: Dp,
+    val contextMenuItemHeight: Dp,
 )
 
 // Compact dimensions optimized for mouse pointer precision on Desktop
@@ -35,7 +36,8 @@ val DesktopDimensions = AppDimensions(
     listItemTextSize = 14.sp,
     badgeTextSize = 11.sp,
     listItemPaddingVertical = 6.dp,
-    listItemIndentPerLevel = 12.dp
+    listItemIndentPerLevel = 12.dp,
+    contextMenuItemHeight = 32.dp,
 )
 
 // Touch-friendly dimensions optimized for fingers and legibility on Mobile (Android/iOS)
@@ -49,7 +51,8 @@ val MobileDimensions = AppDimensions(
     listItemTextSize = 17.sp,
     badgeTextSize = 13.sp,
     listItemPaddingVertical = 12.dp,
-    listItemIndentPerLevel = 16.dp
+    listItemIndentPerLevel = 16.dp,
+    contextMenuItemHeight = 48.dp,
 )
 
 val LocalAppDimensions = staticCompositionLocalOf { DesktopDimensions }

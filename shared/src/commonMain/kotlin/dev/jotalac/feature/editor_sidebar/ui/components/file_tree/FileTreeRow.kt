@@ -7,11 +7,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import dev.jotalac.core.ui.theme.dimensions
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -31,10 +32,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FileType
@@ -92,7 +95,12 @@ fun FileTreeRow(
                     enabled = !isRenaming,
                     onClick = onClick
                 )
-                .padding(start = (MaterialTheme.dimensions.listItemIndentPerLevel * flatNode.depth) + 4.dp, top = MaterialTheme.dimensions.listItemPaddingVertical, bottom = MaterialTheme.dimensions.listItemPaddingVertical, end = 8.dp)
+                .padding(
+                    start = (MaterialTheme.dimensions.listItemIndentPerLevel * flatNode.depth) + 4.dp,
+                    top = MaterialTheme.dimensions.listItemPaddingVertical,
+                    bottom = MaterialTheme.dimensions.listItemPaddingVertical,
+                    end = 8.dp
+                )
                 .alpha(if (isDragged) 0.5f else 1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -133,7 +141,7 @@ fun FileTreeRow(
 
         }
 
-        ItemContextMenu(
+        FileContextMenu(
             showMenu = showMenu,
             menuOffset = menuOffset,
             onDismissRequest = { showMenu = false },
@@ -261,6 +269,11 @@ private fun RenameTextField(
         onValueChange = { textFieldValue = it },
         textStyle = textStyle,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+            onSubmit(textFieldValue.text)
+            submitted = true
+        }),
         modifier = modifier
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .border(
