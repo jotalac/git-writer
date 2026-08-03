@@ -21,7 +21,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SidebarContent(
     viewModel: EditorSidebarViewModel = koinViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    closeSidebarOnNoteOpen: () -> Unit = {},
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showListDialog by remember { mutableStateOf(false) }
@@ -89,11 +90,14 @@ fun SidebarContent(
                 onFolderToggle = { viewModel.toggleFolder(it) },
                 itemToRename = state.itemToRename,
                 onAction = { action ->
+                    // handle the copy item with clipboard manager
                     if (action is SidebarAction.CopyItemPath) {
                         scope.launch {
                             clipboardManager.setClipEntry(buildClipEntry(action.path))
                         }
                     }
+                    // close the sidebar
+                    if (action is SidebarAction.OpenNote) closeSidebarOnNoteOpen()
                     viewModel.onAction(action)
                 }
             )
