@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
 import dev.jotalac.feature.editor.ui.EditorAction
 
@@ -227,6 +228,10 @@ fun MarkdownEditor(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
             listState = lazyListState
         )
+
+        if (!isDesktopPlatform) {
+            // show the action bar
+        }
 
         if (isDraggingImageOver) {
             ImageDropOverlay()
