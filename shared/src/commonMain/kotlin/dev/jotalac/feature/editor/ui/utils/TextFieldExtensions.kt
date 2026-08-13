@@ -24,3 +24,32 @@ fun TextFieldValue.applyMarkdownSyntax(prefix: String = "", suffix: String = "")
 
     return TextFieldValue(text = newText, selection = TextRange(newCursorPos))
 }
+
+fun TextFieldValue.applyBold(): TextFieldValue = this.applyMarkdownSyntax("**", "**")
+
+fun TextFieldValue.applyH1(): TextFieldValue = this.applyMarkdownSyntax("# ")
+
+fun TextFieldValue.applyH2(): TextFieldValue = this.applyMarkdownSyntax("## ")
+
+fun TextFieldValue.applyH3(): TextFieldValue = this.applyMarkdownSyntax("### ")
+
+fun TextFieldValue.applyItalic(): TextFieldValue = this.applyMarkdownSyntax("*", "*")
+
+fun TextFieldValue.applyBulletedList(): TextFieldValue = this.applyMarkdownSyntax("- ")
+
+fun TextFieldValue.applyNumberedList(): TextFieldValue = this.applyMarkdownSyntax("1. ")
+
+fun TextFieldValue.applyQuote(): TextFieldValue = this.applyMarkdownSyntax("> ")
+
+fun TextFieldValue.applyCodeBlock(): TextFieldValue = this.applyMarkdownSyntax("```\n", "\n```")
+
+fun TextFieldValue.applyInlineCode(): TextFieldValue = this.applyMarkdownSyntax("`", "`")
+
+fun TextFieldValue.applyCheckbox(): TextFieldValue = this.applyMarkdownSyntax("- [ ]")
+
+fun TextFieldValue.addLink(): TextFieldValue = this.applyMarkdownSyntax("[", "]()")
+
+fun TextFieldValue.increaseIndentation(): TextFieldValue = handleIndentation(this, isUntab = false)
+
+fun TextFieldValue.decreaseIndentation(): TextFieldValue = handleIndentation(this, isUntab = true)
+

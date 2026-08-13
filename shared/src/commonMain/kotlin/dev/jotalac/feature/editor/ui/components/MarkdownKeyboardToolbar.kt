@@ -15,8 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import dev.jotalac.feature.editor.ui.utils.applyMarkdownSyntax
-import dev.jotalac.feature.editor.ui.utils.handleIndentation
+import dev.jotalac.feature.editor.ui.utils.*
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -35,56 +34,59 @@ fun MarkdownKeyboardToolbar(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         ToolbarButton(Res.drawable.format_h1) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("# "))
+            onValueChange(textFieldValue.applyH1())
         }
 
         ToolbarButton(Res.drawable.format_h2) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("## "))
+            onValueChange(textFieldValue.applyH2())
         }
 
         ToolbarButton(Res.drawable.format_h3) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("### "))
+            onValueChange(textFieldValue.applyH3())
         }
 
         ToolbarButton(Res.drawable.format_bold) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("**", "**"))
+            onValueChange(textFieldValue.applyBold())
         }
 
         ToolbarButton(Res.drawable.format_italic) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("*", "*"))
+            onValueChange(textFieldValue.applyItalic())
         }
 
         ToolbarButton(Res.drawable.format_list_bulleted) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("- "))
+            onValueChange(textFieldValue.applyBulletedList())
         }
 
         ToolbarButton(Res.drawable.format_list_numbered) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("1. "))
+            onValueChange(textFieldValue.applyNumberedList())
         }
 
         ToolbarButton(Res.drawable.format_indent_increase) {
-            onValueChange(handleIndentation(textFieldValue, isUntab = false))
+            onValueChange(textFieldValue.increaseIndentation())
         }
 
         ToolbarButton(Res.drawable.format_indent_decrease) {
-            onValueChange(handleIndentation(textFieldValue, isUntab = true))
+            onValueChange(textFieldValue.decreaseIndentation())
         }
 
         ToolbarButton(Res.drawable.format_quote) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("> "))
+            onValueChange(textFieldValue.applyQuote())
         }
 
-
         ToolbarButton(Res.drawable.format_code_block) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("```\n", "\n```"))
+            onValueChange(textFieldValue.applyCodeBlock())
         }
 
         ToolbarButton(Res.drawable.format_inline_code) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("`", "`"))
+            onValueChange(textFieldValue.applyInlineCode())
         }
 
         ToolbarButton(Res.drawable.format_checkbox) {
-            onValueChange(textFieldValue.applyMarkdownSyntax("- [ ]"))
+            onValueChange(textFieldValue.applyCheckbox())
+        }
+
+        ToolbarButton(Res.drawable.link) {
+            onValueChange(textFieldValue.addLink())
         }
     }
 }

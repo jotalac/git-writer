@@ -16,6 +16,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -70,21 +71,26 @@ fun ActiveEditorBlock(
         editorState.updateActiveText(newTextFiledValue)
     }
 
-    fun handlePlainEnterPress(): Boolean {
+    fun handlePlainEnterPress() {
         // handle list continuation
         val newTextFieldValue = handleMarkdownListContinuation(textFieldValue)
-        return if (newTextFieldValue != null) {
+        if (newTextFieldValue != null) {
             updateText(newTextFieldValue)
 
-            true
         } else if (isInsideCodeBlock(textFieldValue.text, textFieldValue.selection.start)) {
-            // dont break when inside code block
-            false
+            // dont break code when inside code block
+            val text = textFieldValue.text
+            val cursor = textFieldValue.selection.start
+            val newText = text.substring(0, cursor) + "\n" + text.substring(cursor)
+
+            updateText(TextFieldValue(newText, TextRange(cursor + 1)))
+
         } else {
             // split block on just enter press
             editorState.splitBlock(textFieldValue.selection.start)
-            true
         }
+
+
     }
 
     BasicTextField(
@@ -122,14 +128,13 @@ fun ActiveEditorBlock(
                             if (event.isShiftPressed) {
                                 // add new line withing the current block
                                 updateText(handleNewLineWithinBlock(textFieldValue))
-                                true
                             } else if (event.isCtrlPressed) {
                                 // exit the current block and create new
                                 editorState.addBlockBelow(index)
-                                true
                             } else {
                                 handlePlainEnterPress()
                             }
+                            true
                         }
 
                         Key.DirectionUp -> {
@@ -186,6 +191,27 @@ fun ActiveEditorBlock(
                                 }
                             }
                             true
+                        }
+
+                        Key.B -> {
+                            if (event.isCtrlPressed) {
+                                editorState.applyBold()
+                                true
+                            } else false
+                        }
+
+                        Key.I -> {
+                            if (event.isCtrlPressed) {
+                                editorState.applyItalic()
+                                true
+                            } else false
+                        }
+
+                        Key.K -> {
+                            if (event.isCtrlPressed) {
+                                editorState.addLinkTemplate()
+                                true
+                            } else false
                         }
 
                         else -> false

@@ -3,6 +3,9 @@ package dev.jotalac.feature.editor.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import dev.jotalac.feature.editor.ui.utils.addLink
+import dev.jotalac.feature.editor.ui.utils.applyBold
+import dev.jotalac.feature.editor.ui.utils.applyItalic
 
 @Stable
 class MarkdownEditorState(
@@ -153,6 +156,18 @@ class MarkdownEditorState(
 
     fun handleEscape() {
         clearFocus()
+    }
+
+    fun applyBold() {
+        updateActiveText(activeTextFieldValue.applyBold())
+    }
+
+    fun applyItalic() {
+        updateActiveText(activeTextFieldValue.applyItalic())
+    }
+
+    fun addLinkTemplate() {
+        updateActiveText(activeTextFieldValue.addLink())
     }
 }
 

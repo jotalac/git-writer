@@ -2,7 +2,6 @@
 
 ## TODO
 
-- shortcuts for bold, italic, ...
 - add images on mobile from toolbar
 - fix scrolling in the editor - the lazy column is broken for the scrolling with scrollbar especially with images
 - make the x icon always on the right side - even when the block is empty
