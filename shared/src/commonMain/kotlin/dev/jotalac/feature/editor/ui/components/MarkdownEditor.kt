@@ -35,6 +35,8 @@ fun MarkdownEditor(
     val surfaceFocusRequester = remember { FocusRequester() }
 
     val lazyListState = rememberLazyListState()
+    
+    val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
     LaunchedEffect(editorState.focusedIndex, markdownBlocks.size) {
         val targetIndex = editorState.focusedIndex
@@ -54,6 +56,7 @@ fun MarkdownEditor(
         modifier = modifier
             .focusRequester(surfaceFocusRequester)
             .focusable()
+            .imePadding()
             .pointerInput(Unit) {
                 detectTapGestures {
                     if (editorState.focusedIndex != null) {
@@ -118,12 +121,10 @@ fun MarkdownEditor(
         }
 
         // show the action bar for phones when some block is being edited
-        val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
         if (!isDesktopPlatform && editorState.focusedIndex != null && isKeyboardOpen) {
             MarkdownKeyboardToolbar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .imePadding()
                     .fillMaxWidth(),
                 textFieldValue = editorState.activeTextFieldValue,
                 onValueChange = editorState::updateActiveText
