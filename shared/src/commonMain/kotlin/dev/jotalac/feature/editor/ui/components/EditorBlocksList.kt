@@ -10,8 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.add_new_block_message
 import org.jetbrains.compose.resources.stringResource
@@ -19,21 +19,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun MarkdownEditorBlocksList(
     blocks: List<String>,
-    focusedIndex: Int?,
-    cursorTarget: TextRange?,
-    onBlockFocus: (index: Int, cursor: TextRange?) -> Unit,
-    onBlockChange: (index: Int, text: String) -> Unit,
-    onBlockFocusLost: (index: Int, text: String) -> Unit,
-    onEscape: () -> Unit,
-    onAddBlockBelow: (index: Int) -> Unit,
-    onSplitBlock: (index: Int, cursor: Int) -> Unit,
-    onMoveUp: (index: Int) -> Boolean,
-    onMoveDown: (index: Int) -> Boolean,
-    onBackspaceOnEmpty: (index: Int) -> Boolean,
-    onBackspaceOnStart: (index: Int) -> Boolean,
-    onAddBlockAtEnd: () -> Unit,
-    onBlockDelete: (index: Int) -> Unit,
-    onImagePasted: (ByteArray) -> Unit,
+    editorState: MarkdownEditorState,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState()
 ) {
@@ -50,28 +36,18 @@ fun MarkdownEditorBlocksList(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    if (focusedIndex == index) {
+                    if (editorState.focusedIndex == index) {
                         ActiveEditorBlock(
-                            initialText = block,
-                            cursorTarget = cursorTarget,
-                            onTextChange = { newText -> onBlockChange(index, newText) },
-                            onFocusLost = { text -> onBlockFocusLost(index, text) },
-                            onEscape = onEscape,
-                            onAddBlockBelow = { onAddBlockBelow(index) },
-                            onSplitBlock = { cursor -> onSplitBlock(index, cursor) },
-                            onMoveUp = { onMoveUp(index) },
-                            onMoveDown = { onMoveDown(index) },
-                            onBackspaceOnEmpty = { onBackspaceOnEmpty(index) },
-                            onBackspaceOnStart = { onBackspaceOnStart(index) },
-                            onImagePasted = { byteArray -> onImagePasted(byteArray) },
+                            editorState = editorState,
+                            index = index
                         )
                     } else {
                         RenderedEditorBlock(
                             text = block,
                             modifier = Modifier.clickable {
-                                onBlockFocus(index, null)
+                                editorState.focusBlock(index, null)
                             },
-                            onDeleteClick = { onBlockDelete(index) }
+                            onDeleteClick = { editorState.deleteBlock(index) }
                         )
                     }
                 }
@@ -83,7 +59,7 @@ fun MarkdownEditorBlocksList(
                         .fillMaxWidth()
                         .padding(vertical = 16.dp)
                         .clickable {
-                            onAddBlockAtEnd()
+                            editorState.addBlockAtEnd()
                         }
                 ) {
                     Text(

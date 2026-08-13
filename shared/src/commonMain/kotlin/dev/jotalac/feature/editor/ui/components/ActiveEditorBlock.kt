@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -15,10 +17,12 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.utils.getImageBytesFromClipboard
 import dev.jotalac.core.utils.hasClipboardImage
+import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,44 +30,16 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun ActiveEditorBlock(
-    initialText: String,
-    cursorTarget: TextRange?,
-    onTextChange: (String) -> Unit,
-    onFocusLost: (String) -> Unit,
-    onEscape: () -> Unit,
-    onAddBlockBelow: () -> Unit,
-    onSplitBlock: (Int) -> Unit,
-    onMoveUp: () -> Boolean,
-    onMoveDown: () -> Boolean,
-    onBackspaceOnEmpty: () -> Boolean,
-    onBackspaceOnStart: () -> Boolean,
-    onImagePasted: (ByteArray) -> Unit,
+    editorState: MarkdownEditorState,
+    index: Int,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() }
 ) {
     val scope = rememberCoroutineScope()
     var hasFocused by remember { mutableStateOf(false) }
 
-    var textFieldValue by remember {
-        val initialSelection = cursorTarget ?: TextRange(initialText.length)
-        val safeSelection = TextRange(
-            initialSelection.start.coerceIn(0, initialText.length),
-            initialSelection.end.coerceIn(0, initialText.length)
-        )
-        mutableStateOf(TextFieldValue(text = initialText, selection = safeSelection))
-    }
+    val textFieldValue = editorState.activeTextFieldValue
 
-    LaunchedEffect(initialText, cursorTarget) {
-        if (initialText != textFieldValue.text) {
-            textFieldValue = textFieldValue.copy(
-                text = initialText,
-                selection = cursorTarget ?: TextRange(
-                    textFieldValue.selection.start.coerceIn(0, initialText.length),
-                    textFieldValue.selection.end.coerceIn(0, initialText.length)
-                )
-            )
-        }
-    }
 
     // scroll the viewport to the cursor on typing
     val localBringIntoViewRequester = remember { BringIntoViewRequester() }
@@ -88,17 +64,36 @@ fun ActiveEditorBlock(
     }
 
     fun updateText(newTextFiledValue: TextFieldValue) {
-        textFieldValue = newTextFiledValue
-        onTextChange(newTextFiledValue.text)
+        editorState.updateActiveText(newTextFiledValue)
+    }
+
+    fun handlePlainEnterPress(): Boolean {
+        // handle list continuation
+        val newTextFieldValue = handleMarkdownListContinuation(textFieldValue)
+        return if (newTextFieldValue != null) {
+            updateText(newTextFieldValue)
+
+            true
+        } else if (isInsideCodeBlock(textFieldValue.text, textFieldValue.selection.start)) {
+            // dont break when inside code block
+            false
+        } else {
+            // split block on just enter press
+            editorState.splitBlock(textFieldValue.selection.start)
+            true
+        }
     }
 
     BasicTextField(
         value = textFieldValue,
         onValueChange = {
-            textFieldValue = it
-            onTextChange(it.text)
+            editorState.updateActiveText(it)
         },
         onTextLayout = { textLayoutResult = it },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+            handlePlainEnterPress()
+        }),
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 8.dp)
@@ -109,14 +104,14 @@ fun ActiveEditorBlock(
                     hasFocused = true
                 } else if (hasFocused) {
                     hasFocused = false
-                    onFocusLost(textFieldValue.text)
+                    editorState.evaluateFocusLost(index, textFieldValue.text)
                 }
             }
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown) {
                     when (event.key) {
                         Key.Escape -> {
-                            onEscape()
+                            editorState.handleEscape()
                             true
                         }
 
@@ -127,23 +122,10 @@ fun ActiveEditorBlock(
                                 true
                             } else if (event.isCtrlPressed) {
                                 // exit the current block and create new
-                                onAddBlockBelow()
+                                editorState.addBlockBelow(index)
                                 true
                             } else {
-                                // handle list continuation
-                                val newTextFieldValue = handleMarkdownListContinuation(textFieldValue)
-                                if (newTextFieldValue != null) {
-                                    updateText(newTextFieldValue)
-
-                                    true
-                                } else if (isInsideCodeBlock(textFieldValue.text, textFieldValue.selection.start)) {
-                                    // dont break when inside code block
-                                    false
-                                } else {
-                                    // split block on just enter press
-                                    onSplitBlock(textFieldValue.selection.start)
-                                    true
-                                }
+                                handlePlainEnterPress()
                             }
                         }
 
@@ -153,7 +135,7 @@ fun ActiveEditorBlock(
                             val isFirstLine = if (firstNewline == -1) true else cursorStart <= firstNewline
 
                             if (isFirstLine) {
-                                onMoveUp()
+                                editorState.moveUp()
                             } else {
                                 false
                             }
@@ -165,7 +147,7 @@ fun ActiveEditorBlock(
                             val isLastLine = if (lastNewline == -1) true else cursorStart > lastNewline
 
                             if (isLastLine) {
-                                onMoveDown()
+                                editorState.moveDown()
                             } else {
                                 false
                             }
@@ -179,9 +161,9 @@ fun ActiveEditorBlock(
 
                         Key.Backspace -> {
                             if (textFieldValue.text.isBlank()) {
-                                onBackspaceOnEmpty()
+                                editorState.backspaceOnEmpty()
                             } else if (textFieldValue.selection.start == 0 && textFieldValue.selection.start == textFieldValue.selection.end) {
-                                onBackspaceOnStart()
+                                editorState.backspaceOnStart()
                                 true
                             } else {
                                 false
@@ -196,7 +178,7 @@ fun ActiveEditorBlock(
                                 val imageBytes = getImageBytesFromClipboard()
                                 if (imageBytes != null) {
                                     withContext(Dispatchers.Main) {
-                                        onImagePasted(imageBytes)
+                                        editorState.pasteImages(listOf(imageBytes))
                                     }
                                 }
                             }
@@ -219,6 +201,7 @@ fun ActiveEditorBlock(
         focusRequester.requestFocus()
     }
 }
+
 
 private fun isInsideCodeBlock(text: String, cursorIndex: Int): Boolean {
     val textBeforeCursor = text.substring(0, cursorIndex)

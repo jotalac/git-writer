@@ -14,11 +14,13 @@ fun CustomScaffold(
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
     topAppBar: @Composable () -> Unit = {},
+    bottomAppBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
         topBar = topAppBar,
+        bottomBar = bottomAppBar,
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { snackbarData ->
                 CustomSnackbar(snackbarData)

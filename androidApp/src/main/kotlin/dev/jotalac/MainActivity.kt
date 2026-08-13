@@ -6,9 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
 import dev.jotalac.core.di.initFileKitAndroid
-import dev.jotalac.core.di.initKoin
-import dev.jotalac.core.di.initKoinAndroid
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,6 +15,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         initFileKitAndroid(this)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             App()

@@ -231,9 +231,9 @@ fun MainEditorScaffold(
                         icon = if (isSidebarOpen) Res.drawable.opened_sidebar else Res.drawable.closed_sidebar,
                         contentDescription = "Toggle sidebar visibility",
                     )
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
         Surface(
             modifier = Modifier
