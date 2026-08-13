@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import dev.jotalac.feature.editor.ui.utils.addLink
 import dev.jotalac.feature.editor.ui.utils.applyBold
+import dev.jotalac.feature.editor.ui.utils.applyInlineCode
 import dev.jotalac.feature.editor.ui.utils.applyItalic
 
 @Stable
@@ -93,6 +94,24 @@ class MarkdownEditorState(
         return false
     }
 
+    fun swapBlockUp() {
+        val index = focusedIndex ?: return
+        if (index > 0) {
+            val targetIndex = index - 1
+            dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
+            focusBlock(targetIndex, activeTextFieldValue.selection)
+        }
+    }
+
+    fun swapBlockDown() {
+        val index = focusedIndex ?: return
+        if (index < blocksState.value.lastIndex) {
+            val targetIndex = index + 1
+            dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
+            focusBlock(targetIndex, activeTextFieldValue.selection)
+        }
+    }
+
     fun moveDown(): Boolean {
         val index = focusedIndex ?: return false
         if (index < blocksState.value.size - 1) {
@@ -168,6 +187,10 @@ class MarkdownEditorState(
 
     fun addLinkTemplate() {
         updateActiveText(activeTextFieldValue.addLink())
+    }
+
+    fun applyInlineCode() {
+        updateActiveText(activeTextFieldValue.applyInlineCode())
     }
 }
 

@@ -215,6 +215,12 @@ class EditorViewModel(
             is EditorAction.PasteImages -> {
                 savePastedImages(action.imageBytesList, action.focusedIndex, action.onFocusCalculated)
             }
+
+            is EditorAction.SwapBlocks -> {
+                val temp = markdownBlocks[action.toIndex]
+                markdownBlocks[action.toIndex] = markdownBlocks[action.fromIndex]
+                markdownBlocks[action.fromIndex] = temp
+            }
         }
     }
 

@@ -8,6 +8,8 @@ sealed interface EditorAction {
     data class SplitBlock(val index: Int, val cursorStart: Int, val onFocusCalculated: (newFocusIndex: Int) -> Unit) :
         EditorAction
 
+    data class SwapBlocks(val fromIndex: Int, val toIndex: Int) : EditorAction
+
     data class BlockTurnedIntoMoreBlocks(val index: Int, val newBlocks: List<String>) : EditorAction
     data class EvaluateBlockOnFocusLost(
         val index: Int,

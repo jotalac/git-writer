@@ -142,7 +142,11 @@ fun ActiveEditorBlock(
                             val firstNewline = textFieldValue.text.indexOf('\n')
                             val isFirstLine = if (firstNewline == -1) true else cursorStart <= firstNewline
 
-                            if (isFirstLine) {
+                            if (event.isAltPressed) {
+                                editorState.swapBlockUp()
+                                true
+                            }
+                            else if (isFirstLine) {
                                 editorState.moveUp()
                             } else {
                                 false
@@ -154,7 +158,10 @@ fun ActiveEditorBlock(
                             val lastNewline = textFieldValue.text.lastIndexOf('\n')
                             val isLastLine = if (lastNewline == -1) true else cursorStart > lastNewline
 
-                            if (isLastLine) {
+                            if (event.isAltPressed) {
+                                editorState.swapBlockDown()
+                                true
+                            } else if (isLastLine){
                                 editorState.moveDown()
                             } else {
                                 false
@@ -213,6 +220,15 @@ fun ActiveEditorBlock(
                                 true
                             } else false
                         }
+
+
+                        Key.E -> {
+                            if (event.isCtrlPressed) {
+                                editorState.applyInlineCode()
+                                true
+                            } else false
+                        }
+
 
                         else -> false
                     }
