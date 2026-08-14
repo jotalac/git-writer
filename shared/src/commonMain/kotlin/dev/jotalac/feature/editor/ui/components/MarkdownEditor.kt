@@ -3,7 +3,7 @@ package dev.jotalac.feature.editor.ui.components
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,21 +34,13 @@ fun MarkdownEditor(
 
     val surfaceFocusRequester = remember { FocusRequester() }
 
-    val lazyListState = rememberLazyListState()
+    val listScrollState = rememberScrollState()
     
     val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
-    LaunchedEffect(editorState.focusedIndex, markdownBlocks.size) {
-        val targetIndex = editorState.focusedIndex
-        if (targetIndex == null) {
+    LaunchedEffect(editorState.focusedIndex) {
+        if (editorState.focusedIndex == null) {
             surfaceFocusRequester.requestFocus()
-        } else if (targetIndex < markdownBlocks.size) {
-            // make sure the currently edited items are loaded in the lazy column1
-            val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
-            val isVisible = visibleItems.any { it.index == targetIndex }
-            if (!isVisible) {
-                lazyListState.scrollToItem(targetIndex)
-            }
         }
     }
 
@@ -108,12 +100,12 @@ fun MarkdownEditor(
             modifier = Modifier.widthIn(max = 800.dp),
             blocks = markdownBlocks,
             editorState = editorState,
-            listState = lazyListState
+            scrollState = listScrollState
         )
 
         AppVerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-            listState = lazyListState
+            listState = listScrollState
         )
 
         if (isDraggingImageOver) {
