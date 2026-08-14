@@ -43,6 +43,7 @@ import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
+import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.arrow_right
 import git_writer.shared.generated.resources.more_vert
@@ -141,7 +142,7 @@ fun FileTreeRow(
 
         }
 
-        FileContextMenu(
+        AdaptiveContextMenu(
             showMenu = showMenu,
             menuOffset = menuOffset,
             onDismissRequest = { showMenu = false },

@@ -1,7 +1,5 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree
+package dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -23,41 +21,33 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun FileContextMenu(
+fun AdaptiveContextMenu(
     showMenu: Boolean,
-    menuOffset: DpOffset,
+    menuOffset: DpOffset = DpOffset(0.dp, 0.dp),
     itemType: FileType,
     itemPath: String,
     onDismissRequest: () -> Unit,
-    onAction: (SidebarAction) -> Unit
-) {
-    DropdownMenu(
-        expanded = showMenu,
-        onDismissRequest = onDismissRequest,
-        offset = menuOffset,
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .clip(RoundedCornerShape(6.dp))
-            .border(2.dp, MaterialTheme.colorScheme.onSurface.copy(0.1f), shape = RoundedCornerShape(6.dp))
-            .padding(5.dp)
-            .width(200.dp)
-
-    ) {
-        if (itemType == FileType.FILE) {
-            FileContextMenuContent(
-                onAction = onAction,
-                itemPath = itemPath,
-                onDismissRequest = onDismissRequest
-            )
-        } else {
-            FolderContextMenuContent(
-                onAction = onAction,
-                itemPath = itemPath,
-                onDismissRequest = onDismissRequest
-            )
-        }
+    onAction: (SidebarAction) -> Unit) {
+    if (isDesktopPlatform) {
+        DesktopContextMenu(
+            showMenu = showMenu,
+            menuOffset = menuOffset,
+            itemType = itemType,
+            itemPath = itemPath,
+            onAction = onAction,
+            onDismissRequest = onDismissRequest
+        )
+    } else {
+        MobileContextMenu(
+            showMenu = showMenu,
+            itemType = itemType,
+            itemPath = itemPath,
+            onAction = onAction,
+            onDismissRequest = onDismissRequest
+        )
     }
 }
+
 
 @Composable
 private fun ContextMenuItem(
@@ -84,7 +74,9 @@ private fun ContextMenuItem(
                 )
                 Text(
                     text,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = MaterialTheme.dimensions.listItemTextSize
+                    ),
                     fontWeight = FontWeight.Medium,
                     color = itemColor ?: MaterialTheme.colorScheme.onSurface,
                 )
@@ -103,7 +95,7 @@ private fun ContextMenuItem(
 }
 
 @Composable
-private fun FileContextMenuContent(
+fun FileContextMenuContent(
     onAction: (SidebarAction) -> Unit,
     itemPath: String,
     onDismissRequest: () -> Unit,
@@ -142,7 +134,7 @@ private fun FileContextMenuContent(
 }
 
 @Composable
-private fun FolderContextMenuContent(
+fun FolderContextMenuContent(
     onAction: (SidebarAction) -> Unit,
     itemPath: String,
     onDismissRequest: () -> Unit,
