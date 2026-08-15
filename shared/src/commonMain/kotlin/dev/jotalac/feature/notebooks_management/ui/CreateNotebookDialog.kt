@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,12 +53,16 @@ import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.text.style.TextOverflow
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import dev.jotalac.feature.notebooks_management.ui.CreateNotebookViewModel.CreateNotebookEvent
+import git_writer.shared.generated.resources.browse_destination_button
+import git_writer.shared.generated.resources.destination_directory_label
 
 @Composable
 fun CreateNotebookDialog(
@@ -283,19 +288,48 @@ private fun RemoteNotebookForm(
                 modifier = childModifier
             )
         }
-        DirectoryPickerRow(
-            directory = directory,
-            onBrowseClick = onBrowseClick
-        )
+        if (isDesktopPlatform) {
+            DirectoryPickerRow(
+                directory = directory,
+                onBrowseClick = onBrowseClick
+            )
+        }
     }
 }
 
-// don't pick custom directory on mobile - everything lives in the default app folder
 @Composable
-expect fun DirectoryPickerRow(
+fun DirectoryPickerRow(
     directory: String?,
     onBrowseClick: () -> Unit
-)
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(Res.string.destination_directory_label),
+            style = MaterialTheme.typography.labelMedium
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (!directory.isNullOrBlank()) directory else "No directory selected",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (directory.isNullOrBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 12.dp)
+            )
+
+            TextButton(onClick = onBrowseClick) {
+                Text(stringResource(Res.string.browse_destination_button))
+            }
+        }
+    }
+}
 
 
 @Composable
