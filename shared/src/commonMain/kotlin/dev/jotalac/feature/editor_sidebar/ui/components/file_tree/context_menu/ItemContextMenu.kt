@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.components.ContextMenuItem
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.domain.FileType
@@ -48,52 +49,6 @@ fun AdaptiveContextMenu(
     }
 }
 
-
-@Composable
-private fun ContextMenuItem(
-    text: String,
-    iconPainter: DrawableResource,
-    onClick: () -> Unit,
-    onDismissRequest: () -> Unit,
-    itemColor: Color? = null,
-    modifier: Modifier = Modifier,
-) {
-    DropdownMenuItem(
-        text = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = modifier.clip(RoundedCornerShape(6.dp))
-            ) {
-                Icon(
-                    painter = painterResource(iconPainter),
-                    contentDescription = text,
-                    modifier = Modifier
-                        .size(MaterialTheme.dimensions.iconMedium),
-                    tint = itemColor ?: MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = MaterialTheme.dimensions.listItemTextSize
-                    ),
-                    fontWeight = FontWeight.Medium,
-                    color = itemColor ?: MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        },
-        onClick = {
-            onDismissRequest()
-            onClick()
-        },
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-        modifier = modifier
-            .height(MaterialTheme.dimensions.contextMenuItemHeight)
-            .clip(RoundedCornerShape(6.dp))
-            .padding(3.dp)
-    )
-}
-
 @Composable
 fun FileContextMenuContent(
     onAction: (SidebarAction) -> Unit,
@@ -107,7 +62,7 @@ fun FileContextMenuContent(
         onDismissRequest = onDismissRequest,
     )
     ContextMenuItem(
-        text = stringResource(Res.string.delete_contect_menu_item),
+        text = stringResource(Res.string.delete_item),
         iconPainter = Res.drawable.delete,
         onClick = { onAction(SidebarAction.DeleteItem(itemPath)) },
         onDismissRequest = onDismissRequest,
@@ -162,7 +117,7 @@ fun FolderContextMenuContent(
     )
 
     ContextMenuItem(
-        text = stringResource(Res.string.delete_contect_menu_item),
+        text = stringResource(Res.string.delete_item),
         iconPainter = Res.drawable.delete,
         onClick = { onAction(SidebarAction.DeleteItem(itemPath)) },
         onDismissRequest = onDismissRequest,

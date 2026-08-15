@@ -113,7 +113,7 @@ fun ActiveEditorBlock(
                     hasFocused = true
                 } else if (hasFocused) {
                     hasFocused = false
-                    editorState.evaluateFocusLost(index, textFieldValue.text)
+                    editorState.evaluateFocusLost(index)
                 }
             }
             .onPreviewKeyEvent { event ->

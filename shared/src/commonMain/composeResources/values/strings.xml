@@ -30,11 +30,13 @@
     <string name="create_file_input_placeholder">File name...</string>
     <string name="create_directory_input_placeholder">Folder name...</string>
     <string name="rename_contect_menu_item">Rename</string>
-    <string name="delete_contect_menu_item">Delete</string>
+    <string name="delete_item">Delete</string>
     <string name="copy_contect_menu_item">Copy path</string>
     <string name="duplicate_contect_menu_item">Duplicate</string>
     <string name="note_add_contect_menu_item">Add note</string>
     <string name="folder_add_contect_menu_item">Add folder</string>
     <string name="add_new_block_message">Tap to add new text...</string>
+    <string name="move_block_up">Move block up</string>
+    <string name="move_block_down">Move block down</string>
 
 </resources>

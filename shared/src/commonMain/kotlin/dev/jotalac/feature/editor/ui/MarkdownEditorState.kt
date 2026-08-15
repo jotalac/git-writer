@@ -62,7 +62,7 @@ class MarkdownEditorState(
 
     // block actions
 
-    fun evaluateFocusLost(index: Int, text: String) {
+    fun evaluateFocusLost(index: Int) {
         dispatchAction(
             EditorAction.EvaluateBlockOnFocusLost(
                 index = index,
@@ -94,21 +94,29 @@ class MarkdownEditorState(
         return false
     }
 
-    fun swapBlockUp() {
-        val index = focusedIndex ?: return
+    fun swapBlockUp(blockIndex: Int? = null) {
+        val index = blockIndex ?: focusedIndex ?: return
         if (index > 0) {
             val targetIndex = index - 1
             dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
-            focusBlock(targetIndex, activeTextFieldValue.selection)
+
+            // if the block was swapped from modal bottom sheet dont focus it
+            focusedIndex?.let {
+                focusBlock(targetIndex, activeTextFieldValue.selection)
+            }
         }
     }
 
-    fun swapBlockDown() {
-        val index = focusedIndex ?: return
+    fun swapBlockDown(blockIndex: Int? = null) {
+        val index = blockIndex ?: focusedIndex ?: return
         if (index < blocksState.value.lastIndex) {
             val targetIndex = index + 1
             dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
-            focusBlock(targetIndex, activeTextFieldValue.selection)
+
+            // if the block was swapped from modal bottom sheet dont focus it
+            focusedIndex?.let {
+                focusBlock(targetIndex, activeTextFieldValue.selection)
+            }
         }
     }
 
