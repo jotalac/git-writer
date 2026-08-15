@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.utils.isDesktopPlatform
@@ -30,43 +31,51 @@ fun MarkdownEditorBlocksList(
 ) {
     var selectedBlockIndex by remember { mutableStateOf<Int?>(null) }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(16.dp)
     ) {
-        blocks.forEachIndexed { index, block ->
-            if (editorState.focusedIndex == index) {
-                ActiveEditorBlock(
-                    editorState = editorState,
-                    index = index
-                )
-            } else {
-                RenderedEditorBlock(
-                    text = block,
-                    modifier = Modifier.combinedClickable(
-                        onClick = { editorState.focusBlock(index, null) },
-                        onLongClick = {
-                            if (!isDesktopPlatform) { selectedBlockIndex = index }
-                        }
-                    ),
-                    onDeleteClick = { editorState.deleteBlock(index) }
-                )
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .widthIn(max = 800.dp)
+                .padding(16.dp)
+        ) {
+            blocks.forEachIndexed { index, block ->
+                if (editorState.focusedIndex == index) {
+                    ActiveEditorBlock(
+                        editorState = editorState,
+                        index = index
+                    )
+                } else {
+                    RenderedEditorBlock(
+                        text = block,
+                        modifier = Modifier.combinedClickable(
+                            onClick = { editorState.focusBlock(index, null) },
+                            onLongClick = {
+                                if (!isDesktopPlatform) {
+                                    selectedBlockIndex = index
+                                }
+                            }
+                        ),
+                        onDeleteClick = { editorState.deleteBlock(index) }
+                    )
+                }
             }
+
+            AddNewBlockButton(editorState)
+            Spacer(modifier = Modifier.height(50.dp))
+
         }
 
-        AddNewBlockButton(editorState)
-        Spacer(modifier = Modifier.height(50.dp))
-
-    }
-
-    selectedBlockIndex?.let { index ->
-        MarkdownBlockActionsBottomSheet(
-            editorState = editorState,
-            blockIndex = index,
-            onDismissRequest = { selectedBlockIndex = null }
-        )
+        selectedBlockIndex?.let { index ->
+            MarkdownBlockActionsBottomSheet(
+                editorState = editorState,
+                blockIndex = index,
+                onDismissRequest = { selectedBlockIndex = null }
+            )
+        }
     }
 }
 

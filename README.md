@@ -8,6 +8,7 @@
 - better way to delete images on mobile and move blocks up and down - add modal bottom sheet
 
 ### TODO - not important (extra features)
+- customize the markdown elements from the markdown library 
 - when renaming image resource – refactor the notes to use the new image name?
 - maybe add the action bar on desktop - like it is in the IDEA markdown editor 
 

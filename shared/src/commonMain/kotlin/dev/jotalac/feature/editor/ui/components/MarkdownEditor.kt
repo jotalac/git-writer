@@ -106,7 +106,7 @@ fun MarkdownEditor(
         contentAlignment = Alignment.TopCenter
     ) {
         MarkdownEditorBlocksList(
-            modifier = Modifier.widthIn(max = 800.dp),
+            modifier = Modifier.fillMaxSize(),
             blocks = markdownBlocks,
             editorState = editorState,
             scrollState = listScrollState
