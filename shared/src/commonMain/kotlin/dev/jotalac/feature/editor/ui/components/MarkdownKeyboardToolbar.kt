@@ -26,6 +26,7 @@ fun MarkdownKeyboardToolbar(
     textFieldValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     onImageAdd: () -> Unit,
+    onCameraOpen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -35,10 +36,6 @@ fun MarkdownKeyboardToolbar(
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        ToolbarButton(Res.drawable.attach_file_add) {
-            onImageAdd()
-        }
-
         ToolbarButton(Res.drawable.format_h1) {
             onValueChange(textFieldValue.applyH1())
         }
@@ -57,6 +54,14 @@ fun MarkdownKeyboardToolbar(
 
         ToolbarButton(Res.drawable.format_italic) {
             onValueChange(textFieldValue.applyItalic())
+        }
+
+        ToolbarButton(Res.drawable.attach_file_add) {
+            onImageAdd()
+        }
+
+        ToolbarButton(Res.drawable.photo_camera) {
+            onCameraOpen()
         }
 
         ToolbarButton(Res.drawable.format_list_bulleted) {

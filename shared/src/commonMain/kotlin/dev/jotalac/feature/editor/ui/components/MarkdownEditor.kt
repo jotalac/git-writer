@@ -15,10 +15,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
-import dev.jotalac.core.navigation.Route
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
+import dev.jotalac.feature.editor.platform.pickCameraImage
 import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.rememberMarkdownEditorState
 import io.github.vinceglb.filekit.FileKit
@@ -132,11 +132,15 @@ fun MarkdownEditor(
                 onImageAdd =  {
                     scope.launch {
                         val files = FileKit.openFilePicker(type = FileKitType.Image, mode = FileKitMode.Multiple()) ?: return@launch
-                        val bytesArrays = files.map { it.readBytes() }
-                        editorState.pasteImages(bytesArrays)
+                        val bytesArray = files.map { it.readBytes() }
+                        editorState.pasteImages(bytesArray)
                     }
-
-
+                },
+                onCameraOpen = {
+                    scope.launch {
+                        val bytesArray = pickCameraImage() ?: return@launch
+                        editorState.pasteImages(listOf(bytesArray))
+                    }
                 }
             )
         }
