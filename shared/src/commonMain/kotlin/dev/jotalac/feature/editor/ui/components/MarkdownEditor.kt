@@ -15,11 +15,18 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.navigation.Route
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
 import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.rememberMarkdownEditorState
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.readBytes
+import kotlinx.coroutines.launch
 
 @Composable
 fun MarkdownEditor(
@@ -37,6 +44,8 @@ fun MarkdownEditor(
     val listScrollState = rememberScrollState()
     
     val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(editorState.focusedIndex) {
         if (editorState.focusedIndex == null) {
@@ -119,7 +128,16 @@ fun MarkdownEditor(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
                 textFieldValue = editorState.activeTextFieldValue,
-                onValueChange = editorState::updateActiveText
+                onValueChange = editorState::updateActiveText,
+                onImageAdd =  {
+                    scope.launch {
+                        val files = FileKit.openFilePicker(type = FileKitType.Image, mode = FileKitMode.Multiple()) ?: return@launch
+                        val bytesArrays = files.map { it.readBytes() }
+                        editorState.pasteImages(bytesArrays)
+                    }
+
+
+                }
             )
         }
     }

@@ -23,4 +23,5 @@ sealed interface EditorAction {
         val focusedIndex: Int,
         val onFocusCalculated: (newFocusIndex: Int) -> Unit
     ) : EditorAction
+
 }

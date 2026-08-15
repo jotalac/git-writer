@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.utils.*
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.DrawableResource
@@ -24,6 +25,7 @@ import org.jetbrains.compose.resources.painterResource
 fun MarkdownKeyboardToolbar(
     textFieldValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
+    onImageAdd: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -33,6 +35,10 @@ fun MarkdownKeyboardToolbar(
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
+        ToolbarButton(Res.drawable.attach_file_add) {
+            onImageAdd()
+        }
+
         ToolbarButton(Res.drawable.format_h1) {
             onValueChange(textFieldValue.applyH1())
         }

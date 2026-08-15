@@ -5,6 +5,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 import git_writer.shared.generated.resources.Res
@@ -41,21 +43,21 @@ fun RenderedEditorBlock(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 12.dp)
             .hoverable(interactionSource)
+            .padding(horizontal = 8.dp, vertical = 12.dp)
     ) {
         // the displayed text content
         if (text.isBlank()) {
             Text(
                 text = " ",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
             )
         } else {
             val isDarkTheme = isSystemInDarkTheme()
             val highlightsBuilder = remember(isDarkTheme) {
                 Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
             }
-
             Markdown(
                 content = text,
                 modifier = Modifier.weight(1f),
