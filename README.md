@@ -4,11 +4,10 @@
 
 - why does some things like checkboxes or github alerts, warnings ... doenst work - do i need to modify the markdown
   plugin?
-- scrolling only works on the middle part where the text is in the editor - make sure the scrolling works in whole of the editor
-- better way to delete images on mobile and move blocks up and down - add modal bottom sheet
+
 
 ### TODO - not important (extra features)
-- customize the markdown elements from the markdown library 
+- customize the markdown elements from the markdown library
 - when renaming image resource – refactor the notes to use the new image name?
 - maybe add the action bar on desktop - like it is in the IDEA markdown editor 
 

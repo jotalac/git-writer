@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.utils.isDesktopPlatform
+import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.add_new_block_message
@@ -59,7 +60,10 @@ fun MarkdownEditorBlocksList(
                                 }
                             }
                         ),
-                        onDeleteClick = { editorState.deleteBlock(index) }
+                        onDeleteClick = { editorState.deleteBlock(index) },
+                        onTextChange = { newText ->
+                            editorState.dispatchAction(EditorAction.UpdateBlock(index, newText))
+                        }
                     )
                 }
             }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +16,7 @@ import dev.jotalac.core.ui.theme.dimensions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
@@ -24,7 +24,7 @@ import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
-import dev.jotalac.core.utils.isDesktopPlatform
+import com.mikepenz.markdown.model.rememberMarkdownState
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 import git_writer.shared.generated.resources.Res
@@ -36,6 +36,7 @@ fun RenderedEditorBlock(
     text: String,
     modifier: Modifier = Modifier,
     onDeleteClick: () -> Unit,
+    onTextChange: (String) -> Unit = {},
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -58,10 +59,12 @@ fun RenderedEditorBlock(
             val highlightsBuilder = remember(isDarkTheme) {
                 Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
             }
-            Markdown(
-                content = text,
-                modifier = Modifier.weight(1f),
-                components = markdownComponents(
+            
+            val currentText by rememberUpdatedState(text)
+            val currentOnTextChange by rememberUpdatedState(onTextChange)
+            
+            val customMarkdownComponents = remember(highlightsBuilder) {
+                markdownComponents(
                     codeFence = {
                         MarkdownHighlightedCodeFence(
                             content = it.content,
@@ -69,8 +72,18 @@ fun RenderedEditorBlock(
                             highlightsBuilder = highlightsBuilder,
                             showHeader = true
                         )
-                    }
-                ),
+                    },
+                    checkbox = customCheckboxComponent { offset, isChecked ->
+                        val newCheckbox = if (isChecked) "[x]" else "[ ]"
+                        currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
+                    },
+                )
+            }
+
+            Markdown(
+                content = text,
+                modifier = Modifier.weight(1f),
+                components = customMarkdownComponents,
                 imageTransformer = Coil3ImageTransformerImpl
             )
         }
