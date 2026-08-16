@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import dev.jotalac.core.ui.theme.dimensions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,16 +20,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hrm.latex.renderer.Latex
+import com.hrm.latex.renderer.model.LatexConfig
+import com.hrm.latex.renderer.model.LatexTheme
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
+import com.mikepenz.markdown.compose.components.MarkdownComponentModel
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
+import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
-import com.mikepenz.markdown.model.rememberMarkdownState
+import dev.jotalac.core.ui.theme.dimensions
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.x_icon
+import org.intellij.markdown.ast.getTextInNode
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -61,10 +66,10 @@ fun RenderedEditorBlock(
             val highlightsBuilder = remember(isDarkTheme) {
                 Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
             }
-            
+
             val currentText by rememberUpdatedState(text)
             val currentOnTextChange by rememberUpdatedState(onTextChange)
-            
+
             val customMarkdownComponents = remember(highlightsBuilder) {
                 markdownComponents(
                     codeFence = {
@@ -75,15 +80,23 @@ fun RenderedEditorBlock(
                             showHeader = true
                         )
                     },
+                    paragraph = { model ->
+                        if (!renderedLatexInParagraph(model, isDarkTheme)) {
+                            MarkdownParagraph(
+                                content = model.content,
+                                node = model.node
+                            )
+                        }
+                    },
                     checkbox = customCheckboxComponent { offset, isChecked ->
                         val newCheckbox = if (isChecked) "[x]" else "[ ]"
                         currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
-                    },
+                    }
                 )
             }
 
             Markdown(
-                content = text,
+                content = currentText,
                 modifier = Modifier.weight(1f),
                 components = customMarkdownComponents,
                 imageTransformer = Coil3ImageTransformerImpl,
@@ -95,7 +108,7 @@ fun RenderedEditorBlock(
                     h5 = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium),
                     h6 = MaterialTheme.typography.titleMedium,
 
-                )
+                    )
             )
         }
 
@@ -110,5 +123,24 @@ fun RenderedEditorBlock(
                 .clickable(onClick = onDeleteClick),
             tint = MaterialTheme.colorScheme.outline
         )
+    }
+}
+
+@Composable
+private fun renderedLatexInParagraph(model: MarkdownComponentModel, isDarkTheme: Boolean): Boolean {
+    val mathChild = model.node.children.find { it.type.name in listOf("BLOCK_MATH", "INLINE_MATH") }
+    return if (mathChild != null) {
+        val mathText = mathChild.getTextInNode(model.content).toString()
+            .removeSurrounding("$")
+            .removeSurrounding("$$").trim()
+        Latex(
+            mathText,
+            config = LatexConfig(
+                theme = if (isDarkTheme) LatexTheme.light() else LatexTheme.dark()
+            )
+        )
+        true
+    } else {
+        false
     }
 }

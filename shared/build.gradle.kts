@@ -86,6 +86,10 @@ kotlin {
             implementation(libs.multiplatform.markdown.renderer.m3)
             implementation(libs.multiplatform.markdown.renderer.coil3)
             implementation(libs.multiplatform.markdown.renderer.code)
+
+            implementation(libs.latex.base) // Basic logging
+            implementation(libs.latex.renderer) // Rendering logic
+            implementation(libs.latex.parser) // Parsing logic
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
