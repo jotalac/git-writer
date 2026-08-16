@@ -19,11 +19,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.rememberMarkdownState
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
@@ -84,7 +86,16 @@ fun RenderedEditorBlock(
                 content = text,
                 modifier = Modifier.weight(1f),
                 components = customMarkdownComponents,
-                imageTransformer = Coil3ImageTransformerImpl
+                imageTransformer = Coil3ImageTransformerImpl,
+                typography = markdownTypography(
+                    h1 = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
+                    h2 = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                    h3 = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    h4 = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+                    h5 = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium),
+                    h6 = MaterialTheme.typography.titleMedium,
+
+                )
             )
         }
 
