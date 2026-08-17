@@ -12,8 +12,8 @@ import dev.jotalac.core.utils.buildClipEntry
 import dev.jotalac.feature.editor_sidebar.ui.components.ActiveNotebookMenu
 import dev.jotalac.feature.editor_sidebar.ui.components.SidebarGlobalActions
 import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.FileTree
-import dev.jotalac.feature.notebooks_management.ui.CreateNotebookDialog
-import dev.jotalac.feature.notebooks_management.ui.NotebookListDialog
+import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookDialog
+import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 

@@ -11,6 +11,7 @@
 - when renaming image resource – refactor the notes to use the new image name?
 - maybe add the action bar on desktop - like it is in the IDEA markdown editor
 - default warning, tip, success github like quotes that should be supported by mikepenz markdown library - doesnt work
+- add rounded corners to rendered image in the editor
 
 - ![img.png](img.png)
 - ![img_1.png](img_1.png)

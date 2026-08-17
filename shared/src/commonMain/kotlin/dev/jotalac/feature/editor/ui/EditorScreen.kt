@@ -51,10 +51,7 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
                         viewModel.closeActiveNote()
                         true
                     }
-//                    Key.N -> {
-//                        viewModel.
-//                        true
-//                    }
+
                     else -> false
 
                 }
@@ -192,7 +189,6 @@ fun MainEditorScaffold(
         snackbarHostState = snackbarHostState,
         topAppBar = {
             TopAppBar(
-//                modifier = Modifier.heightIn(max = 70.dp),
                 title = {
                     if (filename != null) {
                         Row(

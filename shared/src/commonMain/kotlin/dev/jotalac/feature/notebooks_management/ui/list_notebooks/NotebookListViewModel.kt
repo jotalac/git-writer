@@ -1,21 +1,12 @@
-package dev.jotalac.feature.notebooks_management.ui
+package dev.jotalac.feature.notebooks_management.ui.list_notebooks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.no_file_loaded_msg
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 
 data class NotebookListState(
     val notebooks: List<Notebook> = emptyList(),
@@ -50,7 +41,7 @@ class NotebookListViewModel(
     private fun openNotebook(id: Long, onSuccess: () -> Unit) {
         // Add activation logic here if needed, e.g.,
         viewModelScope.launch {
-         val result = notebookRepository.activateNotebook(id)
+            val result = notebookRepository.activateNotebook(id)
 
             result
                 .onSuccess {

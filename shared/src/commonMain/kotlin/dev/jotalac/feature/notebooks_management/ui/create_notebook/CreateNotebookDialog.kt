@@ -1,68 +1,28 @@
-package dev.jotalac.feature.notebooks_management.ui
+package dev.jotalac.feature.notebooks_management.ui.create_notebook
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.toSafeFileName
-import org.jetbrains.compose.resources.painterResource
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.cancel_button
-import git_writer.shared.generated.resources.clone_notebook
-import git_writer.shared.generated.resources.create_notebook_title
-import git_writer.shared.generated.resources.git_auth_placeholder
-import git_writer.shared.generated.resources.git_merge
-import git_writer.shared.generated.resources.git_merge_icon
-import git_writer.shared.generated.resources.git_remote_example
-import git_writer.shared.generated.resources.git_repository_url_input_label
-import git_writer.shared.generated.resources.init_notebook
-import git_writer.shared.generated.resources.notebook_name_placeholder
-import git_writer.shared.generated.resources.plus
-import git_writer.shared.generated.resources.plus_icon
-import git_writer.shared.generated.resources.username_placeholder
+import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
-import org.koin.compose.viewmodel.koinViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.text.style.TextOverflow
-import dev.jotalac.core.utils.isDesktopPlatform
-import dev.jotalac.feature.notebooks_management.domain.Notebook
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import dev.jotalac.feature.notebooks_management.ui.CreateNotebookViewModel.CreateNotebookEvent
-import git_writer.shared.generated.resources.browse_destination_button
-import git_writer.shared.generated.resources.destination_directory_label
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CreateNotebookDialog(
@@ -89,7 +49,7 @@ fun CreateNotebookDialog(
             )
 
             if (directory != null) {
-                viewModel.onEvent(CreateNotebookEvent.DirectorySelected(directory.absolutePath()))
+                viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.DirectorySelected(directory.absolutePath()))
             }
         }
     }
@@ -113,7 +73,7 @@ fun CreateNotebookDialog(
                 ) {
                     Tab(
                         selected = state.selectedTabIndex == 0,
-                        onClick = { viewModel.onEvent(CreateNotebookEvent.TabSelected(0)) },
+                        onClick = { viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.TabSelected(0)) },
                         text = {
                             TabText(
                                 text = Res.string.init_notebook,
@@ -124,7 +84,7 @@ fun CreateNotebookDialog(
                     )
                     Tab(
                         selected = state.selectedTabIndex == 1,
-                        onClick = { viewModel.onEvent(CreateNotebookEvent.TabSelected(1)) },
+                        onClick = { viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.TabSelected(1)) },
                         text = {
                             TabText(
                                 text = Res.string.clone_notebook,
@@ -141,25 +101,56 @@ fun CreateNotebookDialog(
                     when (state.selectedTabIndex) {
                         0 -> LocalNotebookForm(
                             name = state.notebookName,
-                            onNameChange = { viewModel.onEvent(CreateNotebookEvent.NotebookNameChanged(it)) },
+                            onNameChange = {
+                                viewModel.onEvent(
+                                    CreateNotebookViewModel.CreateNotebookEvent.NotebookNameChanged(
+                                        it
+                                    )
+                                )
+                            },
                             directory = actualDirectory,
                             onBrowseClick = { browseForDirectory() }
                         )
+
                         1 -> RemoteNotebookForm(
                             name = state.notebookName,
-                            onNameChange = { viewModel.onEvent(CreateNotebookEvent.NotebookNameChanged(it)) },
+                            onNameChange = {
+                                viewModel.onEvent(
+                                    CreateNotebookViewModel.CreateNotebookEvent.NotebookNameChanged(
+                                        it
+                                    )
+                                )
+                            },
                             url = state.remoteUrl,
-                            onUrlChange = { viewModel.onEvent(CreateNotebookEvent.RemoteUrlChanged(it)) },
+                            onUrlChange = {
+                                viewModel.onEvent(
+                                    CreateNotebookViewModel.CreateNotebookEvent.RemoteUrlChanged(
+                                        it
+                                    )
+                                )
+                            },
                             username = state.username,
-                            onUsernameChange = { viewModel.onEvent(CreateNotebookEvent.UsernameChanged(it)) },
+                            onUsernameChange = {
+                                viewModel.onEvent(
+                                    CreateNotebookViewModel.CreateNotebookEvent.UsernameChanged(
+                                        it
+                                    )
+                                )
+                            },
                             password = state.password,
-                            onPasswordChange = { viewModel.onEvent(CreateNotebookEvent.PasswordChanged(it)) },
+                            onPasswordChange = {
+                                viewModel.onEvent(
+                                    CreateNotebookViewModel.CreateNotebookEvent.PasswordChanged(
+                                        it
+                                    )
+                                )
+                            },
                             directory = actualDirectory,
                             onBrowseClick = { browseForDirectory() }
                         )
                     }
                 }
-                
+
                 if (state.errorMessage != null) {
                     Text(
                         text = state.errorMessage!!,
@@ -173,14 +164,20 @@ fun CreateNotebookDialog(
             Button(
                 onClick = {
                     if (state.selectedTabIndex == 0) {
-                        viewModel.onEvent(CreateNotebookEvent.CreateLocalNotebook(actualDirectory) {
-                            onDismiss()
-                        })
+                        viewModel.onEvent(
+                            CreateNotebookViewModel.CreateNotebookEvent.CreateLocalNotebook(
+                                actualDirectory
+                            ) {
+                                onDismiss()
+                            })
                     } else {
-                        viewModel.onEvent(CreateNotebookEvent.CloneRemoteNotebook(actualDirectory) {
+                        viewModel.onEvent(
+                            CreateNotebookViewModel.CreateNotebookEvent.CloneRemoteNotebook(
+                                actualDirectory
+                            ) {
 
-                            onDismiss()
-                        })
+                                onDismiss()
+                            })
                     }
                 },
                 enabled = if (state.selectedTabIndex == 0) {
@@ -189,7 +186,11 @@ fun CreateNotebookDialog(
                     state.notebookName.isNotBlank() && state.remoteUrl.isNotBlank() && actualDirectory.isNotBlank() && state.username.isNotBlank() && state.password.isNotBlank()
                 }
             ) {
-                Text(if (state.selectedTabIndex == 0) stringResource(Res.string.create_notebook_title) else stringResource(Res.string.clone_notebook))
+                Text(
+                    if (state.selectedTabIndex == 0) stringResource(Res.string.create_notebook_title) else stringResource(
+                        Res.string.clone_notebook
+                    )
+                )
             }
         },
         dismissButton = {

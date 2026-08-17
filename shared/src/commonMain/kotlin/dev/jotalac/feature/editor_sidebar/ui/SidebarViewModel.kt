@@ -79,20 +79,13 @@ class EditorSidebarViewModel(
 
     private fun deleteItem(path: String) {
         viewModelScope.launch {
-            val result = editorRepository.deleteItem(path)
-            result.onSuccess {
-                // close the editor file if it was deleted
-                val currentActiveNotePath = notebookRepository.activeNotePath.firstOrNull()
-                if (currentActiveNotePath != null && (currentActiveNotePath == path || currentActiveNotePath.startsWith(
-                        "$path/"
-                    ))
-                ) {
-                    notebookRepository.closeActiveNote()
+            editorRepository.deleteItem(path)
+                .onSuccess {
+                    notebookRepository.syncActiveNotePathOnDeleted(path)
+                    refreshFileTree()
+                }.onFailure {
+                    snackbarManager.showMessage(it.message ?: "Failed to delete item")
                 }
-                refreshFileTree()
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to delete item")
-            }
         }
     }
 
@@ -101,24 +94,32 @@ class EditorSidebarViewModel(
             setRenameItem(null)
             return
         }
-        val fileExtension = Path(path).name.substringAfterLast('.')
+        val fileExtension = Path(path).name.substringAfterLast('.', "")
         val node = findNode(path)
-        val finalName = if (node is FileNode.File) "$newName.$fileExtension" else newName
+        val finalName = if (node is FileNode.File && fileExtension.isNotEmpty() && !newName.endsWith(".$fileExtension")) {
+            "$newName.$fileExtension"
+        } else {
+            newName
+        }
+        val safeName = finalName.toSafeFileName()
 
-        //check if the original and final names are the same
-        if (node?.path?.substringAfterLast("/") == finalName) {
+        // check if the original and final names are the same
+        if (node?.path?.substringAfterLast("/") == safeName) {
             setRenameItem(null)
             return
         }
 
         viewModelScope.launch {
-            val result = editorRepository.renameItem(path, finalName.toSafeFileName())
-            result.onSuccess {
-                setRenameItem(null)
-                refreshFileTree()
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to rename item")
-            }
+            editorRepository.renameItem(path, safeName)
+                .onSuccess {
+                    setRenameItem(null)
+                    val parentPath = Path(path).parent
+                    val newPath = if (parentPath != null) Path(parentPath, safeName).toString() else safeName
+                    notebookRepository.syncActiveNotePathOnMoved(path, newPath)
+                    refreshFileTree()
+                }.onFailure {
+                    snackbarManager.showMessage(it.message ?: "Failed to rename item")
+                }
         }
     }
 
@@ -281,13 +282,15 @@ class EditorSidebarViewModel(
 
     private fun moveItem(sourcePath: String, destinationDirectoryPath: String) {
         viewModelScope.launch {
-            val result = editorRepository.moveItem(sourcePath, destinationDirectoryPath)
-
-            result.onSuccess {
-                refreshFileTree()
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to move item")
-            }
+            editorRepository.moveItem(sourcePath, destinationDirectoryPath)
+                .onSuccess {
+                    val itemName = Path(sourcePath).name
+                    val newPath = Path(Path(destinationDirectoryPath), itemName).toString()
+                    notebookRepository.syncActiveNotePathOnMoved(sourcePath, newPath)
+                    refreshFileTree()
+                }.onFailure {
+                    snackbarManager.showMessage(it.message ?: "Failed to move item")
+                }
         }
     }
 

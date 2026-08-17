@@ -16,5 +16,6 @@ interface NotebookRepository {
     suspend fun activateNotebook(id: Long): Result<Unit>
     suspend fun activateNote(notePath: String): Result<Unit>
     suspend fun closeActiveNote(): Result<Unit>
-
+    suspend fun syncActiveNotePathOnMoved(oldPath: String, newPath: String): Result<Unit>
+    suspend fun syncActiveNotePathOnDeleted(deletedPath: String): Result<Unit>
 }

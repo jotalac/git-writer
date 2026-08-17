@@ -109,6 +109,27 @@ class NotebookRepositoryImpl(
         }
     }
 
+    override suspend fun syncActiveNotePathOnMoved(oldPath: String, newPath: String): Result<Unit> {
+        return runCatching {
+            val currentActivePath = activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@runCatching
+            if (currentActivePath == oldPath) {
+                activeNotebookManager.setActiveNotePath(newPath)
+            } else if (currentActivePath.startsWith("$oldPath/")) {
+                val updatedPath = currentActivePath.replaceFirst(oldPath, newPath)
+                activeNotebookManager.setActiveNotePath(updatedPath)
+            }
+        }
+    }
+
+    override suspend fun syncActiveNotePathOnDeleted(deletedPath: String): Result<Unit> {
+        return runCatching {
+            val currentActivePath = activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@runCatching
+            if (currentActivePath == deletedPath || currentActivePath.startsWith("$deletedPath/")) {
+                activeNotebookManager.clearActiveNote()
+            }
+        }
+    }
+
     override fun getNotebookByIdAsFlow(id: Long): Flow<Notebook?> {
         return notebookDao.getNotebookByIdAsFlow(id).map { entity ->
             entity?.toNotebook()

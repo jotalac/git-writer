@@ -1,4 +1,4 @@
-package dev.jotalac.feature.notebooks_management.ui
+package dev.jotalac.feature.notebooks_management.ui.create_notebook
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -81,7 +81,7 @@ class CreateNotebookViewModel(
 
             result.onSuccess { notebook ->
                 // activate the notebook in repository
-                 notebookRepository.activateNotebook(notebook.id)
+                notebookRepository.activateNotebook(notebook.id)
 
                 //reset the dialog values
                 _uiState.update {
@@ -109,7 +109,7 @@ class CreateNotebookViewModel(
     private fun cloneRemoteNotebook(actualDirectory: String, onSuccess: () -> Unit) {
         // TODO: Implement remote cloning logic
         val currentState = _uiState.value
-        
+
         _uiState.update {
             it.copy(
                 notebookName = "",
@@ -118,9 +118,9 @@ class CreateNotebookViewModel(
                 password = "",
             )
         }
-        
+
         onSuccess()
-        
+
         println("Cloning remote notebook: ${currentState.remoteUrl} to $actualDirectory")
     }
 

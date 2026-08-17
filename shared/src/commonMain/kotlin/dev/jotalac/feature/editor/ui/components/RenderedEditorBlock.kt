@@ -91,7 +91,7 @@ fun RenderedEditorBlock(
                     checkbox = customCheckboxComponent { offset, isChecked ->
                         val newCheckbox = if (isChecked) "[x]" else "[ ]"
                         currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
-                    }
+                    },
                 )
             }
 

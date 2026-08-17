@@ -26,7 +26,7 @@ fun Path.deleteRecursively() {
     SystemFileSystem.delete(this, mustExist = false)
 }
 
-fun Path.buildFileTree() : FileNode.Directory {
+fun Path.buildFileTree(): FileNode.Directory {
     return FileNode.Directory(
         name = this.name,
         path = this.toString(),
@@ -34,7 +34,7 @@ fun Path.buildFileTree() : FileNode.Directory {
     )
 }
 
-fun Path.traverse() : List<FileNode> {
+fun Path.traverse(): List<FileNode> {
     val metadata = SystemFileSystem.metadataOrNull(this) ?: return emptyList()
     if (!metadata.isDirectory) return emptyList()
 
@@ -60,7 +60,7 @@ fun Path.traverse() : List<FileNode> {
                 )
             } else null
         }
-    }.sortedWith(compareBy<FileNode> { it is FileNode.File}.thenBy { it.name })
+    }.sortedWith(compareBy<FileNode> { it is FileNode.File }.thenBy { it.name })
 }
 
 val IMAGE_FILE_EXTENSIONS = listOf(".png", ".jpg", ".jpeg", ".svg", ".gif", ".webp")
@@ -71,6 +71,7 @@ fun isImageFile(filename: String): Boolean {
     return IMAGE_FILE_EXTENSIONS.any { lowerName.endsWith(it) }
 }
 
+// detect file type from the image bytes (ai generated)
 fun ByteArray.detectImageExtension(): String {
     if (size >= 3 && this[0] == 0xFF.toByte() && this[1] == 0xD8.toByte() && this[2] == 0xFF.toByte()) {
         return ".jpg"
