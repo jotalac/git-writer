@@ -7,6 +7,8 @@ import dev.jotalac.core.database.AppDatabase
 import dev.jotalac.core.database.DATA_STORE_FILE_NAME
 import dev.jotalac.core.database.createDataStore
 import dev.jotalac.core.database.getDatabaseBuilder
+import dev.jotalac.feature.git_sync.data.JGitSyncRepositoryImpl
+import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.DesktopNotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import io.github.vinceglb.filekit.FileKit
@@ -33,5 +35,9 @@ actual val platformModule: Module = module {
 
             File(appDataDir, DATA_STORE_FILE_NAME).absolutePath
         }
+    }
+
+    single<GitSyncRepository> {
+        JGitSyncRepositoryImpl()
     }
 }

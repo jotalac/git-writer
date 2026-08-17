@@ -27,7 +27,8 @@ sqlite = "2.7.0"
 ksp = "2.3.10"
 kotlinx-io = "0.9.1"
 datastore = "1.2.1"
-latex = "1.5.3"
+compose-latex = "1.5.3"
+jgit = "7.1.0.202411261347-r"
 
 
 [libraries]
@@ -64,6 +65,8 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version = "2.1.4" }
 
 multiplatform-markdown-renderer = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "markdown-renderer" }
 multiplatform-markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown-renderer" }
@@ -76,9 +79,9 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 
-latex-base = { module = "io.github.huarangmeng:latex-base", version.ref = "latex" }
-latex-parser = { module = "io.github.huarangmeng:latex-parser", version.ref = "latex" }
-latex-renderer = { module = "io.github.huarangmeng:latex-renderer", version.ref = "latex" }
+latex-base = { module = "io.github.huarangmeng:latex-base", version.ref = "compose-latex" }
+latex-parser = { module = "io.github.huarangmeng:latex-parser", version.ref = "compose-latex" }
+latex-renderer = { module = "io.github.huarangmeng:latex-renderer", version.ref = "compose-latex" }
 
 
 

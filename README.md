@@ -2,7 +2,6 @@
 
 ## TODO
 
-- when renaming item - rename it
 - git sync :o
 
 ### TODO - not important (extra features)

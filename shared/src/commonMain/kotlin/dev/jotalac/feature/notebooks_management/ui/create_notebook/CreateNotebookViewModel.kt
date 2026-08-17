@@ -3,6 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.create_notebook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.PlatformFile
@@ -71,57 +72,56 @@ class CreateNotebookViewModel(
 
 
         viewModelScope.launch {
-            val result = notebookRepository.createLocalNotebook(
+            val result = notebookRepository.createNotebook(
                 name = currentState.notebookName,
-                directoryPath = actualDirectory,
-                remoteUrl = currentState.remoteUrl,
-                remoteUsername = currentState.username,
-                remotePassword = currentState.password,
+                directoryPath = actualDirectory
             )
 
-            result.onSuccess { notebook ->
-                // activate the notebook in repository
-                notebookRepository.activateNotebook(notebook.id)
-
-                //reset the dialog values
-                _uiState.update {
-                    it.copy(
-                        notebookName = "",
-                        remoteUrl = "",
-                        username = "",
-                        password = "",
-                        errorMessage = null
-                    )
-                }
-
-                snackbarManager.showMessage("Notebook created successfully")
-                onSuccess()
-            }.onFailure { error ->
-                _uiState.update {
-                    it.copy(
-                        errorMessage = error.message ?: "Failed to create notebook"
-                    )
-                }
-            }
+            handleNotebookCreateResult(result, onSuccess)
         }
     }
 
     private fun cloneRemoteNotebook(actualDirectory: String, onSuccess: () -> Unit) {
-        // TODO: Implement remote cloning logic
         val currentState = _uiState.value
 
-        _uiState.update {
-            it.copy(
-                notebookName = "",
-                remoteUrl = "",
-                username = "",
-                password = "",
+        viewModelScope.launch {
+            val result = notebookRepository.cloneNotebook(
+                name = currentState.notebookName,
+                directoryPath = actualDirectory,
+                remoteUrl = currentState.remoteUrl,
+                remotePasswordOrToken = currentState.password,
+                remoteUsername = currentState.username
             )
+
+            handleNotebookCreateResult(result, onSuccess)
         }
+    }
 
-        onSuccess()
+    private suspend fun handleNotebookCreateResult(result: Result<Notebook>, onSuccess: () -> Unit) {
+        result.onSuccess { notebook ->
+            // activate the notebook in repository
+            notebookRepository.activateNotebook(notebook.id)
 
-        println("Cloning remote notebook: ${currentState.remoteUrl} to $actualDirectory")
+            //reset the dialog values
+            _uiState.update {
+                it.copy(
+                    notebookName = "",
+                    remoteUrl = "",
+                    username = "",
+                    password = "",
+                    errorMessage = null
+                )
+            }
+
+            snackbarManager.showMessage("Notebook created successfully")
+            onSuccess()
+        }.onFailure { error ->
+            _uiState.update {
+                it.copy(
+                    errorMessage = error.message ?: "Failed to create notebook"
+                )
+            }
+        }
     }
 
     sealed interface CreateNotebookEvent {

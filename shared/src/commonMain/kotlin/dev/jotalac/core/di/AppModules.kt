@@ -45,7 +45,7 @@ val coreModule = module {
 val featureModules = module {
     //notebook management
     single<NotebookRepository> {
-        NotebookRepositoryImpl(notebookDao = get(), activeNotebookManager = get())
+        NotebookRepositoryImpl(notebookDao = get(), activeNotebookManager = get(), gitSyncRepository = get())
     }
     //files management
     single<EditorRepository> {
