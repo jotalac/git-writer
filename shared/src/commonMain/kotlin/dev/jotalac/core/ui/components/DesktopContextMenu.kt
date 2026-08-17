@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu
+package dev.jotalac.core.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,42 +12,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import dev.jotalac.feature.editor_sidebar.domain.FileType
-import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 
 @Composable
 fun DesktopContextMenu(
-    showMenu: Boolean,
+    expanded: Boolean,
     onDismissRequest: () -> Unit,
-    menuOffset: DpOffset,
-    itemType: FileType,
-    itemPath: String,
-    onAction: (SidebarAction) -> Unit,
+    offset: DpOffset,
+    content: @Composable () -> Unit,
 ) {
     DropdownMenu(
-        expanded = showMenu,
+        expanded = expanded,
         onDismissRequest = onDismissRequest,
-        offset = menuOffset,
+        offset = offset,
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .clip(RoundedCornerShape(6.dp))
             .border(2.dp, MaterialTheme.colorScheme.onSurface.copy(0.1f), shape = RoundedCornerShape(6.dp))
             .padding(5.dp)
             .width(200.dp)
-
     ) {
-        if (itemType == FileType.FILE) {
-            FileContextMenuContent(
-                onAction = onAction,
-                itemPath = itemPath,
-                onDismissRequest = onDismissRequest
-            )
-        } else {
-            FolderContextMenuContent(
-                onAction = onAction,
-                itemPath = itemPath,
-                onDismissRequest = onDismissRequest
-            )
-        }
+        content()
     }
 }

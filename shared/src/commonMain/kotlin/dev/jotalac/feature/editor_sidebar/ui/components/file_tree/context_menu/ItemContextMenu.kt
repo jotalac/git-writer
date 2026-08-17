@@ -1,24 +1,15 @@
 package dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.ContextMenuItem
-import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 import git_writer.shared.generated.resources.*
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -28,9 +19,10 @@ fun AdaptiveContextMenu(
     itemType: FileType,
     itemPath: String,
     onDismissRequest: () -> Unit,
-    onAction: (SidebarAction) -> Unit) {
+    onAction: (SidebarAction) -> Unit
+) {
     if (isDesktopPlatform) {
-        DesktopContextMenu(
+        FileTreeContextMenu(
             showMenu = showMenu,
             menuOffset = menuOffset,
             itemType = itemType,

@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -24,11 +23,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.isSecondaryPressed
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +31,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.components.onContextMenuOpen
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
@@ -83,7 +78,7 @@ fun FileTreeRow(
     Box {
         Row(
             modifier = modifier
-                .onRightClick { offset ->
+                .onContextMenuOpen { offset ->
                     menuOffset = offset
                     showMenu = true
                 }
@@ -317,21 +312,3 @@ private fun RenameTextField(
         )
 }
 
-private fun Modifier.onRightClick(onEvent: (DpOffset) -> Unit): Modifier = composed {
-    val density = LocalDensity.current
-    pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
-                if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
-                    val position = event.changes.first().position
-                    val offset = with(density) {
-                        DpOffset(position.x.toDp(), (position.y - 10).toDp())
-                    }
-                    onEvent(offset)
-                    event.changes.forEach { it.consume() }
-                }
-            }
-        }
-    }
-}

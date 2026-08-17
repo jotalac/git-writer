@@ -1,18 +1,10 @@
 package dev.jotalac.feature.editor.ui.components
 
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,14 +44,15 @@ fun MarkdownEditorBlocksList(
                 } else {
                     RenderedEditorBlock(
                         text = block,
-                        modifier = Modifier.combinedClickable(
-                            onClick = { editorState.focusBlock(index, null) },
-                            onLongClick = {
-                                if (!isDesktopPlatform) {
-                                    selectedBlockIndex = index
+                        modifier = Modifier
+                            .combinedClickable(
+                                onClick = { editorState.focusBlock(index, null) },
+                                onLongClick = {
+                                    if (!isDesktopPlatform) {
+                                        selectedBlockIndex = index
+                                    }
                                 }
-                            }
-                        ),
+                            ),
                         onDeleteClick = { editorState.deleteBlock(index) },
                         onTextChange = { newText ->
                             editorState.dispatchAction(EditorAction.UpdateBlock(index, newText))
