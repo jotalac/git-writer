@@ -49,7 +49,11 @@ fun TextFieldValue.applyCheckbox(): TextFieldValue = this.applyMarkdownSyntax("-
 
 fun TextFieldValue.addLink(): TextFieldValue = this.applyMarkdownSyntax("[", "]()")
 
+fun TextFieldValue.addMathBlock(): TextFieldValue = this.applyMarkdownSyntax("$$", "$$")
+
 fun TextFieldValue.increaseIndentation(): TextFieldValue = handleIndentation(this, isUntab = false)
 
 fun TextFieldValue.decreaseIndentation(): TextFieldValue = handleIndentation(this, isUntab = true)
+
+fun TextFieldValue.handleNewLine(): TextFieldValue = handleNewLineWithinBlock(this)
 

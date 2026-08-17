@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.hrm.latex.renderer.Latex
+import com.hrm.latex.renderer.LatexAutoWrap
 import com.hrm.latex.renderer.model.LatexConfig
 import com.hrm.latex.renderer.model.LatexTheme
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
@@ -131,12 +131,12 @@ private fun renderedLatexInParagraph(model: MarkdownComponentModel, isDarkTheme:
     val mathChild = model.node.children.find { it.type.name in listOf("BLOCK_MATH", "INLINE_MATH") }
     return if (mathChild != null) {
         val mathText = mathChild.getTextInNode(model.content).toString()
-            .removeSurrounding("$")
-            .removeSurrounding("$$").trim()
-        Latex(
+            .removeSurrounding("$$")
+            .removeSurrounding("$").trim()
+        LatexAutoWrap(
             mathText,
             config = LatexConfig(
-                theme = if (isDarkTheme) LatexTheme.light() else LatexTheme.dark()
+                theme = LatexTheme.material3()
             )
         )
         true

@@ -38,5 +38,22 @@
     <string name="add_new_block_message">Tap to add new text...</string>
     <string name="move_block_up">Move block up</string>
     <string name="move_block_down">Move block down</string>
-
+    <string name="toolbar_h1">Heading 1</string>
+    <string name="toolbar_h2">Heading 2</string>
+    <string name="toolbar_h3">Heading 3</string>
+    <string name="toolbar_bold">Bold</string>
+    <string name="toolbar_italic">Italic</string>
+    <string name="toolbar_attach_file">Add image</string>
+    <string name="toolbar_camera">Camera</string>
+    <string name="toolbar_bulleted_list">Bulleted list</string>
+    <string name="toolbar_numbered_list">Numbered list</string>
+    <string name="toolbar_indent_increase">Increase indent</string>
+    <string name="toolbar_indent_decrease">Decrease indent</string>
+    <string name="toolbar_quote">Quote</string>
+    <string name="toolbar_code_block">Code block</string>
+    <string name="toolbar_inline_code">Inline code</string>
+    <string name="toolbar_checkbox">Checkbox</string>
+    <string name="toolbar_link">Link</string>
+    <string name="toolbar_math">Math formula</string>
+    <string name="toolbar_new_line">Add new line</string>
 </resources>

@@ -3,12 +3,10 @@ package dev.jotalac.core.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Immutable
-import androidx.compose.ui.graphics.Color
 
 internal val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -238,18 +236,6 @@ internal val highContrastDarkColorScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
 )
 
-@Immutable
-data class ColorFamily(
-    val color: Color,
-    val onColor: Color,
-    val colorContainer: Color,
-    val onColorContainer: Color
-)
-
-val unspecified_scheme = ColorFamily(
-    Color.Unspecified, Color.Unspecified, Color.Unspecified, Color.Unspecified
-)
-
 @Composable
 expect fun determineColorScheme(
     isDark: Boolean,
@@ -260,23 +246,22 @@ expect fun determineAppDimensions(): AppDimensions
 
 @Composable
 fun AppTheme(
-//    darkTheme: Boolean = isSystemInDarkTheme(),
-    darkTheme: Boolean = true,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-  val colorScheme = determineColorScheme(
-      isDark = darkTheme,
-      dynamicColor = dynamicColor
-  )
-  val dimensions = determineAppDimensions()
-
-  CompositionLocalProvider(LocalAppDimensions provides dimensions) {
-    MaterialTheme(
-      colorScheme = colorScheme,
-      typography = AppTypography,
-      content = content
+    val colorScheme = determineColorScheme(
+        isDark = darkTheme,
+        dynamicColor = dynamicColor
     )
-  }
+    val dimensions = determineAppDimensions()
+
+    CompositionLocalProvider(LocalAppDimensions provides dimensions) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = AppTypography,
+            content = content
+        )
+    }
 }
 
