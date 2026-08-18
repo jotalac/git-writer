@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,10 +24,7 @@ import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
 import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
 import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.closed_sidebar
-import git_writer.shared.generated.resources.opened_sidebar
-import git_writer.shared.generated.resources.x_icon
+import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -230,6 +229,24 @@ fun MainEditorScaffold(
                 },
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onAction(EditorAction.SyncNotes) },
+                modifier = Modifier.dropShadow(
+                    shape = CircleShape,
+                    shadow = Shadow(
+                        radius = 10.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        spread = 5.dp
+                    )
+                )
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.sync_dot),
+                    contentDescription = "Sync icon",
+                )
+            }
+        }
     ) { innerPadding ->
         Surface(
             modifier = Modifier

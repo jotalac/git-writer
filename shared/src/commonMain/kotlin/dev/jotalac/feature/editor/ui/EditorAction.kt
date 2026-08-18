@@ -24,4 +24,5 @@ sealed interface EditorAction {
         val onFocusCalculated: (newFocusIndex: Int) -> Unit
     ) : EditorAction
 
+    data object SyncNotes : EditorAction
 }

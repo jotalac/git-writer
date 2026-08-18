@@ -1,9 +1,14 @@
 # Git-writer - git synced markdown editor
 
-## TODO
+# TODO
 
-- add active notebook settings - change notebook name, add remote credentials, ...
-- make username and password optional for cloning when cloning public repo – then the synch would be disabled?
+> hight priority
+
+- when editing the active notebook remote url - need to actually set the upstream on the git repo
+
+> medium priority
+
+- right click on filetree backgrond should also bring up the context menu with create file and create folder options
 
 ### TODO - not important (extra features)
 
@@ -13,6 +18,9 @@
 - default warning, tip, success github like quotes that should be supported by mikepenz markdown library - doesnt work
 - add rounded corners to rendered image in the editor
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories
+-
+    - make username and password optional for cloning when cloning public repo – then the synch would be disabled?
+
 
 - ![img.png](img.png)
 - ![img_1.png](img_1.png)

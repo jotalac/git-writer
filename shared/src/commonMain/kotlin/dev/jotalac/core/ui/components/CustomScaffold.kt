@@ -15,6 +15,7 @@ fun CustomScaffold(
     modifier: Modifier = Modifier,
     topAppBar: @Composable () -> Unit = {},
     bottomAppBar: @Composable () -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
@@ -25,7 +26,8 @@ fun CustomScaffold(
             SnackbarHost(hostState = snackbarHostState) { snackbarData ->
                 CustomSnackbar(snackbarData)
             }
-        }
+        },
+        floatingActionButton = floatingActionButton,
 //        floatingActionButton = {
 //            FloatingActionButton(onClick = { /* Commit to Git */ }) {
 //                Text("Sync")

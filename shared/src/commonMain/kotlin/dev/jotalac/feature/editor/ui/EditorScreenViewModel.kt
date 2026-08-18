@@ -9,15 +9,12 @@ import dev.jotalac.core.utils.detectImageExtension
 import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
+import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
-import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.isRegularFile
 import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -38,6 +35,7 @@ class EditorViewModel(
     private val notebookRepository: NotebookRepository,
     private val editorRepository: EditorRepository,
     private val snackbarManager: SnackbarManager,
+    private val gitSyncRepository: GitSyncRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorScreenState())
@@ -128,6 +126,25 @@ class EditorViewModel(
 
             result.onFailure {
                 println("Failed to close active note - $it")
+            }
+        }
+    }
+
+    fun syncNotes() {
+        viewModelScope.launch {
+            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
+            if (notebook.remoteUrl.isNullOrBlank() || notebook.remotePassword.isNullOrBlank()) return@launch
+
+            val result = gitSyncRepository.syncNotes(
+                notebook.directoryPath,
+                notebook.remotePassword,
+                notebook.remoteUsername
+            )
+
+            result.onSuccess {
+                snackbarManager.showMessage("Notes synced successfully")
+            }.onFailure {
+                snackbarManager.showMessage("Failed to sync notes: $it")
             }
         }
     }
@@ -224,6 +241,10 @@ class EditorViewModel(
                 val temp = markdownBlocks[action.toIndex]
                 markdownBlocks[action.toIndex] = markdownBlocks[action.fromIndex]
                 markdownBlocks[action.fromIndex] = temp
+            }
+
+            is EditorAction.SyncNotes -> {
+                syncNotes()
             }
         }
     }
