@@ -12,6 +12,7 @@ import dev.jotalac.feature.editor_sidebar.ui.EditorSidebarViewModel
 import dev.jotalac.feature.notebooks_management.data.NotebookRepositoryImpl
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookViewModel
+import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookViewModel
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -54,6 +55,7 @@ val featureModules = module {
 
     viewModelOf(::EditorViewModel)
     viewModelOf(::CreateNotebookViewModel)
+    viewModelOf(::EditNotebookViewModel)
     viewModelOf(::NotebookListViewModel)
     viewModelOf(::EditorSidebarViewModel)
 }

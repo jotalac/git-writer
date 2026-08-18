@@ -49,12 +49,48 @@ class CreateNotebookViewModel(
 
     fun onEvent(event: CreateNotebookEvent) {
         when (event) {
-            is CreateNotebookEvent.TabSelected -> _uiState.update { it.copy(selectedTabIndex = event.index) }
-            is CreateNotebookEvent.NotebookNameChanged -> _uiState.update { it.copy(notebookName = event.name) }
-            is CreateNotebookEvent.RemoteUrlChanged -> _uiState.update { it.copy(remoteUrl = event.url) }
-            is CreateNotebookEvent.UsernameChanged -> _uiState.update { it.copy(username = event.username) }
-            is CreateNotebookEvent.PasswordChanged -> _uiState.update { it.copy(password = event.password) }
-            is CreateNotebookEvent.DirectorySelected -> _uiState.update { it.copy(selectedDirectory = event.directory) }
+            is CreateNotebookEvent.TabSelected -> _uiState.update {
+                it.copy(
+                    selectedTabIndex = event.index,
+                    errorMessage = null
+                )
+            }
+
+            is CreateNotebookEvent.NotebookNameChanged -> _uiState.update {
+                it.copy(
+                    notebookName = event.name,
+                    errorMessage = null
+                )
+            }
+
+            is CreateNotebookEvent.RemoteUrlChanged -> _uiState.update {
+                it.copy(
+                    remoteUrl = event.url,
+                    errorMessage = null
+                )
+            }
+
+            is CreateNotebookEvent.UsernameChanged -> _uiState.update {
+                it.copy(
+                    username = event.username,
+                    errorMessage = null
+                )
+            }
+
+            is CreateNotebookEvent.PasswordChanged -> _uiState.update {
+                it.copy(
+                    password = event.password,
+                    errorMessage = null
+                )
+            }
+
+            is CreateNotebookEvent.DirectorySelected -> _uiState.update {
+                it.copy(
+                    selectedDirectory = event.directory,
+                    errorMessage = null
+                )
+            }
+
             is CreateNotebookEvent.CreateLocalNotebook -> createLocalNotebook(event.path, event.onSuccess)
             is CreateNotebookEvent.CloneRemoteNotebook -> cloneRemoteNotebook(event.path, event.onSuccess)
             is CreateNotebookEvent.AddErrorMessage -> _uiState.update { it.copy(errorMessage = event.message) }

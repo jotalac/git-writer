@@ -22,6 +22,7 @@ fun ActiveNotebookMenu(
     onCollapseToggled: () -> Unit,
     onAddNoteClick: () -> Unit,
     onAddFolderClick: () -> Unit,
+    openEditNotebookDialog: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -46,7 +47,8 @@ fun ActiveNotebookMenu(
             notebookName == null,
             onCollapseToggled,
             onAddNoteClick,
-            onAddFolderClick
+            onAddFolderClick,
+            openEditNotebookDialog,
         )
     }
 }
@@ -77,34 +79,51 @@ private fun ActiveNotebookActions(
     onCollapseToggled: () -> Unit,
     onAddNoteClick: () -> Unit,
     onAddFolderClick: () -> Unit,
+    openEditNotebbokDialog: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().offset(x = (-4).dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            SidebarButtonWithTooltip(
+                onClick = onAddNoteClick,
+                icon = Res.drawable.note_add,
+                contentDescription = stringResource(Res.string.create_new_file),
+                tint = MaterialTheme.colorScheme.secondary,
+                enabled = !isNotebookNull
+            )
+            SidebarButtonWithTooltip(
+                onClick = onAddFolderClick,
+                icon = Res.drawable.folder_create,
+                contentDescription = stringResource(Res.string.create_new_folder),
+                tint = MaterialTheme.colorScheme.secondary,
+                enabled = !isNotebookNull
+            )
+            SidebarButtonWithTooltip(
+                onClick = onCollapseToggled,
+                icon = if (anyFolderExpanded) Res.drawable.collapse_all else Res.drawable.expand_all,
+                contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(
+                    Res.string.expand_folders
+                ),
+                tint = MaterialTheme.colorScheme.secondary,
+                enabled = !isNotebookNull
+            )
+
+        }
+
         SidebarButtonWithTooltip(
-            onClick = onAddNoteClick,
-            icon = Res.drawable.note_add,
-            contentDescription = stringResource(Res.string.create_new_file),
+            onClick = openEditNotebbokDialog,
+            icon = Res.drawable.edit_square,
+            contentDescription = stringResource(Res.string.edit_active_notebook),
             tint = MaterialTheme.colorScheme.secondary,
             enabled = !isNotebookNull
         )
-        SidebarButtonWithTooltip(
-            onClick = onAddFolderClick,
-            icon = Res.drawable.folder_create,
-            contentDescription = stringResource(Res.string.create_new_folder),
-            tint = MaterialTheme.colorScheme.secondary,
-            enabled = !isNotebookNull
-        )
-        SidebarButtonWithTooltip(
-            onClick = onCollapseToggled,
-            icon = if (anyFolderExpanded) Res.drawable.collapse_all else Res.drawable.expand_all,
-            contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(
-                Res.string.expand_folders
-            ),
-            tint = MaterialTheme.colorScheme.secondary,
-            enabled = !isNotebookNull
-        )
+
+
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.components.AlertDialogTitleWithIcon
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.feature.notebooks_management.domain.Notebook
@@ -38,7 +39,12 @@ fun NotebookListDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.open_notebook_title)) },
+        title = {
+            AlertDialogTitleWithIcon(
+                iconResource = Res.drawable.format_list_bulleted,
+                text = Res.string.open_notebook_title,
+            )
+        },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),

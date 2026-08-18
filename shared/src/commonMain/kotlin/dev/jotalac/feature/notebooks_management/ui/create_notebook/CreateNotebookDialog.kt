@@ -9,9 +9,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.components.AlertDialogTitleWithIcon
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.toSafeFileName
+import dev.jotalac.feature.notebooks_management.ui.validateRemoteUrl
 import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
@@ -55,17 +57,14 @@ fun CreateNotebookDialog(
     }
 
     fun validateCloneForm(): String? {
-        if (state.notebookName.isBlank() || state.remoteUrl.isBlank() ||
+        return if (state.notebookName.isBlank() || state.remoteUrl.isBlank() ||
             actualDirectory.isBlank() || state.username.isBlank() ||
             state.password.isBlank()
         ) {
-            return "Please fill in all fields"
-        } else if (!state.remoteUrl.startsWith("http://") && !state.remoteUrl.startsWith("https://")) {
-            return "Remote URL must be over HTTP"
-        } else if (!state.remoteUrl.endsWith(".git")) {
-            return "Remote URL must end with .git"
+            "Please fill in all fields"
+        } else {
+            validateRemoteUrl(state.remoteUrl)
         }
-        return null
     }
 
 
@@ -73,7 +72,12 @@ fun CreateNotebookDialog(
 
     AlertDialog(
         onDismissRequest = { if (!state.isLoading) onDismiss() },
-        title = { Text(stringResource(Res.string.create_notebook_title)) },
+        title = {
+            AlertDialogTitleWithIcon(
+                iconResource = Res.drawable.plus,
+                text = Res.string.create_notebook_title,
+            )
+        },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),

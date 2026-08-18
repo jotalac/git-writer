@@ -13,6 +13,7 @@ import dev.jotalac.feature.editor_sidebar.ui.components.ActiveNotebookMenu
 import dev.jotalac.feature.editor_sidebar.ui.components.SidebarGlobalActions
 import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.FileTree
 import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookDialog
+import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -26,6 +27,7 @@ fun SidebarContent(
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showListDialog by remember { mutableStateOf(false) }
+    var showEditNotebookDialog by remember { mutableStateOf(false) }
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -54,6 +56,13 @@ fun SidebarContent(
         )
     }
 
+    if (showEditNotebookDialog && state.activeNotebook != null) {
+        EditNotebookDialog(
+            notebook = state.activeNotebook!!,
+            onDismiss = { showEditNotebookDialog = false }
+        )
+    }
+
 
     Column(
         modifier = modifier
@@ -73,6 +82,7 @@ fun SidebarContent(
             anyFolderExpanded = state.expandedFolders.isNotEmpty(),
             onAddNoteClick = { viewModel.onAction(SidebarAction.AddNote()) },
             onAddFolderClick = { viewModel.onAction(SidebarAction.AddFolder()) },
+            openEditNotebookDialog = { showEditNotebookDialog = true }
         )
 
         Spacer(modifier = Modifier.height(12.dp))

@@ -2,6 +2,7 @@ package dev.jotalac.feature.notebooks_management.data
 
 import dev.jotalac.core.database.ActiveNotebookManager
 import dev.jotalac.core.utils.deleteRecursively
+import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -9,6 +10,7 @@ import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
 
 class NotebookRepositoryImpl(
     private val notebookDao: NotebookDao,
@@ -127,6 +129,82 @@ class NotebookRepositoryImpl(
         }
     }
 
+    override suspend fun updateNotebook(
+        id: Long,
+        name: String,
+        remoteUrl: String?,
+        remoteUsername: String?,
+        remotePassword: String?,
+    ): Result<Unit> {
+        return runCatching {
+            val existing = notebookDao.getNotebookById(id)
+                ?: throw NullPointerException("Notebook with id $id not found")
+
+            //validate the name
+            val newDirectoryPath = validateUpdateNotebookName(name, existing)
+
+            //validate the remote credentials - if changed
+            if (!remoteUrl.isNullOrBlank() && !remotePassword.isNullOrBlank()
+                && (remoteUrl != existing.remoteUrl || remoteUsername != existing.remoteUsername || remotePassword != existing.remotePassword)
+            ) {
+                validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+            }
+
+            val updated = existing.copy(
+                name = name,
+                directoryPath = newDirectoryPath,
+                remoteUrl = remoteUrl,
+                remoteUsername = remoteUsername,
+                remotePassword = remotePassword,
+            )
+            notebookDao.upsertNotebook(updated)
+        }
+    }
+
+    private suspend fun validateUpdateNotebookName(name: String, existingNotebook: NotebookEntity): String {
+        // validate name uniqueness (excluding this notebook)
+        if (!isNotebookNameUnique(name, excludeId = existingNotebook.id)) {
+            throw IllegalStateException("A notebook with this name already exists")
+        }
+
+        var newDirectoryPath = existingNotebook.directoryPath
+
+        // if the name changed, rename the folder
+        if (existingNotebook.name != name) {
+            val safeFolderName = name.toSafeFileName()
+            val parentPath = Path(existingNotebook.directoryPath).parent?.toString()
+                ?: throw IllegalStateException("Cannot determine parent directory")
+
+            val newPath = "$parentPath/$safeFolderName"
+
+            // check if target directory already exists (different from current)
+            if (newPath != existingNotebook.directoryPath && directoryExists(newPath)) {
+                throw IllegalStateException("A folder with this name already exists")
+            }
+
+            // rename the directory
+            if (newPath != existingNotebook.directoryPath) {
+                val source = Path(existingNotebook.directoryPath)
+                val destination = Path(newPath)
+                SystemFileSystem.atomicMove(source, destination)
+                newDirectoryPath = newPath
+            }
+        }
+
+        return newDirectoryPath
+    }
+
+    private suspend fun validateUpdateNotebookRemote(
+        remoteUrl: String,
+        remoteUsername: String?,
+        remotePassword: String
+    ) {
+        val validationResult = gitSyncRepository.validateCredentials(remoteUrl, remotePassword, remoteUsername)
+        if (validationResult.isFailure) {
+            throw IllegalStateException("Invalid remote credentials")
+        }
+    }
+
     override suspend fun activateNotebook(id: Long): Result<Unit> {
         return runCatching {
             val notebook = notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook not found")
@@ -193,6 +271,14 @@ class NotebookRepositoryImpl(
 
     override val activeNotePath: Flow<String?> = activeNotebookManager.activeNotebookStateFlow.map {
         it?.notePath
+    }
+
+    override suspend fun isNotebookNameUnique(name: String, excludeId: Long?): Boolean {
+        return if (excludeId != null) {
+            notebookDao.getNotebookByNameExcludingId(name, excludeId) == null
+        } else {
+            notebookDao.getNotebookByName(name) == null
+        }
     }
 
 }
