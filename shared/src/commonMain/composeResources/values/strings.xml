@@ -7,7 +7,7 @@
     <string name="clone_notebook">Clone (git)</string>
     <string name="no_saved_notebooks_msg">No notebooks available</string>
     <string name="notebook_name_placeholder">Notebook name</string>
-    <string name="git_remote_example">git@github.com:user/notes.git</string>
+    <string name="git_remote_example">https://github.com/user/repo.git</string>
     <string name="create_notebook_button">Create</string>
     <string name="clone_notebook_button">Clone</string>
     <string name="username_placeholder">Username</string>

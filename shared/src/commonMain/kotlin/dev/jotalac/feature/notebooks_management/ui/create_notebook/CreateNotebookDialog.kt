@@ -54,11 +54,25 @@ fun CreateNotebookDialog(
         }
     }
 
+    fun validateCloneForm(): String? {
+        if (state.notebookName.isBlank() || state.remoteUrl.isBlank() ||
+            actualDirectory.isBlank() || state.username.isBlank() ||
+            state.password.isBlank()
+        ) {
+            return "Please fill in all fields"
+        } else if (!state.remoteUrl.startsWith("http://") && !state.remoteUrl.startsWith("https://")) {
+            return "Remote URL must be over HTTP"
+        } else if (!state.remoteUrl.endsWith(".git")) {
+            return "Remote URL must end with .git"
+        }
+        return null
+    }
+
 
 
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!state.isLoading) onDismiss() },
         title = { Text(stringResource(Res.string.create_notebook_title)) },
         text = {
             Column(
@@ -112,7 +126,7 @@ fun CreateNotebookDialog(
                             onBrowseClick = { browseForDirectory() }
                         )
 
-                        1 -> RemoteNotebookForm(
+                        1 -> CloneNotebookForm(
                             name = state.notebookName,
                             onNameChange = {
                                 viewModel.onEvent(
@@ -155,7 +169,7 @@ fun CreateNotebookDialog(
                     Text(
                         text = state.errorMessage!!,
                         color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
@@ -171,30 +185,54 @@ fun CreateNotebookDialog(
                                 onDismiss()
                             })
                     } else {
-                        viewModel.onEvent(
-                            CreateNotebookViewModel.CreateNotebookEvent.CloneRemoteNotebook(
-                                actualDirectory
-                            ) {
-
-                                onDismiss()
-                            })
+                        val validationResult = validateCloneForm()
+                        if (validationResult != null) {
+                            viewModel.onEvent(
+                                CreateNotebookViewModel.CreateNotebookEvent.AddErrorMessage(
+                                    validationResult
+                                )
+                            )
+                        } else {
+                            viewModel.onEvent(
+                                CreateNotebookViewModel.CreateNotebookEvent.CloneRemoteNotebook(
+                                    actualDirectory
+                                ) {
+                                    onDismiss()
+                                })
+                        }
                     }
                 },
                 enabled = if (state.selectedTabIndex == 0) {
-                    state.notebookName.isNotBlank() && actualDirectory.isNotBlank()
+                    state.notebookName.isNotBlank() && actualDirectory.isNotBlank() && !state.isLoading
                 } else {
-                    state.notebookName.isNotBlank() && state.remoteUrl.isNotBlank() && actualDirectory.isNotBlank() && state.username.isNotBlank() && state.password.isNotBlank()
+                    state.notebookName.isNotBlank() && state.remoteUrl.isNotBlank() &&
+                            actualDirectory.isNotBlank() && state.username.isNotBlank() &&
+                            state.password.isNotBlank() && !state.isLoading
                 }
             ) {
-                Text(
-                    if (state.selectedTabIndex == 0) stringResource(Res.string.create_notebook_title) else stringResource(
-                        Res.string.clone_notebook
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Text(
+                        if (state.selectedTabIndex == 0) stringResource(Res.string.create_notebook_title) else stringResource(
+                            Res.string.clone_notebook
+                        )
                     )
-                )
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !state.isLoading
+            ) {
                 Text(stringResource(Res.string.cancel_button))
             }
         }
@@ -234,15 +272,17 @@ private fun LocalNotebookForm(
             modifier = Modifier.fillMaxWidth()
         )
 
-        DirectoryPickerRow(
-            directory = directory,
-            onBrowseClick = onBrowseClick
-        )
+        if (isDesktopPlatform) {
+            DirectoryPickerRow(
+                directory = directory,
+                onBrowseClick = onBrowseClick
+            )
+        }
     }
 }
 
 @Composable
-private fun RemoteNotebookForm(
+private fun CloneNotebookForm(
     name: String,
     onNameChange: (String) -> Unit,
     url: String,

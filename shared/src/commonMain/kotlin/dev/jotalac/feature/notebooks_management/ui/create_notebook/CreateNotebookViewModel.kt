@@ -23,7 +23,8 @@ data class CreateNotebookState(
     val password: String = "",
     val defaultBasePath: String = "",
     val selectedDirectory: String? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isLoading: Boolean = false,
 )
 
 class CreateNotebookViewModel(
@@ -56,7 +57,7 @@ class CreateNotebookViewModel(
             is CreateNotebookEvent.DirectorySelected -> _uiState.update { it.copy(selectedDirectory = event.directory) }
             is CreateNotebookEvent.CreateLocalNotebook -> createLocalNotebook(event.path, event.onSuccess)
             is CreateNotebookEvent.CloneRemoteNotebook -> cloneRemoteNotebook(event.path, event.onSuccess)
-
+            is CreateNotebookEvent.AddErrorMessage -> _uiState.update { it.copy(errorMessage = event.message) }
         }
     }
 
@@ -68,6 +69,7 @@ class CreateNotebookViewModel(
     }
 
     private fun createLocalNotebook(actualDirectory: String, onSuccess: () -> Unit) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         val currentState = _uiState.value
 
 
@@ -82,6 +84,7 @@ class CreateNotebookViewModel(
     }
 
     private fun cloneRemoteNotebook(actualDirectory: String, onSuccess: () -> Unit) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         val currentState = _uiState.value
 
         viewModelScope.launch {
@@ -109,7 +112,8 @@ class CreateNotebookViewModel(
                     remoteUrl = "",
                     username = "",
                     password = "",
-                    errorMessage = null
+                    errorMessage = null,
+                    isLoading = false,
                 )
             }
 
@@ -118,7 +122,8 @@ class CreateNotebookViewModel(
         }.onFailure { error ->
             _uiState.update {
                 it.copy(
-                    errorMessage = error.message ?: "Failed to create notebook"
+                    errorMessage = error.message ?: "Failed to create notebook",
+                    isLoading = false,
                 )
             }
         }
@@ -133,5 +138,6 @@ class CreateNotebookViewModel(
         data class DirectorySelected(val directory: String) : CreateNotebookEvent
         data class CreateLocalNotebook(val path: String, val onSuccess: () -> Unit) : CreateNotebookEvent
         data class CloneRemoteNotebook(val path: String, val onSuccess: () -> Unit) : CreateNotebookEvent
+        data class AddErrorMessage(val message: String) : CreateNotebookEvent
     }
 }
