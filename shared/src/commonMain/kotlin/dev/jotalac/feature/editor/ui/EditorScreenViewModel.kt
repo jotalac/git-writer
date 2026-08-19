@@ -10,7 +10,7 @@ import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
-import dev.jotalac.feature.git_sync.domain.SyncStatus
+import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
@@ -29,6 +29,7 @@ data class EditorScreenState(
     val isImage: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val gitSyncStatus: GitSyncStatus = GitSyncStatus.UpToDate,
     val conflictedFiles: List<String> = emptyList(),
 )
 
@@ -66,7 +67,12 @@ class EditorViewModel(
                 }
             }
 
+        }
 
+        viewModelScope.launch {
+            gitSyncRepository.gitSyncStatus.collect { status ->
+                _uiState.update { it.copy(gitSyncStatus = status) }
+            }
         }
 
         // handle file saving
@@ -137,6 +143,8 @@ class EditorViewModel(
             val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
             if (notebook.remoteUrl.isNullOrBlank() || notebook.remotePassword.isNullOrBlank()) return@launch
 
+            _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.Syncing) }
+
             saveNotesContent(markdownBlocks)
 
             val result = gitSyncRepository.syncNotes(
@@ -145,21 +153,23 @@ class EditorViewModel(
                 notebook.remoteUsername
             )
 
-            result.onSuccess {
+            result.onSuccess { syncResult ->
                 // check if we need to resolve conflicts
-                if (it is SyncStatus.Conflict) {
+                if (syncResult is GitSyncStatus.Conflict) {
                     _uiState.update { state ->
-                        state.copy(conflictedFiles = it.files.toList())
+                        state.copy(conflictedFiles = syncResult.files.toList())
                     }
                 } else {
                     val activePath = _uiState.value.activeNotePath
                     if (activePath != null) {
                         loadFileContent(activePath)
                     }
+                    _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.UpToDate) }
                     snackbarManager.showMessage("Notes synced successfully")
                 }
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Error syncing notes")
+            }.onFailure { errorResult ->
+                _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
+                snackbarManager.showMessage(errorResult.message ?: "Error syncing notes")
             }
         }
     }
@@ -208,7 +218,7 @@ class EditorViewModel(
             result.onSuccess {
                 _uiState.update { it.copy(conflictedFiles = emptyList()) }
 
-                // reload the opended note
+                // reload the opened note
                 val currentActive = _uiState.value.activeNotePath
                 if (currentActive != null) {
                     loadFileContent(currentActive)

@@ -9,7 +9,7 @@ import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
-import dev.jotalac.feature.git_sync.domain.SyncStatus
+import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import kotlinx.coroutines.*
@@ -59,8 +59,8 @@ class EditorSidebarViewModel(
         }
 
         viewModelScope.launch {
-            gitSyncRepository.syncStatus.collect { status ->
-                if (status is SyncStatus.UpToDate) {
+            gitSyncRepository.gitSyncStatus.collect { status ->
+                if (status is GitSyncStatus.UpToDate) {
                     refreshFileTree()
                 }
             }
@@ -107,11 +107,12 @@ class EditorSidebarViewModel(
         }
         val fileExtension = Path(path).name.substringAfterLast('.', "")
         val node = findNode(path)
-        val finalName = if (node is FileNode.File && fileExtension.isNotEmpty() && !newName.endsWith(".$fileExtension")) {
-            "$newName.$fileExtension"
-        } else {
-            newName
-        }
+        val finalName =
+            if (node is FileNode.File && fileExtension.isNotEmpty() && !newName.endsWith(".$fileExtension")) {
+                "$newName.$fileExtension"
+            } else {
+                newName
+            }
         val safeName = finalName.toSafeFileName()
 
         // check if the original and final names are the same

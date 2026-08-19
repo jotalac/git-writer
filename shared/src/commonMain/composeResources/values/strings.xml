@@ -70,4 +70,9 @@
     <string name="git_conflict_dialog_description">Conflicting changes detected. Choose which version to keep for each
         file or apply to all files.
     </string>
+    <string name="sync_status_up_to_date">Notes are up to date. Tap to sync.</string>
+    <string name="sync_status_syncing">Syncing notes...</string>
+    <string name="sync_status_failed">Sync failed. Tap to retry.</string>
+    <string name="sync_status_conflict">Merge conflicts detected. Tap to resolve.</string>
+    <string name="sync_status_not_configured">Git sync is not configured.</string>
 </resources>

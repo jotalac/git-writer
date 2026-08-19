@@ -2,7 +2,7 @@ package dev.jotalac.feature.git_sync.data
 
 import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
-import dev.jotalac.feature.git_sync.domain.SyncStatus
+import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -92,8 +92,10 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         tokenOrPassword: String,
         username: String?,
         commitMessage: String
-    ): Result<SyncStatus> = withContext(Dispatchers.IO) {
+    ): Result<GitSyncStatus> = withContext(Dispatchers.IO) {
+        _syncStatus.tryEmit(GitSyncStatus.Syncing)
         suspendRunCatching {
+
             //check if the notebook directory is a git repo
             val localRepoDir = getLocalRepoDir(currentNotebookPath)
 
@@ -112,7 +114,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                     // return the conflicted files if the failure was due to the file conflict
                     if (mergeResult.mergeStatus == MergeResult.MergeStatus.CONFLICTING) {
                         val conflictingFiles = mergeResult.conflicts?.keys ?: emptySet()
-                        val conflictStatus = SyncStatus.Conflict(conflictingFiles)
+                        val conflictStatus = GitSyncStatus.Conflict(conflictingFiles)
                         _syncStatus.tryEmit(conflictStatus)
                         return@suspendRunCatching conflictStatus
                     } else {
@@ -124,7 +126,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 //push everything
                 git.push().setCredentialsProvider(credentials).call()
 
-                val status = SyncStatus.UpToDate
+                val status = GitSyncStatus.UpToDate
                 _syncStatus.tryEmit(status)
                 status
             }
@@ -160,7 +162,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                     git.commit().setMessage("Resolved conflict").call()
                 }
 
-                _syncStatus.tryEmit(SyncStatus.UpToDate)
+                _syncStatus.tryEmit(GitSyncStatus.UpToDate)
                 Unit
             }
         }
@@ -187,7 +189,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                     checkoutCommand.call()
 
                     stageAndCommitAll(git, "Resolved all conflicts - keep ${stage.name.lowercase()}")
-                    _syncStatus.tryEmit(SyncStatus.UpToDate)
+                    _syncStatus.tryEmit(GitSyncStatus.UpToDate)
                     Unit
                 }
             }
@@ -206,12 +208,12 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 git.push().setCredentialsProvider(credentials).call()
             }
 
-            _syncStatus.tryEmit(SyncStatus.UpToDate)
+            _syncStatus.tryEmit(GitSyncStatus.UpToDate)
             Unit
         }
     }
 
-    private val _syncStatus = MutableSharedFlow<SyncStatus>(extraBufferCapacity = 1)
-    override val syncStatus: Flow<SyncStatus> = _syncStatus.asSharedFlow()
+    private val _syncStatus = MutableSharedFlow<GitSyncStatus>(extraBufferCapacity = 1)
+    override val gitSyncStatus: Flow<GitSyncStatus> = _syncStatus.asSharedFlow()
 
 }

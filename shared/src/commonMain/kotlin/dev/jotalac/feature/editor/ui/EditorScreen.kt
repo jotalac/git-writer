@@ -8,8 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,10 +20,15 @@ import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
+import dev.jotalac.feature.editor.ui.components.SyncFloatingButton
 import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
 import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
+import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
-import git_writer.shared.generated.resources.*
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.closed_sidebar
+import git_writer.shared.generated.resources.opened_sidebar
+import git_writer.shared.generated.resources.x_icon
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -90,7 +93,8 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
                 isImage = state.isImage,
                 isLoading = state.isLoading,
                 onNoteClose = viewModel::closeActiveNote,
-                onAction = viewModel::onAction
+                onAction = viewModel::onAction,
+                gitSyncStatus = state.gitSyncStatus
             )
         } else {
             ExpandedEditorLayout(
@@ -100,7 +104,8 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
                 isImage = state.isImage,
                 isLoading = state.isLoading,
                 onNoteClose = viewModel::closeActiveNote,
-                onAction = viewModel::onAction
+                onAction = viewModel::onAction,
+                gitSyncStatus = state.gitSyncStatus
             )
         }
     }
@@ -114,7 +119,8 @@ private fun CompactEditorLayout(
     isImage: Boolean,
     isLoading: Boolean,
     onNoteClose: () -> Unit,
-    onAction: (EditorAction) -> Unit
+    onAction: (EditorAction) -> Unit,
+    gitSyncStatus: GitSyncStatus,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -144,6 +150,7 @@ private fun CompactEditorLayout(
             isLoading = isLoading,
             markdownBlocks = markdownBlocks,
             onAction = onAction,
+            gitSyncStatus = gitSyncStatus,
         )
     }
 }
@@ -156,7 +163,8 @@ private fun ExpandedEditorLayout(
     isImage: Boolean,
     isLoading: Boolean,
     onNoteClose: () -> Unit,
-    onAction: (EditorAction) -> Unit
+    onAction: (EditorAction) -> Unit,
+    gitSyncStatus: GitSyncStatus,
 ) {
     var isSidebarVisible by remember { mutableStateOf(true) }
 
@@ -176,6 +184,7 @@ private fun ExpandedEditorLayout(
             isLoading = isLoading,
             markdownBlocks = markdownBlocks,
             onAction = onAction,
+            gitSyncStatus = gitSyncStatus,
         )
     }
 }
@@ -193,6 +202,7 @@ fun MainEditorScaffold(
     isLoading: Boolean,
     markdownBlocks: List<String>,
     onAction: (EditorAction) -> Unit,
+    gitSyncStatus: GitSyncStatus
 ) {
 
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
@@ -252,22 +262,10 @@ fun MainEditorScaffold(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            SyncFloatingButton(
                 onClick = { onAction(EditorAction.SyncNotes) },
-                modifier = Modifier.dropShadow(
-                    shape = CircleShape,
-                    shadow = Shadow(
-                        radius = 10.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                        spread = 5.dp
-                    )
-                )
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.sync_dot),
-                    contentDescription = "Sync icon",
-                )
-            }
+                gitSyncStatus = gitSyncStatus
+            )
         }
     ) { innerPadding ->
         Surface(

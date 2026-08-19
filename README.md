@@ -2,15 +2,16 @@
 
 # TODO
 
-> hight priority
+> high priority
 
 - when editing the active notebook remote url - need to actually set the upstream on the git repo
-- refresh the file tree on sync, and reopen the current note
 - automatically open note when it is created
+- show the state of the sync - if it is syncing or up to date, or it needs to sync
+- handle merge conflict abort - abort whole sync
 
 > medium priority
 
-- right click on filetree backgrond should also bring up the context menu with create file and create folder options
+- right click on filetree background should also bring up the context menu with create file and create folder options
 
 ### TODO - not important (extra features)
 

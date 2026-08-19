@@ -16,7 +16,7 @@ interface GitSyncRepository {
         tokenOrPassword: String,
         username: String? = null,
         commitMessage: String = "sync notes"
-    ): Result<SyncStatus>
+    ): Result<GitSyncStatus>
 
     suspend fun resolveSingleConflict(
         currentNotebookPath: String,
@@ -35,13 +35,5 @@ interface GitSyncRepository {
         username: String? = null
     ): Result<Unit>
 
-    val syncStatus: Flow<SyncStatus>
-}
-
-sealed interface SyncStatus {
-    data object UpToDate : SyncStatus
-    data class Conflict(val files: Set<String>) : SyncStatus
-//    data object PulledChanges : SyncStatus
-//    data object PushedChanges : SyncStatus
-//    data object PulledAndPushedChanges : SyncStatus
+    val gitSyncStatus: Flow<GitSyncStatus>
 }
