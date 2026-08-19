@@ -137,6 +137,8 @@ class EditorViewModel(
             val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
             if (notebook.remoteUrl.isNullOrBlank() || notebook.remotePassword.isNullOrBlank()) return@launch
 
+            saveNotesContent(markdownBlocks)
+
             val result = gitSyncRepository.syncNotes(
                 notebook.directoryPath,
                 notebook.remotePassword,
@@ -150,6 +152,10 @@ class EditorViewModel(
                         state.copy(conflictedFiles = it.files.toList())
                     }
                 } else {
+                    val activePath = _uiState.value.activeNotePath
+                    if (activePath != null) {
+                        loadFileContent(activePath)
+                    }
                     snackbarManager.showMessage("Notes synced successfully")
                 }
             }.onFailure {
@@ -170,17 +176,20 @@ class EditorViewModel(
                 val remaining = _uiState.value.conflictedFiles.filter { it != filePath }
                 _uiState.update { it.copy(conflictedFiles = remaining) }
 
-//                val currentActive = _uiState.value.activeNotePath
-//                if (currentActive != null && (currentActive.endsWith(filePath) || _uiState.value.activeFilename == filePath)) {
-//                    loadFileContent(currentActive)
-//                }
+                // if there was conflict resolved on the opened note - refresh the note
+                val activeNotePath = _uiState.value.activeNotePath
+                if (activeNotePath != null && (activeNotePath.endsWith(filePath) || _uiState.value.activeFilename == filePath)) {
+                    loadFileContent(activeNotePath)
+                }
 
-                if (remaining.isEmpty() && !notebook.remotePassword.isNullOrBlank()) {
-                    gitSyncRepository.pushChanges(
-                        currentNotebookPath = notebook.directoryPath,
-                        tokenOrPassword = notebook.remotePassword,
-                        username = notebook.remoteUsername
-                    )
+                if (remaining.isEmpty()) {
+                    if (!notebook.remotePassword.isNullOrBlank()) {
+                        gitSyncRepository.pushChanges(
+                            currentNotebookPath = notebook.directoryPath,
+                            tokenOrPassword = notebook.remotePassword,
+                            username = notebook.remoteUsername
+                        )
+                    }
                     snackbarManager.showMessage("All conflicts resolved and synced")
                 }
             }.onFailure {
@@ -199,10 +208,11 @@ class EditorViewModel(
             result.onSuccess {
                 _uiState.update { it.copy(conflictedFiles = emptyList()) }
 
-//                val currentActive = _uiState.value.activeNotePath
-//                if (currentActive != null) {
-//                    loadFileContent(currentActive)
-//                }
+                // reload the opended note
+                val currentActive = _uiState.value.activeNotePath
+                if (currentActive != null) {
+                    loadFileContent(currentActive)
+                }
 
                 if (!notebook.remotePassword.isNullOrBlank()) {
                     gitSyncRepository.pushChanges(

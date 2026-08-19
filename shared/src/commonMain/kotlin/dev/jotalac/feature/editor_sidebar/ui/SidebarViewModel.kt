@@ -8,6 +8,8 @@ import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
+import dev.jotalac.feature.git_sync.domain.GitSyncRepository
+import dev.jotalac.feature.git_sync.domain.SyncStatus
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import kotlinx.coroutines.*
@@ -26,6 +28,7 @@ class EditorSidebarViewModel(
     private val notebookRepository: NotebookRepository,
     private val editorRepository: EditorRepository,
     private val snackbarManager: SnackbarManager,
+    private val gitSyncRepository: GitSyncRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SidebarState())
     val uiState: StateFlow<SidebarState> = _uiState.asStateFlow()
@@ -53,6 +56,14 @@ class EditorSidebarViewModel(
                         }
                     }
                 }
+        }
+
+        viewModelScope.launch {
+            gitSyncRepository.syncStatus.collect { status ->
+                if (status is SyncStatus.UpToDate) {
+                    refreshFileTree()
+                }
+            }
         }
     }
 
