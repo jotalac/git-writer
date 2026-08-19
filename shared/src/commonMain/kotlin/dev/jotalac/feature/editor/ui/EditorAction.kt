@@ -25,4 +25,7 @@ sealed interface EditorAction {
     ) : EditorAction
 
     data object SyncNotes : EditorAction
+    data class ResolveSingleConflict(val filePath: String, val keepLocalChanges: Boolean) : EditorAction
+    data class ResolveAllConflicts(val keepLocalChanges: Boolean) : EditorAction
+    data object AbortConflictResolve : EditorAction
 }

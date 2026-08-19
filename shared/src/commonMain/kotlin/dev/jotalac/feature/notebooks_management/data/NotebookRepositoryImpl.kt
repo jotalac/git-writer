@@ -2,6 +2,7 @@ package dev.jotalac.feature.notebooks_management.data
 
 import dev.jotalac.core.database.ActiveNotebookManager
 import dev.jotalac.core.utils.deleteRecursively
+import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
@@ -32,7 +33,7 @@ class NotebookRepositoryImpl(
     override suspend fun createNotebook(
         name: String, directoryPath: String,
     ): Result<Notebook> {
-        return runCatching {
+        return suspendRunCatching {
             // first create the directory
             if (directoryExists(directoryPath)) {
                 throw IllegalStateException("Directory already exists")
@@ -67,7 +68,7 @@ class NotebookRepositoryImpl(
         remotePasswordOrToken: String,
         remoteUsername: String?,
     ): Result<Notebook> {
-        return runCatching {
+        return suspendRunCatching {
             // first create the directory
             if (directoryExists(directoryPath)) {
                 throw IllegalStateException("Directory already exists")
@@ -112,7 +113,7 @@ class NotebookRepositoryImpl(
     }
 
     override suspend fun deleteNotebook(id: Long): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             val notebook =
                 notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook with id $id not found")
 
@@ -136,7 +137,7 @@ class NotebookRepositoryImpl(
         remoteUsername: String?,
         remotePassword: String?,
     ): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             val existing = notebookDao.getNotebookById(id)
                 ?: throw NullPointerException("Notebook with id $id not found")
 
@@ -206,7 +207,7 @@ class NotebookRepositoryImpl(
     }
 
     override suspend fun activateNotebook(id: Long): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             val notebook = notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook not found")
 
             // check if the directory with the notebook content still exists
@@ -219,21 +220,21 @@ class NotebookRepositoryImpl(
     }
 
     override suspend fun activateNote(notePath: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             activeNotebookManager.setActiveNotePath(notePath)
         }
     }
 
     override suspend fun closeActiveNote(): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             activeNotebookManager.clearActiveNote()
         }
     }
 
     override suspend fun syncActiveNotePathOnMoved(oldPath: String, newPath: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             val currentActivePath =
-                activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@runCatching
+                activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@suspendRunCatching
             if (currentActivePath == oldPath) {
                 activeNotebookManager.setActiveNotePath(newPath)
             } else if (currentActivePath.startsWith("$oldPath/")) {
@@ -244,9 +245,9 @@ class NotebookRepositoryImpl(
     }
 
     override suspend fun syncActiveNotePathOnDeleted(deletedPath: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             val currentActivePath =
-                activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@runCatching
+                activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@suspendRunCatching
             if (currentActivePath == deletedPath || currentActivePath.startsWith("$deletedPath/")) {
                 activeNotebookManager.clearActiveNote()
             }

@@ -60,4 +60,14 @@
     <string name="edit_notebook_title">Edit notebook</string>
     <string name="save_button">Save</string>
     <string name="remote_credentials_section_title">Remote credentials</string>
+    <string name="git_merge_conflict">Git merge conflict</string>
+    <string name="git_merge_all_local">All local</string>
+    <string name="git_merge_all_remote">All remote</string>
+    <string name="git_merge_local">Local</string>
+    <string name="git_merge_remote">Remote</string>
+    <string name="abort_sync_button">Abort sync</string>
+    <string name="git_conflict_keep_files_label">Keep file version:</string>
+    <string name="git_conflict_dialog_description">Conflicting changes detected. Choose which version to keep for each
+        file or apply to all files.
+    </string>
 </resources>

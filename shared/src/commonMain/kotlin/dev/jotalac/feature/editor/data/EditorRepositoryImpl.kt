@@ -1,6 +1,7 @@
 package dev.jotalac.feature.editor.data
 
 import dev.jotalac.core.utils.deleteRecursively
+import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import io.github.vinceglb.filekit.*
@@ -15,7 +16,7 @@ import kotlinx.io.writeString
 
 class EditorRepositoryImpl : EditorRepository {
     override suspend fun loadMarkdownFileBlocks(file: PlatformFile): Result<List<String>> {
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val fileContent = file.readString()
                 chunkMarkdownIntoBlocks(fileContent)
@@ -24,7 +25,7 @@ class EditorRepositoryImpl : EditorRepository {
     }
 
     override suspend fun saveFile(fileContent: String, filePath: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val filePath = Path(filePath)
 
@@ -38,7 +39,7 @@ class EditorRepositoryImpl : EditorRepository {
     }
 
     override suspend fun addNote(filename: String, filePath: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val newFile = Path(Path(filePath), filename)
 
@@ -54,7 +55,7 @@ class EditorRepositoryImpl : EditorRepository {
     }
 
     override suspend fun addFolder(folderName: String, filePath: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val newFolder = PlatformFile(PlatformFile(filePath), folderName)
 
@@ -75,7 +76,7 @@ class EditorRepositoryImpl : EditorRepository {
             return Result.failure(IllegalStateException("Cannot move a folder into itself or its subfolder."))
         }
 
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val source = Path(sourcePath)
                 val destDir = Path(destinationDirectoryPath)
@@ -91,7 +92,7 @@ class EditorRepositoryImpl : EditorRepository {
     }
 
     override suspend fun renameItem(sourcePath: String, newName: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val source = Path(sourcePath)
                 val destDir = source.parent ?: throw IllegalStateException("Invalid path")
@@ -107,7 +108,7 @@ class EditorRepositoryImpl : EditorRepository {
     }
 
     override suspend fun deleteItem(path: String): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 Path(path).deleteRecursively()
             }
@@ -119,7 +120,7 @@ class EditorRepositoryImpl : EditorRepository {
         imageBytes: ByteArray,
         filename: String
     ): Result<Unit> {
-        return runCatching {
+        return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val imageDir = PlatformFile(PlatformFile(notebookRootPath), "images")
                 if (!imageDir.exists()) {

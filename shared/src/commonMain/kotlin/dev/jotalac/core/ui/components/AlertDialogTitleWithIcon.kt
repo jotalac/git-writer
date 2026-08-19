@@ -2,7 +2,9 @@ package dev.jotalac.core.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +25,7 @@ fun AlertDialogTitleWithIcon(
     ) {
         Icon(
             painter = painterResource(iconResource),
+            tint = MaterialTheme.colorScheme.onSurface,
             contentDescription = stringResource(text)
         )
         Text(stringResource(text))

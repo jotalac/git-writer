@@ -10,6 +10,7 @@ import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
+import dev.jotalac.feature.git_sync.domain.SyncStatus
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
@@ -28,6 +29,7 @@ data class EditorScreenState(
     val isImage: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
+    val conflictedFiles: List<String> = emptyList(),
 )
 
 @OptIn(FlowPreview::class)
@@ -142,11 +144,82 @@ class EditorViewModel(
             )
 
             result.onSuccess {
-                snackbarManager.showMessage("Notes synced successfully")
+                // check if we need to resolve conflicts
+                if (it is SyncStatus.Conflict) {
+                    _uiState.update { state ->
+                        state.copy(conflictedFiles = it.files.toList())
+                    }
+                } else {
+                    snackbarManager.showMessage("Notes synced successfully")
+                }
             }.onFailure {
-                snackbarManager.showMessage("Failed to sync notes: $it")
+                snackbarManager.showMessage(it.message ?: "Error syncing notes")
             }
         }
+    }
+
+    fun resolveSingleConflict(filePath: String, keepLocal: Boolean) {
+        viewModelScope.launch {
+            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
+            val result = gitSyncRepository.resolveSingleConflict(
+                currentNotebookPath = notebook.directoryPath,
+                conflictedFilePath = filePath,
+                keepLocalChanges = keepLocal
+            )
+            result.onSuccess {
+                val remaining = _uiState.value.conflictedFiles.filter { it != filePath }
+                _uiState.update { it.copy(conflictedFiles = remaining) }
+
+//                val currentActive = _uiState.value.activeNotePath
+//                if (currentActive != null && (currentActive.endsWith(filePath) || _uiState.value.activeFilename == filePath)) {
+//                    loadFileContent(currentActive)
+//                }
+
+                if (remaining.isEmpty() && !notebook.remotePassword.isNullOrBlank()) {
+                    gitSyncRepository.pushChanges(
+                        currentNotebookPath = notebook.directoryPath,
+                        tokenOrPassword = notebook.remotePassword,
+                        username = notebook.remoteUsername
+                    )
+                    snackbarManager.showMessage("All conflicts resolved and synced")
+                }
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to resolve conflict")
+            }
+        }
+    }
+
+    fun resolveAllConflicts(keepLocal: Boolean) {
+        viewModelScope.launch {
+            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
+            val result = gitSyncRepository.resolveAllConflicts(
+                currentNotebookPath = notebook.directoryPath,
+                keepLocalChanges = keepLocal
+            )
+            result.onSuccess {
+                _uiState.update { it.copy(conflictedFiles = emptyList()) }
+
+//                val currentActive = _uiState.value.activeNotePath
+//                if (currentActive != null) {
+//                    loadFileContent(currentActive)
+//                }
+
+                if (!notebook.remotePassword.isNullOrBlank()) {
+                    gitSyncRepository.pushChanges(
+                        currentNotebookPath = notebook.directoryPath,
+                        tokenOrPassword = notebook.remotePassword,
+                        username = notebook.remoteUsername
+                    )
+                }
+                snackbarManager.showMessage("All conflicts resolved and synced")
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to resolve conflicts")
+            }
+        }
+    }
+
+    fun dismissConflictDialog() {
+        _uiState.update { it.copy(conflictedFiles = emptyList()) }
     }
 
     fun onAction(action: EditorAction) {
@@ -245,6 +318,18 @@ class EditorViewModel(
 
             is EditorAction.SyncNotes -> {
                 syncNotes()
+            }
+
+            is EditorAction.ResolveSingleConflict -> {
+                resolveSingleConflict(action.filePath, action.keepLocalChanges)
+            }
+
+            is EditorAction.ResolveAllConflicts -> {
+                resolveAllConflicts(action.keepLocalChanges)
+            }
+
+            is EditorAction.AbortConflictResolve -> {
+                dismissConflictDialog()
             }
         }
     }

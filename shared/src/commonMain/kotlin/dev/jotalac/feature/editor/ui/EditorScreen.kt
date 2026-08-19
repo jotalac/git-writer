@@ -24,6 +24,7 @@ import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
 import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
 import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
+import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
 import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
@@ -35,6 +36,27 @@ import org.koin.compose.viewmodel.koinViewModel
 fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val blocks = viewModel.markdownBlocks
+
+    if (state.conflictedFiles.isNotEmpty()) {
+        GitConflictResolveDialog(
+            conflictedFileNames = state.conflictedFiles,
+            onKeepLocal = { fileName ->
+                viewModel.onAction(EditorAction.ResolveSingleConflict(fileName, keepLocalChanges = true))
+            },
+            onKeepRemote = { fileName ->
+                viewModel.onAction(EditorAction.ResolveSingleConflict(fileName, keepLocalChanges = false))
+            },
+            onKeepAllLocal = {
+                viewModel.onAction(EditorAction.ResolveAllConflicts(keepLocalChanges = true))
+            },
+            onKeepAllRemote = {
+                viewModel.onAction(EditorAction.ResolveAllConflicts(keepLocalChanges = false))
+            },
+            onDismiss = {
+                viewModel.onAction(EditorAction.AbortConflictResolve)
+            }
+        )
+    }
 
     BoxWithConstraints(
         modifier = Modifier

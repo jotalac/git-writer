@@ -18,13 +18,30 @@ interface GitSyncRepository {
         commitMessage: String = "sync notes"
     ): Result<SyncStatus>
 
+    suspend fun resolveSingleConflict(
+        currentNotebookPath: String,
+        conflictedFilePath: String,
+        keepLocalChanges: Boolean,
+    ): Result<Unit>
+
+    suspend fun resolveAllConflicts(
+        currentNotebookPath: String,
+        keepLocalChanges: Boolean,
+    ): Result<Unit>
+
+    suspend fun pushChanges(
+        currentNotebookPath: String,
+        tokenOrPassword: String,
+        username: String? = null
+    ): Result<Unit>
+
     val syncStatus: Flow<SyncStatus>
 }
 
 sealed interface SyncStatus {
     data object UpToDate : SyncStatus
-    data object PulledChanges : SyncStatus
-    data object PushedChanges : SyncStatus
-    data object PulledAndPushedChanges : SyncStatus
-    data class Conflict(val files: List<String>) : SyncStatus
+    data class Conflict(val files: Set<String>) : SyncStatus
+//    data object PulledChanges : SyncStatus
+//    data object PushedChanges : SyncStatus
+//    data object PulledAndPushedChanges : SyncStatus
 }

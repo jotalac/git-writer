@@ -1,5 +1,6 @@
 package dev.jotalac.feature.git_sync.data
 
+import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.git_sync.domain.SyncStatus
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +26,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         username: String?
     ): Result<Boolean> =
         withContext(Dispatchers.IO) {
-            runCatching {
+            suspendRunCatching {
                 val credentials = getCredentials(username, tokenOrPassword)
 
                 //ls-remote to check accessibility to the remote without cloning any files
@@ -53,7 +54,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         val destinationDirectory = File(destinationPath)
 
         // clone the repository
-        runCatching {
+        suspendRunCatching {
             Git.cloneRepository()
                 .setURI(repoUrl)
                 .setDirectory(destinationDirectory)
@@ -64,6 +65,26 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         }
     }
 
+    private fun stageAndCommitAll(git: Git, commitMessage: String) {
+        val status = git.status().call()
+        val hasLocalChanges = status.hasUncommittedChanges() || status.untracked.isNotEmpty()
+
+        if (hasLocalChanges) {
+            git.add().addFilepattern(".").call()
+            git.add().addFilepattern(".").setUpdate(true).call() // capture deleted files
+            git.commit().setMessage(commitMessage).call()
+        }
+    }
+
+    private fun getLocalRepoDir(currentNotebookPath: String): File {
+        val localRepoDir = File(currentNotebookPath)
+        if (!localRepoDir.resolve(".git").exists()) {
+            throw IllegalStateException("Notebook directory is not a Git repository.")
+        }
+
+        return File(currentNotebookPath)
+    }
+
 
     override suspend fun syncNotes(
         currentNotebookPath: String,
@@ -71,25 +92,15 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         username: String?,
         commitMessage: String
     ): Result<SyncStatus> = withContext(Dispatchers.IO) {
-        runCatching {
+        suspendRunCatching {
             //check if the notebook directory is a git repo
-            val localRepoDir = File(currentNotebookPath)
-            if (!localRepoDir.resolve(".git").exists()) {
-                error("Notebook directory is not a Git repository.")
-            }
+            val localRepoDir = getLocalRepoDir(currentNotebookPath)
 
             Git.open(localRepoDir).use { git ->
                 val credentials = getCredentials(username, tokenOrPassword)
 
                 // stage and commit local changes
-                val status = git.status().call()
-                val hasLocalChanges = status.hasUncommittedChanges() || status.untracked.isNotEmpty()
-
-                if (hasLocalChanges) {
-                    git.add().addFilepattern(".").call()
-                    git.add().addFilepattern(".").setUpdate(true).call() // capture deleted files
-                    git.commit().setMessage(commitMessage).call()
-                }
+                stageAndCommitAll(git, commitMessage)
 
                 // pull changes from remote
                 val pullResult = git.pull().setCredentialsProvider(credentials).call()
@@ -97,28 +108,14 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 // resolve merge conflicts
                 val mergeResult = pullResult.mergeResult
                 if (mergeResult != null && !mergeResult.mergeStatus.isSuccessful) {
+                    
 
-                    // Check if the failure was specifically due to a file conflict
+                    // return the conflicted files if the failure was due to the file conflict
                     if (mergeResult.mergeStatus == MergeResult.MergeStatus.CONFLICTING) {
-
                         val conflictingFiles = mergeResult.conflicts?.keys ?: emptySet()
-
-                        for (file in conflictingFiles) {
-                            // 1. Force checkout the remote version (THEIRS)
-                            git.checkout()
-                                .setStage(CheckoutCommand.Stage.THEIRS)
-                                .addPath(file)
-                                .call()
-
-                            // 2. Stage the newly checked-out file
-                            git.add().addFilepattern(file).call()
-                        }
-
-                        // 3. Finalize the resolution with a merge commit
-                        git.commit().setMessage("Auto-resolved conflicts preferring THEIRS (Testing)").call()
-
+                        return@suspendRunCatching SyncStatus.Conflict(conflictingFiles)
                     } else {
-                        // Throw an error if the merge failed for a different reason (e.g., failed to write to disk)
+                        // Throw an error if the merge failed for a different reason
                         error("Merge failed critically: ${mergeResult.mergeStatus}")
                     }
                 }
@@ -129,6 +126,79 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 SyncStatus.UpToDate
             }
 
+        }
+    }
+
+    override suspend fun resolveSingleConflict(
+        currentNotebookPath: String,
+        conflictedFilePath: String,
+        keepLocalChanges: Boolean
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
+            val localRepoDir = getLocalRepoDir(currentNotebookPath)
+
+            Git.open(localRepoDir).use { git ->
+                // keep OURS or THEIRS version
+                val stage = if (keepLocalChanges) CheckoutCommand.Stage.OURS else CheckoutCommand.Stage.THEIRS
+
+                // checkout the requested variant
+                git.checkout()
+                    .setStage(stage)
+                    .addPath(conflictedFilePath)
+                    .call()
+
+                // stage the file
+                git.add().addFilepattern(conflictedFilePath).call()
+
+                // check if there are any other conflicts - if not do the commit
+                val status = git.status().call()
+
+                if (status.conflicting.isEmpty()) {
+                    git.commit().setMessage("Resolved conflict").call()
+                }
+            }
+        }
+    }
+
+    override suspend fun resolveAllConflicts(currentNotebookPath: String, keepLocalChanges: Boolean): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            suspendRunCatching {
+                val localRepoDir = getLocalRepoDir(currentNotebookPath)
+
+                Git.open(localRepoDir).use { git ->
+                    // get all the files that are conflicting
+                    val status = git.status().call()
+                    val conflictingFiles = status.conflicting.ifEmpty { return@use }
+
+                    // set the state for all files
+                    val stage = if (keepLocalChanges) CheckoutCommand.Stage.OURS else CheckoutCommand.Stage.THEIRS
+                    val checkoutCommand = git.checkout().setStage(stage)
+
+                    // checkout all conflicting files
+                    for (file in conflictingFiles) {
+                        checkoutCommand.addPath(file)
+                    }
+                    checkoutCommand.call()
+
+                    stageAndCommitAll(git, "Resolved all conflicts - keep ${stage.name.lowercase()}")
+                }
+            }
+        }
+
+    override suspend fun pushChanges(
+        currentNotebookPath: String,
+        tokenOrPassword: String,
+        username: String?
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
+            val localRepoDir = getLocalRepoDir(currentNotebookPath)
+            val credentials = getCredentials(username, tokenOrPassword)
+
+            Git.open(localRepoDir).use { git ->
+                git.push().setCredentialsProvider(credentials).call()
+            }
+
+            Unit
         }
     }
 

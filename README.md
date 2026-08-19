@@ -5,6 +5,8 @@
 > hight priority
 
 - when editing the active notebook remote url - need to actually set the upstream on the git repo
+- refresh the file tree on sync, and reopen the current note
+- automatically open note when it is created
 
 > medium priority
 
@@ -18,8 +20,10 @@
 - default warning, tip, success github like quotes that should be supported by mikepenz markdown library - doesnt work
 - add rounded corners to rendered image in the editor
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories
--
-    - make username and password optional for cloning when cloning public repo – then the synch would be disabled?
+- in the app settings there will be option to set the conflict resolution strategy - auto merge (always local/remote) or
+  always manual solve
+
+- make username and password optional for cloning when cloning public repo – then the sync would be disabled?
 
 
 - ![img.png](img.png)
