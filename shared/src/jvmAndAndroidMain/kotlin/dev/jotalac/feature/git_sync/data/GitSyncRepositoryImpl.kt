@@ -11,6 +11,8 @@ import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.CheckoutCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeResult
+import org.eclipse.jgit.api.PullResult
+import org.eclipse.jgit.lib.BranchTrackingStatus
 import org.eclipse.jgit.transport.URIish
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
@@ -32,23 +34,23 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 val credentials = getCredentials(username, tokenOrPassword)
 
                 //ls-remote to check accessibility to the remote without cloning any files
-                val remoteRefs = Git.lsRemoteRepository()
+                Git.lsRemoteRepository()
                     .setRemote(repoUrl)
                     .setCredentialsProvider(credentials)
                     .call()
 
-                if (remoteRefs.isEmpty()) {
-                    throw IllegalStateException("Invalid repository credentials")
-                }
+                Unit
             }
         }
 
     override suspend fun initRepository(currentNotebookPath: String): Result<Unit> = withContext(Dispatchers.IO) {
         suspendRunCatching {
             val currentNotebookPath = File(currentNotebookPath)
-            Git.init().setDirectory(currentNotebookPath).call()
-
-            Unit
+            Git
+                .init()
+                .setDirectory(currentNotebookPath)
+                .setInitialBranch("main")
+                .call().use { }
         }
     }
 
@@ -114,31 +116,57 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 stageAndCommitAll(git, commitMessage)
 
                 // pull changes from remote
-                val pullResult = git.pull().setCredentialsProvider(credentials).call()
+                val pullResult = pullChanges(git, credentials)
 
-                // resolve merge conflicts
-                val mergeResult = pullResult.mergeResult
-                if (mergeResult != null && !mergeResult.mergeStatus.isSuccessful) {
-                    // return the conflicted files if the failure was due to the file conflict
-                    if (mergeResult.mergeStatus == MergeResult.MergeStatus.CONFLICTING) {
-                        val conflictingFiles = mergeResult.conflicts?.keys ?: emptySet()
-                        val conflictStatus = GitSyncStatus.Conflict(conflictingFiles)
-                        _syncStatus.tryEmit(conflictStatus)
-                        return@suspendRunCatching conflictStatus
-                    } else {
-                        // Throw an error if the merge failed for a different reason
-                        error("Merge failed critically: ${mergeResult.mergeStatus}")
+                if (pullResult != null) {
+                    // resolve merge conflicts
+                    val mergeResult = pullResult.mergeResult
+                    if (mergeResult != null && !mergeResult.mergeStatus.isSuccessful) {
+                        // return the conflicted files if the failure was due to the file conflict
+                        if (mergeResult.mergeStatus == MergeResult.MergeStatus.CONFLICTING) {
+                            val conflictingFiles = mergeResult.conflicts?.keys ?: emptySet()
+                            val conflictStatus = GitSyncStatus.Conflict(conflictingFiles)
+                            _syncStatus.tryEmit(conflictStatus)
+                            return@suspendRunCatching conflictStatus
+                        } else {
+                            // Throw an error if the merge failed for a different reason
+                            error("Merge failed critically: ${mergeResult.mergeStatus}")
+                        }
                     }
                 }
 
                 //push everything
-                git.push().setCredentialsProvider(credentials).call()
+                pushChanges(git, credentials)
 
                 val status = GitSyncStatus.UpToDate
                 _syncStatus.tryEmit(status)
                 status
             }
 
+        }
+    }
+
+    private fun pullChanges(git: Git, credentials: UsernamePasswordCredentialsProvider): PullResult? {
+        // handle the case where the repo is empty (no remote refs)
+        return try {
+            git.pull().setCredentialsProvider(credentials).call()
+        } catch (e: Exception) {
+            if (e.message?.contains("did not advertise Ref") == true) {
+                null
+            } else {
+                throw e
+            }
+        }
+    }
+
+    private fun pushChanges(git: Git, credentials: UsernamePasswordCredentialsProvider) {
+        val currentBranch = git.repository.branch
+        val trackingStatus = BranchTrackingStatus.of(git.repository, currentBranch)
+
+        val shouldPush = trackingStatus == null || trackingStatus.aheadCount > 0
+
+        if (shouldPush) {
+            git.push().setCredentialsProvider(credentials).call()
         }
     }
 
@@ -233,6 +261,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                     // if there is no remote, add it - else update the remote url
                     if (allRemotes.isEmpty()) {
                         git.remoteAdd().setName(defaultRemoteName).setUri(parsedUri).call()
+                        setupBranchUpstream(git)
                     } else {
                         git.remoteSetUrl().setRemoteName(defaultRemoteName).setRemoteUri(parsedUri).call()
                     }
@@ -241,6 +270,15 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 Unit
             }
         }
+
+    private suspend fun setupBranchUpstream(git: Git) = withContext(Dispatchers.IO) {
+        val currentBranch = git.repository.branch ?: "main"
+        val config = git.repository.config
+
+        config.setString("branch", currentBranch, "remote", defaultRemoteName)
+        config.setString("branch", currentBranch, "merge", "refs/heads/$currentBranch")
+        config.save()
+    }
 
     private val defaultRemoteName = "origin"
 

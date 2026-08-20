@@ -4,7 +4,8 @@
 
 > high priority
 
-- when editing the active notebook remote url - need to actually set the upstream on the git repo
+- when removing the remote url - remove the remote from the repo - set upstream on adding the
+
 - automatically open note when it is created
 - show the state of the sync - if it is syncing or up to date, or it needs to sync
 - handle merge conflict abort - abort whole sync
