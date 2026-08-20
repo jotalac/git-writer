@@ -3,6 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.edit_notebook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.validateRemoteUrl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ data class EditNotebookState(
 class EditNotebookViewModel(
     private val notebookRepository: NotebookRepository,
     private val snackbarManager: SnackbarManager,
+    private val gitSyncRepository: GitSyncRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EditNotebookState())
     val uiState: StateFlow<EditNotebookState> = _uiState.asStateFlow()
@@ -45,10 +47,34 @@ class EditNotebookViewModel(
 
     fun onEvent(event: EditNotebookEvent) {
         when (event) {
-            is EditNotebookEvent.NameChanged -> _uiState.update { it.copy(notebookName = event.name, errorMessage = null) }
-            is EditNotebookEvent.RemoteUrlChanged -> _uiState.update { it.copy(remoteUrl = event.url, errorMessage = null) }
-            is EditNotebookEvent.UsernameChanged -> _uiState.update { it.copy(remoteUsername = event.username, errorMessage = null) }
-            is EditNotebookEvent.PasswordChanged -> _uiState.update { it.copy(remotePassword = event.password, errorMessage = null) }
+            is EditNotebookEvent.NameChanged -> _uiState.update {
+                it.copy(
+                    notebookName = event.name,
+                    errorMessage = null
+                )
+            }
+
+            is EditNotebookEvent.RemoteUrlChanged -> _uiState.update {
+                it.copy(
+                    remoteUrl = event.url,
+                    errorMessage = null
+                )
+            }
+
+            is EditNotebookEvent.UsernameChanged -> _uiState.update {
+                it.copy(
+                    remoteUsername = event.username,
+                    errorMessage = null
+                )
+            }
+
+            is EditNotebookEvent.PasswordChanged -> _uiState.update {
+                it.copy(
+                    remotePassword = event.password,
+                    errorMessage = null
+                )
+            }
+
             is EditNotebookEvent.SaveNotebook -> saveNotebook(event.onSuccess)
         }
     }
@@ -79,18 +105,18 @@ class EditNotebookViewModel(
     }
 
     private fun saveNotebook(onSuccess: () -> Unit) {
-        val currentState = _uiState.value
-
-        val validationError = validateForm(currentState)
-        if (validationError != null) {
-            _uiState.update { it.copy(isLoading = false, errorMessage = validationError) }
-            return
-        }
-
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
         viewModelScope.launch {
-            val result = notebookRepository.updateNotebook(
+            val currentState = _uiState.value
+
+            val validationError = validateForm(currentState)
+            if (validationError != null) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = validationError) }
+                return@launch
+            }
+
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            val updateNotebookResult = notebookRepository.updateNotebook(
                 id = notebookId,
                 name = currentState.notebookName.trim(),
                 remoteUrl = currentState.remoteUrl.trim().ifBlank { null },
@@ -98,7 +124,7 @@ class EditNotebookViewModel(
                 remotePassword = currentState.remotePassword.ifBlank { null },
             )
 
-            result.onSuccess {
+            updateNotebookResult.onSuccess {
                 _uiState.update { it.copy(isLoading = false, errorMessage = null) }
                 snackbarManager.showMessage("Notebook updated successfully")
                 onSuccess()

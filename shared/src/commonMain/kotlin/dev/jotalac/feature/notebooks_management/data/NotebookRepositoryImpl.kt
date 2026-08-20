@@ -8,8 +8,11 @@ import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
@@ -32,8 +35,8 @@ class NotebookRepositoryImpl(
 
     override suspend fun createNotebook(
         name: String, directoryPath: String,
-    ): Result<Notebook> {
-        return suspendRunCatching {
+    ): Result<Notebook> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
             // first create the directory
             if (directoryExists(directoryPath)) {
                 throw IllegalStateException("Directory already exists")
@@ -41,11 +44,11 @@ class NotebookRepositoryImpl(
             val baseDirectory = PlatformFile(directoryPath)
             baseDirectory.createDirectories()
 
-            //create images directroy
+            //create base images directory
             (baseDirectory / "images").createDirectories()
-            // add starter file in the notebook (later there will be some factory for the files so reaplce this)
-            val starterFile = PlatformFile(baseDirectory, "test.md")
-            starterFile.writeString("# New notebook - $name \n- make sure to add your remote :)")
+
+            //initialize git repo
+            gitSyncRepository.initRepository(directoryPath)
 
             //save notebook to database
             val notebook = Notebook(
@@ -67,8 +70,8 @@ class NotebookRepositoryImpl(
         remoteUrl: String,
         remotePasswordOrToken: String,
         remoteUsername: String?,
-    ): Result<Notebook> {
-        return suspendRunCatching {
+    ): Result<Notebook> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
             // first create the directory
             if (directoryExists(directoryPath)) {
                 throw IllegalStateException("Directory already exists")
@@ -112,8 +115,8 @@ class NotebookRepositoryImpl(
         }
     }
 
-    override suspend fun deleteNotebook(id: Long): Result<Unit> {
-        return suspendRunCatching {
+    override suspend fun deleteNotebook(id: Long): Result<Unit> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
             val notebook =
                 notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook with id $id not found")
 
@@ -136,8 +139,8 @@ class NotebookRepositoryImpl(
         remoteUrl: String?,
         remoteUsername: String?,
         remotePassword: String?,
-    ): Result<Unit> {
-        return suspendRunCatching {
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
             val existing = notebookDao.getNotebookById(id)
                 ?: throw NullPointerException("Notebook with id $id not found")
 
@@ -149,7 +152,12 @@ class NotebookRepositoryImpl(
                 && (remoteUrl != existing.remoteUrl || remoteUsername != existing.remoteUsername || remotePassword != existing.remotePassword)
             ) {
                 validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+                //update the git remote, when valid
+                gitSyncRepository.updateRemoteUrl(existing.directoryPath, remoteUrl)
             }
+
+            //rename the folder name to match the notebook name
+            moveNotebookPaths(existing.directoryPath, newDirectoryPath)
 
             val updated = existing.copy(
                 name = name,
@@ -159,6 +167,8 @@ class NotebookRepositoryImpl(
                 remotePassword = remotePassword,
             )
             notebookDao.upsertNotebook(updated)
+
+            Unit
         }
     }
 
@@ -183,16 +193,20 @@ class NotebookRepositoryImpl(
                 throw IllegalStateException("A folder with this name already exists")
             }
 
-            // rename the directory
             if (newPath != existingNotebook.directoryPath) {
-                val source = Path(existingNotebook.directoryPath)
-                val destination = Path(newPath)
-                SystemFileSystem.atomicMove(source, destination)
                 newDirectoryPath = newPath
             }
         }
 
         return newDirectoryPath
+    }
+
+    private fun moveNotebookPaths(oldPath: String, newPath: String) {
+        if (oldPath == newPath) return
+
+        val source = Path(oldPath)
+        val destination = Path(newPath)
+        SystemFileSystem.atomicMove(source, destination)
     }
 
     private suspend fun validateUpdateNotebookRemote(

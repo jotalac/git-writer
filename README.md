@@ -8,6 +8,7 @@
 - automatically open note when it is created
 - show the state of the sync - if it is syncing or up to date, or it needs to sync
 - handle merge conflict abort - abort whole sync
+- when remote is not set - show it in the FAB
 
 > medium priority
 
@@ -15,7 +16,6 @@
 
 ### TODO - not important (extra features)
 
-- customize the markdown elements from the markdown library
 - when renaming image resource – refactor the notes to use the new image name?
 - maybe add the action bar on desktop - like it is in the IDEA markdown editor
 - default warning, tip, success github like quotes that should be supported by mikepenz markdown library - doesnt work
@@ -23,6 +23,7 @@
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories
 - in the app settings there will be option to set the conflict resolution strategy - auto merge (always local/remote) or
   always manual solve
+- pressing enter on the keyboard will actually confirm the alert dialogs
 
 - make username and password optional for cloning when cloning public repo – then the sync would be disabled?
 

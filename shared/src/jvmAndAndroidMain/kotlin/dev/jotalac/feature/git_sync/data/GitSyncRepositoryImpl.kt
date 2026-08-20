@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.CheckoutCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.MergeResult
+import org.eclipse.jgit.transport.URIish
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 
@@ -25,7 +26,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         repoUrl: String,
         tokenOrPassword: String,
         username: String?
-    ): Result<Boolean> =
+    ): Result<Unit> =
         withContext(Dispatchers.IO) {
             suspendRunCatching {
                 val credentials = getCredentials(username, tokenOrPassword)
@@ -36,9 +37,20 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                     .setCredentialsProvider(credentials)
                     .call()
 
-                remoteRefs.isNotEmpty()
+                if (remoteRefs.isEmpty()) {
+                    throw IllegalStateException("Invalid repository credentials")
+                }
             }
         }
+
+    override suspend fun initRepository(currentNotebookPath: String): Result<Unit> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
+            val currentNotebookPath = File(currentNotebookPath)
+            Git.init().setDirectory(currentNotebookPath).call()
+
+            Unit
+        }
+    }
 
     override suspend fun cloneRepository(
         repoUrl: String,
@@ -46,23 +58,19 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         destinationPath: String,
         username: String?
     ): Result<Unit> = withContext(Dispatchers.IO) {
-        // validate the credentials before cloning
-        val credentialsValidationResult = validateCredentials(repoUrl, tokenOrPassword, username)
-        if (credentialsValidationResult.isFailure) return@withContext Result.failure(
-            credentialsValidationResult.exceptionOrNull() ?: Exception("Invalid repository credentials")
-        )
-
-        val destinationDirectory = File(destinationPath)
-
-        // clone the repository
         suspendRunCatching {
+            // validate the credentials before cloning
+            validateCredentials(repoUrl, tokenOrPassword, username)
+
+            val destinationDirectory = File(destinationPath)
+
+            // clone the repository
             Git.cloneRepository()
                 .setURI(repoUrl)
                 .setDirectory(destinationDirectory)
                 .setCredentialsProvider(getCredentials(username, tokenOrPassword))
                 .call()
                 .use { }
-
         }
     }
 
@@ -212,6 +220,29 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
             Unit
         }
     }
+
+    override suspend fun updateRemoteUrl(currentNotebookPath: String, newRemoteUrl: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            suspendRunCatching {
+                val localRepoDir = getLocalRepoDir(currentNotebookPath)
+
+                Git.open(localRepoDir).use { git ->
+                    val allRemotes = git.remoteList().call()
+                    val parsedUri = URIish(newRemoteUrl)
+
+                    // if there is no remote, add it - else update the remote url
+                    if (allRemotes.isEmpty()) {
+                        git.remoteAdd().setName(defaultRemoteName).setUri(parsedUri).call()
+                    } else {
+                        git.remoteSetUrl().setRemoteName(defaultRemoteName).setRemoteUri(parsedUri).call()
+                    }
+                }
+
+                Unit
+            }
+        }
+
+    private val defaultRemoteName = "origin"
 
     private val _syncStatus = MutableSharedFlow<GitSyncStatus>(extraBufferCapacity = 1)
     override val gitSyncStatus: Flow<GitSyncStatus> = _syncStatus.asSharedFlow()
