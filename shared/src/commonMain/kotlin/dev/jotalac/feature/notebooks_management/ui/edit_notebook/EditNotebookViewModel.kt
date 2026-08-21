@@ -3,7 +3,6 @@ package dev.jotalac.feature.notebooks_management.ui.edit_notebook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
-import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.validateRemoteUrl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +23,6 @@ data class EditNotebookState(
 class EditNotebookViewModel(
     private val notebookRepository: NotebookRepository,
     private val snackbarManager: SnackbarManager,
-    private val gitSyncRepository: GitSyncRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EditNotebookState())
     val uiState: StateFlow<EditNotebookState> = _uiState.asStateFlow()
@@ -75,7 +73,14 @@ class EditNotebookViewModel(
                 )
             }
 
-            is EditNotebookEvent.SaveNotebook -> saveNotebook(event.onSuccess)
+            is EditNotebookEvent.SaveNotebook -> saveNotebookEdit(event.onSuccess)
+            is EditNotebookEvent.ClearRemoteCredentials -> _uiState.update {
+                it.copy(
+                    remoteUrl = "",
+                    remoteUsername = "",
+                    remotePassword = "",
+                )
+            }
         }
     }
 
@@ -104,7 +109,7 @@ class EditNotebookViewModel(
         return null
     }
 
-    private fun saveNotebook(onSuccess: () -> Unit) {
+    private fun saveNotebookEdit(onSuccess: () -> Unit) {
         viewModelScope.launch {
             val currentState = _uiState.value
 
@@ -145,5 +150,6 @@ class EditNotebookViewModel(
         data class UsernameChanged(val username: String) : EditNotebookEvent
         data class PasswordChanged(val password: String) : EditNotebookEvent
         data class SaveNotebook(val onSuccess: () -> Unit) : EditNotebookEvent
+        data object ClearRemoteCredentials : EditNotebookEvent
     }
 }

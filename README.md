@@ -1,15 +1,11 @@
 # Git-writer - git synced markdown editor
 
-# TODO
+## TODO
 
 > high priority
 
-- when removing the remote url - remove the remote from the repo - set upstream on adding the
-
 - automatically open note when it is created
-- show the state of the sync - if it is syncing or up to date, or it needs to sync
 - handle merge conflict abort - abort whole sync
-- when remote is not set - show it in the FAB
 
 > medium priority
 
@@ -25,6 +21,8 @@
 - in the app settings there will be option to set the conflict resolution strategy - auto merge (always local/remote) or
   always manual solve
 - pressing enter on the keyboard will actually confirm the alert dialogs
+- implement undo/redo
+- maybe run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 
 - make username and password optional for cloning when cloning public repo – then the sync would be disabled?
 

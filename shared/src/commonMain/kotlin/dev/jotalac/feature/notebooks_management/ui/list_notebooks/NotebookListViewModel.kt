@@ -3,6 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.list_notebooks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import kotlinx.coroutines.flow.*
@@ -15,6 +16,7 @@ data class NotebookListState(
 
 class NotebookListViewModel(
     private val notebookRepository: NotebookRepository,
+    private val gitSyncRepository: GitSyncRepository,
     private val snackbarManager: SnackbarManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NotebookListState())
@@ -44,9 +46,11 @@ class NotebookListViewModel(
             val result = notebookRepository.activateNotebook(id)
 
             result
-                .onSuccess {
+                .onSuccess { updatedNotebook ->
                     onSuccess()
                     _uiState.update { it.copy(errorMessage = null) }
+
+                    gitSyncRepository.updateSyncStatus(updatedNotebook.remoteUrl)
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(errorMessage = error.message ?: "Failed to open notebook") }

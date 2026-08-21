@@ -22,12 +22,12 @@ interface NotebookRepository {
         remoteUrl: String?,
         remoteUsername: String?,
         remotePassword: String?,
-    ): Result<Unit>
+    ): Result<Notebook>
 
     val activeNotebookState: Flow<Notebook?>
     val activeNotePath: Flow<String?>
     fun getNotebookByIdAsFlow(id: Long): Flow<Notebook?>
-    suspend fun activateNotebook(id: Long): Result<Unit>
+    suspend fun activateNotebook(id: Long): Result<Notebook>
     suspend fun activateNote(notePath: String): Result<Unit>
     suspend fun closeActiveNote(): Result<Unit>
     suspend fun syncActiveNotePathOnMoved(oldPath: String, newPath: String): Result<Unit>

@@ -139,7 +139,7 @@ class NotebookRepositoryImpl(
         remoteUrl: String?,
         remoteUsername: String?,
         remotePassword: String?,
-    ): Result<Unit> = withContext(Dispatchers.IO) {
+    ): Result<Notebook> = withContext(Dispatchers.IO) {
         suspendRunCatching {
             val existing = notebookDao.getNotebookById(id)
                 ?: throw NullPointerException("Notebook with id $id not found")
@@ -156,6 +156,11 @@ class NotebookRepositoryImpl(
                 gitSyncRepository.updateRemoteUrl(existing.directoryPath, remoteUrl)
             }
 
+            // remove the remote if it was deleted
+            if (remoteUrl.isNullOrBlank() && remoteUrl != existing.remoteUrl) gitSyncRepository.removeRemote(existing.directoryPath)
+
+            gitSyncRepository.updateSyncStatus(remoteUrl)
+
             //rename the folder name to match the notebook name
             moveNotebookPaths(existing.directoryPath, newDirectoryPath)
 
@@ -168,7 +173,7 @@ class NotebookRepositoryImpl(
             )
             notebookDao.upsertNotebook(updated)
 
-            Unit
+            updated.toNotebook()
         }
     }
 
@@ -220,8 +225,8 @@ class NotebookRepositoryImpl(
         }
     }
 
-    override suspend fun activateNotebook(id: Long): Result<Unit> {
-        return suspendRunCatching {
+    override suspend fun activateNotebook(id: Long): Result<Notebook> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
             val notebook = notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook not found")
 
             // check if the directory with the notebook content still exists
@@ -230,6 +235,9 @@ class NotebookRepositoryImpl(
             }
 
             activeNotebookManager.setActiveNotebook(id)
+            gitSyncRepository.updateSyncStatus(notebook.remoteUrl)
+
+            notebook.toNotebook()
         }
     }
 

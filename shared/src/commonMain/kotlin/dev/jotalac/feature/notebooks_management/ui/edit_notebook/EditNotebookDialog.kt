@@ -57,11 +57,24 @@ fun EditNotebookDialog(
 
                 HorizontalDivider()
 
-                Text(
-                    text = stringResource(Res.string.remote_credentials_section_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.remote_credentials_section_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    TextButton(
+                        onClick = { viewModel.onEvent(EditNotebookViewModel.EditNotebookEvent.ClearRemoteCredentials) },
+                    ) {
+                        Text(text = stringResource(Res.string.clear_button))
+                    }
+
+                }
 
                 OutlinedTextField(
                     value = state.remoteUrl,

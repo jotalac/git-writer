@@ -271,6 +271,22 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
             }
         }
 
+    override suspend fun removeRemote(currentNotebookPath: String): Result<Unit> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
+            val localRepoDir = getLocalRepoDir(currentNotebookPath)
+
+            Git.open(localRepoDir).use { git ->
+                val allRemotes = git.remoteList().call()
+
+                if (allRemotes.isEmpty()) return@use
+
+                val remoteName = allRemotes.first().name
+                git.remoteRemove().setRemoteName(remoteName).call()
+                removeBranchUpstream(git)
+            }
+        }
+    }
+
     private suspend fun setupBranchUpstream(git: Git) = withContext(Dispatchers.IO) {
         val currentBranch = git.repository.branch ?: "main"
         val config = git.repository.config
@@ -278,6 +294,25 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         config.setString("branch", currentBranch, "remote", defaultRemoteName)
         config.setString("branch", currentBranch, "merge", "refs/heads/$currentBranch")
         config.save()
+    }
+
+    private suspend fun removeBranchUpstream(git: Git) = withContext(Dispatchers.IO) {
+        val currentBranch = git.repository.branch ?: "main"
+        val config = git.repository.config
+
+        config.unset("branch", currentBranch, "remote")
+        config.unset("branch", currentBranch, "merge")
+        config.save()
+    }
+
+    override fun updateSyncStatus(remoteUrl: String?, syncStatus: GitSyncStatus?): Result<Unit> {
+        return runCatching {
+            if (remoteUrl == null) {
+                _syncStatus.tryEmit(syncStatus ?: GitSyncStatus.GitSyncNotConfigured)
+            } else {
+                _syncStatus.tryEmit(syncStatus ?: GitSyncStatus.UpToDate)
+            }
+        }
     }
 
     private val defaultRemoteName = "origin"
