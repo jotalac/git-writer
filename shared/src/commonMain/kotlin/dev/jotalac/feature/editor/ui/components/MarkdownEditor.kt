@@ -14,7 +14,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
@@ -42,13 +41,17 @@ fun MarkdownEditor(
     val surfaceFocusRequester = remember { FocusRequester() }
 
     val listScrollState = rememberScrollState()
-    
+
     val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
     val scope = rememberCoroutineScope()
 
+    var hadFocusedBlock by remember { mutableStateOf(false) }
+
     LaunchedEffect(editorState.focusedIndex) {
-        if (editorState.focusedIndex == null) {
+        if (editorState.focusedIndex != null) {
+            hadFocusedBlock = true
+        } else if (hadFocusedBlock) {
             surfaceFocusRequester.requestFocus()
         }
     }
@@ -60,6 +63,7 @@ fun MarkdownEditor(
             .imePadding()
             .pointerInput(Unit) {
                 detectTapGestures {
+                    surfaceFocusRequester.requestFocus()
                     if (editorState.focusedIndex != null) {
                         focusManager.clearFocus()
                         editorState.clearFocus()
@@ -129,9 +133,10 @@ fun MarkdownEditor(
                     .fillMaxWidth(),
                 textFieldValue = editorState.activeTextFieldValue,
                 onValueChange = editorState::updateActiveText,
-                onImageAdd =  {
+                onImageAdd = {
                     scope.launch {
-                        val files = FileKit.openFilePicker(type = FileKitType.Image, mode = FileKitMode.Multiple()) ?: return@launch
+                        val files = FileKit.openFilePicker(type = FileKitType.Image, mode = FileKitMode.Multiple())
+                            ?: return@launch
                         val bytesArray = files.map { it.readBytes() }
                         editorState.pasteImages(bytesArray)
                     }

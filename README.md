@@ -23,6 +23,8 @@
 - pressing enter on the keyboard will actually confirm the alert dialogs
 - implement undo/redo
 - maybe run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
+- add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for ranaming and ctrl+n
+  for new file)
 
 - make username and password optional for cloning when cloning public repo – then the sync would be disabled?
 

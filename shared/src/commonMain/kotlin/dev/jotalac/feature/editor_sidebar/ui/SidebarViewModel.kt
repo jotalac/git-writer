@@ -266,7 +266,9 @@ class EditorSidebarViewModel(
                 val newPath = Path(Path(targetPath), filename.toSafeFileName()).toString()
                 expandFolder(targetPath)
                 refreshFileTree()
+                setActiveNote(newPath)
                 setRenameItem(newPath)
+
             }.onFailure {
                 snackbarManager.showMessage(it.message ?: "Failed to add note")
             }
@@ -285,6 +287,7 @@ class EditorSidebarViewModel(
                 val newPath = Path(Path(targetPath), folderName.toSafeFileName()).toString()
                 expandFolder(targetPath)
                 refreshFileTree()
+
                 setRenameItem(newPath)
             }.onFailure {
                 snackbarManager.showMessage(it.message ?: "Failed to add folder")

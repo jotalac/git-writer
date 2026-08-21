@@ -23,6 +23,8 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "dev.jotalac"
             packageVersion = "1.0.0"
+
         }
+
     }
 }
