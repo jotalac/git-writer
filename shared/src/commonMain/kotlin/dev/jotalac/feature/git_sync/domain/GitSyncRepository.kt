@@ -42,6 +42,8 @@ interface GitSyncRepository {
         newRemoteUrl: String,
     ): Result<Unit>
 
+    suspend fun abortMerge(currentNotebookPath: String): Result<Unit>
+
     suspend fun removeRemote(currentNotebookPath: String): Result<Unit>
 
     fun updateSyncStatus(remoteUrl: String?, syncStatus: GitSyncStatus? = null): Result<Unit>

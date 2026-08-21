@@ -8,11 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
-import org.eclipse.jgit.api.CheckoutCommand
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.MergeResult
-import org.eclipse.jgit.api.PullResult
+import org.eclipse.jgit.api.*
 import org.eclipse.jgit.lib.BranchTrackingStatus
+import org.eclipse.jgit.lib.RepositoryState
 import org.eclipse.jgit.transport.URIish
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
@@ -311,6 +309,22 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
                 _syncStatus.tryEmit(syncStatus ?: GitSyncStatus.GitSyncNotConfigured)
             } else {
                 _syncStatus.tryEmit(syncStatus ?: GitSyncStatus.UpToDate)
+            }
+        }
+    }
+
+    override suspend fun abortMerge(currentNotebookPath: String): Result<Unit> = withContext(Dispatchers.IO) {
+        suspendRunCatching {
+            val localRepoDir = getLocalRepoDir(currentNotebookPath)
+
+            Git.open(localRepoDir).use { git ->
+                val isUnmerged = git.repository.repositoryState == RepositoryState.MERGING
+                if (!isUnmerged) return@use
+
+                // reset to the state before the pull command (assuming everything was staged and commited)
+                git.reset()
+                    .setMode(ResetCommand.ResetType.HARD)
+                    .call()
             }
         }
     }

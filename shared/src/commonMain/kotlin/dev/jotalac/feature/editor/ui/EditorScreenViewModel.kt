@@ -239,7 +239,17 @@ class EditorViewModel(
     }
 
     fun dismissConflictDialog() {
-        _uiState.update { it.copy(conflictedFiles = emptyList()) }
+        viewModelScope.launch {
+            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
+            val result = gitSyncRepository.abortMerge(notebook.directoryPath)
+
+            result.onSuccess {
+                snackbarManager.showMessage("Sync aborted")
+                _uiState.update { it.copy(conflictedFiles = emptyList()) }
+            }.onFailure {
+                snackbarManager.showMessage(it.message ?: "Failed to abort sync")
+            }
+        }
     }
 
     fun onAction(action: EditorAction) {
