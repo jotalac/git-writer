@@ -293,7 +293,7 @@ class EditorViewModel(
 
                 addNewSplitBlocks(action.index, chunksBefore + chunksAfter)
 
-                val focusIndex = action.index + chunksAfter.size
+                val focusIndex = action.index + chunksBefore.size
                 action.onFocusCalculated(focusIndex)
             }
 

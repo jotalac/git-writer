@@ -67,27 +67,28 @@ fun ActiveEditorBlock(
         }
     }
 
-    fun updateText(newTextFiledValue: TextFieldValue) {
-        editorState.updateActiveText(newTextFiledValue)
+    fun updateText(newTextFiledValue: TextFieldValue, fromIndex: Int? = null) {
+        editorState.updateActiveText(newTextFiledValue, fromIndex)
     }
 
     fun handlePlainEnterPress() {
         // handle list continuation
-        val newTextFieldValue = handleMarkdownListContinuation(textFieldValue)
+        val currentValue = editorState.activeTextFieldValue
+        val newTextFieldValue = handleMarkdownListContinuation(currentValue)
         if (newTextFieldValue != null) {
             updateText(newTextFieldValue)
 
-        } else if (isInsideCodeBlock(textFieldValue.text, textFieldValue.selection.start)) {
+        } else if (isInsideCodeBlock(currentValue.text, currentValue.selection.start)) {
             // dont break code when inside code block
-            val text = textFieldValue.text
-            val cursor = textFieldValue.selection.start
+            val text = currentValue.text
+            val cursor = currentValue.selection.start.coerceIn(0, text.length)
             val newText = text.substring(0, cursor) + "\n" + text.substring(cursor)
 
             updateText(TextFieldValue(newText, TextRange(cursor + 1)))
 
         } else {
             // split block on just enter press
-            editorState.splitBlock(textFieldValue.selection.start)
+            editorState.splitBlock(currentValue.selection.start.coerceIn(0, currentValue.text.length))
         }
 
 
@@ -96,7 +97,7 @@ fun ActiveEditorBlock(
     BasicTextField(
         value = textFieldValue,
         onValueChange = {
-            editorState.updateActiveText(it)
+            editorState.updateActiveText(it, index)
         },
         onTextLayout = { textLayoutResult = it },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -145,8 +146,7 @@ fun ActiveEditorBlock(
                             if (event.isAltPressed) {
                                 editorState.swapBlockUp()
                                 true
-                            }
-                            else if (isFirstLine) {
+                            } else if (isFirstLine) {
                                 editorState.moveUp()
                             } else {
                                 false
@@ -161,7 +161,7 @@ fun ActiveEditorBlock(
                             if (event.isAltPressed) {
                                 editorState.swapBlockDown()
                                 true
-                            } else if (isLastLine){
+                            } else if (isLastLine) {
                                 editorState.moveDown()
                             } else {
                                 false

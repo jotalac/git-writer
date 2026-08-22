@@ -32,7 +32,10 @@ class MarkdownEditorState(
         focusedIndex = null
     }
 
-    fun updateActiveText(newValue: TextFieldValue) {
+    fun updateActiveText(newValue: TextFieldValue, fromIndex: Int? = null) {
+        //only update the block when it came from the actual block - handles synchronization errors
+        if (fromIndex != null && fromIndex != focusedIndex) return
+
         activeTextFieldValue = newValue
         focusedIndex?.let { index ->
             if (blocksState.value.getOrNull(index) != newValue.text) {
@@ -67,7 +70,7 @@ class MarkdownEditorState(
             EditorAction.EvaluateBlockOnFocusLost(
                 index = index,
                 currentFocusedIndex = focusedIndex,
-                onFocusAdjusted = { focusBlock(index) }
+                onFocusAdjusted = { adjustedIndex -> focusBlock(adjustedIndex ?: index) }
             )
         )
     }
