@@ -4,8 +4,8 @@
 
 > high priority
 
+- move the ctrl + z and ctrl + y to the markdown editor and not the active block (on mobile it will stay in the toolbar)
 - pressing enter on the keyboard will actually confirm the alert dialogs
-- implement undo/redo
 
 > medium priority
 

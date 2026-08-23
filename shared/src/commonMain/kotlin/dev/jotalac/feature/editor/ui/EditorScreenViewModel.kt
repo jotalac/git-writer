@@ -361,6 +361,11 @@ class EditorViewModel(
             is EditorAction.AbortConflictResolve -> {
                 dismissConflictDialog()
             }
+
+            is EditorAction.SetBlocks -> {
+                markdownBlocks.clear()
+                markdownBlocks.addAll(action.blocks)
+            }
         }
     }
 

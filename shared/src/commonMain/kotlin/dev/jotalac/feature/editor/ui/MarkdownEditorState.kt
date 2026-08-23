@@ -3,6 +3,8 @@ package dev.jotalac.feature.editor.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import dev.jotalac.feature.editor.ui.components.EditorHistoryItem
+import dev.jotalac.feature.editor.ui.components.EditorHistoryManager
 import dev.jotalac.feature.editor.ui.utils.addLink
 import dev.jotalac.feature.editor.ui.utils.applyBold
 import dev.jotalac.feature.editor.ui.utils.applyInlineCode
@@ -11,13 +13,15 @@ import dev.jotalac.feature.editor.ui.utils.applyItalic
 @Stable
 class MarkdownEditorState(
     private val blocksState: State<List<String>>,
-    private val onActionState: State<(EditorAction) -> Unit>
+    private val onActionState: State<(EditorAction) -> Unit>,
+    private val historyManager: EditorHistoryManager
 ) {
     var focusedIndex by mutableStateOf<Int?>(null)
         private set
 
     var activeTextFieldValue by mutableStateOf(TextFieldValue())
         private set
+
 
     fun focusBlock(index: Int, cursor: TextRange? = null) {
         focusedIndex = index
@@ -36,12 +40,15 @@ class MarkdownEditorState(
         //only update the block when it came from the actual block - handles synchronization errors
         if (fromIndex != null && fromIndex != focusedIndex) return
 
+        historyManager.record(createCurrentSnapshot())
+
         activeTextFieldValue = newValue
         focusedIndex?.let { index ->
             if (blocksState.value.getOrNull(index) != newValue.text) {
                 dispatchAction(EditorAction.UpdateBlock(index, newValue.text))
             }
         }
+
     }
 
     fun dispatchAction(action: EditorAction) {
@@ -63,6 +70,37 @@ class MarkdownEditorState(
         }
     }
 
+    // undo/redo logic
+    private fun createCurrentSnapshot(): EditorHistoryItem {
+        return EditorHistoryItem(
+            blocks = blocksState.value.toList(),
+            focusedIndex = focusedIndex,
+            selection = activeTextFieldValue.selection,
+        )
+    }
+
+    fun undo() {
+        val prevState = historyManager.undo(createCurrentSnapshot()) ?: return
+
+        dispatchAction(EditorAction.SetBlocks(prevState.blocks))
+        if (prevState.focusedIndex != null) {
+            focusBlock(prevState.focusedIndex, prevState.selection)
+        } else {
+            clearFocus()
+        }
+    }
+
+    fun redo() {
+        val nextState = historyManager.redo(createCurrentSnapshot()) ?: return
+
+        dispatchAction(EditorAction.SetBlocks(nextState.blocks))
+        if (nextState.focusedIndex != null) {
+            focusBlock(nextState.focusedIndex, nextState.selection)
+        } else {
+            clearFocus()
+        }
+    }
+
     // block actions
 
     fun evaluateFocusLost(index: Int) {
@@ -76,12 +114,17 @@ class MarkdownEditorState(
     }
 
     fun addBlockBelow(index: Int) {
+        historyManager.record(createCurrentSnapshot(), true)
+
         dispatchAction(EditorAction.AddBlock(index + 1))
         focusBlock(index + 1, TextRange(0))
     }
 
     fun splitBlock(cursorStart: Int) {
         val index = focusedIndex ?: return
+
+        historyManager.record(createCurrentSnapshot(), true)
+
         dispatchAction(EditorAction.SplitBlock(index, cursorStart) { newFocusIndex ->
             focusBlock(newFocusIndex, TextRange(0))
         })
@@ -97,9 +140,22 @@ class MarkdownEditorState(
         return false
     }
 
+    fun moveDown(): Boolean {
+        val index = focusedIndex ?: return false
+        if (index < blocksState.value.size - 1) {
+            val nextText = blocksState.value.getOrNull(index + 1) ?: ""
+            focusBlock(index + 1, TextRange(nextText.length))
+            return true
+        }
+        return false
+    }
+
+
     fun swapBlockUp(blockIndex: Int? = null) {
         val index = blockIndex ?: focusedIndex ?: return
         if (index > 0) {
+            historyManager.record(createCurrentSnapshot(), true)
+
             val targetIndex = index - 1
             dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
 
@@ -113,6 +169,8 @@ class MarkdownEditorState(
     fun swapBlockDown(blockIndex: Int? = null) {
         val index = blockIndex ?: focusedIndex ?: return
         if (index < blocksState.value.lastIndex) {
+            historyManager.record(createCurrentSnapshot(), true)
+
             val targetIndex = index + 1
             dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
 
@@ -123,18 +181,11 @@ class MarkdownEditorState(
         }
     }
 
-    fun moveDown(): Boolean {
-        val index = focusedIndex ?: return false
-        if (index < blocksState.value.size - 1) {
-            val nextText = blocksState.value.getOrNull(index + 1) ?: ""
-            focusBlock(index + 1, TextRange(nextText.length))
-            return true
-        }
-        return false
-    }
-
     fun backspaceOnEmpty(): Boolean {
         val index = focusedIndex ?: return false
+
+        historyManager.record(createCurrentSnapshot(), true)
+
         dispatchAction(EditorAction.RemoveBlock(index))
 
         val blocks = blocksState.value
@@ -152,19 +203,26 @@ class MarkdownEditorState(
         val index = focusedIndex ?: return false
         if (index <= 0) return true
 
+        historyManager.record(createCurrentSnapshot(), true)
+
         val originalBlockLength = blocksState.value.getOrNull(index - 1)?.length ?: 0
         dispatchAction(EditorAction.MergeWithPrevBlock(index))
         focusBlock(index - 1, TextRange(originalBlockLength))
+
         return true
     }
 
     fun addBlockAtEnd() {
+        historyManager.record(createCurrentSnapshot(), true)
+
         val newIndex = blocksState.value.lastIndex + 1
         dispatchAction(EditorAction.AddBlock())
         focusBlock(newIndex, TextRange(0))
     }
 
     fun deleteBlock(index: Int) {
+        historyManager.record(createCurrentSnapshot(), true)
+
         dispatchAction(EditorAction.RemoveBlock(index))
         if (focusedIndex == index) {
             clearFocus()
@@ -173,6 +231,8 @@ class MarkdownEditorState(
 
     fun pasteImages(imageBytesList: List<ByteArray>) {
         val index = focusedIndex ?: return
+        historyManager.record(createCurrentSnapshot(), true)
+
         dispatchAction(
             EditorAction.PasteImages(
                 imageBytesList = imageBytesList,
@@ -184,23 +244,28 @@ class MarkdownEditorState(
         )
     }
 
+
     fun handleEscape() {
         clearFocus()
     }
 
     fun applyBold() {
+        historyManager.record(createCurrentSnapshot(), true)
         updateActiveText(activeTextFieldValue.applyBold())
     }
 
     fun applyItalic() {
+        historyManager.record(createCurrentSnapshot(), true)
         updateActiveText(activeTextFieldValue.applyItalic())
     }
 
     fun addLinkTemplate() {
+        historyManager.record(createCurrentSnapshot(), true)
         updateActiveText(activeTextFieldValue.addLink())
     }
 
     fun applyInlineCode() {
+        historyManager.record(createCurrentSnapshot(), true)
         updateActiveText(activeTextFieldValue.applyInlineCode())
     }
 }
@@ -212,8 +277,9 @@ fun rememberMarkdownEditorState(
 ): MarkdownEditorState {
     val blocksState = rememberUpdatedState(blocks)
     val onActionState = rememberUpdatedState(onAction)
+    val historyManager = remember { EditorHistoryManager() }
 
-    val state = remember { MarkdownEditorState(blocksState, onActionState) }
+    val state = remember { MarkdownEditorState(blocksState, onActionState, historyManager) }
 
     LaunchedEffect(state.focusedIndex, blocks) {
         state.syncExternalBlocks()

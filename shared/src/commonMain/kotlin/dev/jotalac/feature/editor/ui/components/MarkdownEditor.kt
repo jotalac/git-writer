@@ -103,6 +103,18 @@ fun MarkdownEditor(
                         Key.Enter -> {
                             editorState.addBlockAtEnd()
                         }
+
+                        Key.Z -> {
+                            if (event.isCtrlPressed) {
+                                editorState.undo()
+                            }
+                        }
+
+                        Key.Y -> {
+                            if (event.isCtrlPressed) {
+                                editorState.redo()
+                            }
+                        }
                     }
                 }
                 false
@@ -146,6 +158,9 @@ fun MarkdownEditor(
                         val bytesArray = pickCameraImage() ?: return@launch
                         editorState.pasteImages(listOf(bytesArray))
                     }
+                },
+                onUndoRedo = { isUndo ->
+                    if (isUndo) editorState.undo() else editorState.redo()
                 }
             )
         }

@@ -312,6 +312,7 @@ private fun EditorContent(
             contentScale = ContentScale.Inside
         )
     } else {
+//        key(activeNotePath) {}
         MarkdownEditor(
             markdownBlocks = markdownBlocks,
             onAction = onAction,

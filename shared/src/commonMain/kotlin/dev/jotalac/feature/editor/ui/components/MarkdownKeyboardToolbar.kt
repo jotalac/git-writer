@@ -27,6 +27,7 @@ fun MarkdownKeyboardToolbar(
     onValueChange: (TextFieldValue) -> Unit,
     onImageAdd: () -> Unit,
     onCameraOpen: () -> Unit,
+    onUndoRedo: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -36,6 +37,21 @@ fun MarkdownKeyboardToolbar(
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
+        // undo redo
+        ToolbarButton(
+            icon = Res.drawable.undo,
+            contentDescription = Res.string.undo_button
+        ) {
+            onUndoRedo(true)
+        }
+        ToolbarButton(
+            icon = Res.drawable.redo,
+            contentDescription = Res.string.redo_button
+        ) {
+            onUndoRedo(false)
+        }
+
+        // markdown edit states
         ToolbarButton(
             icon = Res.drawable.format_h1,
             contentDescription = Res.string.toolbar_h1

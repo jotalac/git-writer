@@ -229,6 +229,24 @@ fun ActiveEditorBlock(
                             } else false
                         }
 
+//                        Key.Z -> {
+//                            if (event.isCtrlPressed) {
+//                                editorState.undo()
+//                                true
+//                            } else {
+//                                false
+//                            }
+//                        }
+//
+//                        Key.Y -> {
+//                            if (event.isCtrlPressed) {
+//                                editorState.redo()
+//                                true
+//                            } else {
+//                                false
+//                            }
+//                        }
+
 
                         else -> false
                     }

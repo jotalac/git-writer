@@ -76,4 +76,6 @@
     <string name="sync_status_failed">Sync failed. Tap to retry.</string>
     <string name="sync_status_conflict">Merge conflicts detected. Tap to resolve.</string>
     <string name="sync_status_not_configured">Git sync is not configured.</string>
+    <string name="undo_button">Undo</string>
+    <string name="redo_button">Redo</string>
 </resources>
