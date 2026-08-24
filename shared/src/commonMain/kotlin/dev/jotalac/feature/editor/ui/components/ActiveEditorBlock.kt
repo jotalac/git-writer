@@ -201,51 +201,32 @@ fun ActiveEditorBlock(
                         }
 
                         Key.B -> {
-                            if (event.isCtrlPressed) {
+                            if (event.isCtrlPressed || event.isMetaPressed) {
                                 editorState.applyBold()
                                 true
                             } else false
                         }
 
                         Key.I -> {
-                            if (event.isCtrlPressed) {
+                            if (event.isCtrlPressed || event.isMetaPressed) {
                                 editorState.applyItalic()
                                 true
                             } else false
                         }
 
                         Key.K -> {
-                            if (event.isCtrlPressed) {
+                            if (event.isCtrlPressed || event.isMetaPressed) {
                                 editorState.addLinkTemplate()
                                 true
                             } else false
                         }
 
-
                         Key.E -> {
-                            if (event.isCtrlPressed) {
+                            if (event.isCtrlPressed || event.isMetaPressed) {
                                 editorState.applyInlineCode()
                                 true
                             } else false
                         }
-
-//                        Key.Z -> {
-//                            if (event.isCtrlPressed) {
-//                                editorState.undo()
-//                                true
-//                            } else {
-//                                false
-//                            }
-//                        }
-//
-//                        Key.Y -> {
-//                            if (event.isCtrlPressed) {
-//                                editorState.redo()
-//                                true
-//                            } else {
-//                                false
-//                            }
-//                        }
 
 
                         else -> false

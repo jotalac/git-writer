@@ -46,13 +46,14 @@ fun MarkdownEditor(
 
     val scope = rememberCoroutineScope()
 
-    var hadFocusedBlock by remember { mutableStateOf(false) }
-
-    LaunchedEffect(editorState.focusedIndex) {
-        if (editorState.focusedIndex != null) {
-            hadFocusedBlock = true
-        } else if (hadFocusedBlock) {
-            surfaceFocusRequester.requestFocus()
+    DisposableEffect(editorState, surfaceFocusRequester) {
+        editorState.requestRootFocus = {
+            try {
+                surfaceFocusRequester.requestFocus()
+            } catch (_: Exception) {}
+        }
+        onDispose {
+            editorState.requestRootFocus = null
         }
     }
 
@@ -63,13 +64,15 @@ fun MarkdownEditor(
             .imePadding()
             .pointerInput(Unit) {
                 detectTapGestures {
-                    surfaceFocusRequester.requestFocus()
                     if (editorState.focusedIndex != null) {
                         focusManager.clearFocus()
                         editorState.clearFocus()
                     } else {
                         editorState.addBlockAtEnd()
                     }
+                    try {
+                        surfaceFocusRequester.requestFocus()
+                    } catch (_: Exception) {}
                 }
             }
             .onExternalImageDrop(
@@ -79,7 +82,28 @@ fun MarkdownEditor(
                 }
             )
             .onPreviewKeyEvent { event ->
-                if (event.type == KeyEventType.KeyDown && editorState.focusedIndex == null) {
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+
+                val isShortcutModifier = event.isCtrlPressed || event.isMetaPressed
+
+                // Handle Undo (Ctrl+Z / Cmd+Z) and Redo (Ctrl+Shift+Z / Cmd+Shift+Z)
+                if (isShortcutModifier && event.key == Key.Z) {
+                    if (event.isShiftPressed) {
+                        editorState.redo()
+                    } else {
+                        editorState.undo()
+                    }
+                    return@onPreviewKeyEvent true
+                }
+
+                // Handle Redo (Ctrl+Y / Cmd+Y)
+                if (isShortcutModifier && event.key == Key.Y) {
+                    editorState.redo()
+                    return@onPreviewKeyEvent true
+                }
+
+                // Navigation and creation when no block is actively focused
+                if (editorState.focusedIndex == null) {
                     when (event.key) {
                         Key.DirectionUp -> {
                             val lastIndex = markdownBlocks.lastIndex
@@ -88,6 +112,7 @@ fun MarkdownEditor(
                                     lastIndex,
                                     TextRange(markdownBlocks[lastIndex].length)
                                 )
+                                return@onPreviewKeyEvent true
                             }
                         }
 
@@ -97,23 +122,13 @@ fun MarkdownEditor(
                                     0,
                                     TextRange(markdownBlocks[0].length)
                                 )
+                                return@onPreviewKeyEvent true
                             }
                         }
 
                         Key.Enter -> {
                             editorState.addBlockAtEnd()
-                        }
-
-                        Key.Z -> {
-                            if (event.isCtrlPressed) {
-                                editorState.undo()
-                            }
-                        }
-
-                        Key.Y -> {
-                            if (event.isCtrlPressed) {
-                                editorState.redo()
-                            }
+                            return@onPreviewKeyEvent true
                         }
                     }
                 }

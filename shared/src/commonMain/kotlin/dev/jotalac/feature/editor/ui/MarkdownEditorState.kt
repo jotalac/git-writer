@@ -23,17 +23,32 @@ class MarkdownEditorState(
         private set
 
 
+    var requestRootFocus: (() -> Unit)? = null
+
+    fun requestEditorFocus() {
+        requestRootFocus?.invoke()
+    }
+
     fun focusBlock(index: Int, cursor: TextRange? = null) {
         focusedIndex = index
         val text = blocksState.value.getOrNull(index) ?: ""
+        val safeCursor = if (cursor != null) {
+            TextRange(
+                cursor.start.coerceIn(0, text.length),
+                cursor.end.coerceIn(0, text.length)
+            )
+        } else {
+            TextRange(text.length)
+        }
         activeTextFieldValue = TextFieldValue(
             text = text,
-            selection = cursor ?: TextRange(text.length)
+            selection = safeCursor
         )
     }
 
     fun clearFocus() {
         focusedIndex = null
+        requestEditorFocus()
     }
 
     fun updateActiveText(newValue: TextFieldValue, fromIndex: Int? = null) {
@@ -49,6 +64,12 @@ class MarkdownEditorState(
             }
         }
 
+    }
+
+    fun updateBlockText(index: Int, newText: String) {
+        if (index !in blocksState.value.indices) return
+        historyManager.record(createCurrentSnapshot(), true)
+        dispatchAction(EditorAction.UpdateBlock(index, newText))
     }
 
     fun dispatchAction(action: EditorAction) {
@@ -83,7 +104,7 @@ class MarkdownEditorState(
         val prevState = historyManager.undo(createCurrentSnapshot()) ?: return
 
         dispatchAction(EditorAction.SetBlocks(prevState.blocks))
-        if (prevState.focusedIndex != null) {
+        if (prevState.focusedIndex != null && prevState.focusedIndex in prevState.blocks.indices) {
             focusBlock(prevState.focusedIndex, prevState.selection)
         } else {
             clearFocus()
@@ -94,7 +115,7 @@ class MarkdownEditorState(
         val nextState = historyManager.redo(createCurrentSnapshot()) ?: return
 
         dispatchAction(EditorAction.SetBlocks(nextState.blocks))
-        if (nextState.focusedIndex != null) {
+        if (nextState.focusedIndex != null && nextState.focusedIndex in nextState.blocks.indices) {
             focusBlock(nextState.focusedIndex, nextState.selection)
         } else {
             clearFocus()
@@ -224,8 +245,13 @@ class MarkdownEditorState(
         historyManager.record(createCurrentSnapshot(), true)
 
         dispatchAction(EditorAction.RemoveBlock(index))
-        if (focusedIndex == index) {
+        val current = focusedIndex
+        if (current == index) {
             clearFocus()
+        } else if (current != null && current > index) {
+            focusedIndex = current - 1
+        } else if (current == null) {
+            requestEditorFocus()
         }
     }
 

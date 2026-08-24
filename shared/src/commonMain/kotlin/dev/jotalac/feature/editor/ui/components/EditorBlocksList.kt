@@ -55,7 +55,7 @@ fun MarkdownEditorBlocksList(
                             ),
                         onDeleteClick = { editorState.deleteBlock(index) },
                         onTextChange = { newText ->
-                            editorState.dispatchAction(EditorAction.UpdateBlock(index, newText))
+                            editorState.updateBlockText(index, newText)
                         }
                     )
                 }
