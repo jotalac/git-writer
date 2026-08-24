@@ -78,4 +78,37 @@
     <string name="sync_status_not_configured">Git sync is not configured.</string>
     <string name="undo_button">Undo</string>
     <string name="redo_button">Redo</string>
+    <string name="settings_title">Settings</string>
+    <string name="toggle_side_bar_desc">Toggle sidebar visibility</string>
+    <string name="close">Close</string>
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="toggle_collapse">Toggle collapse</string>
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_subtitle">Theme mode &amp; accent color</string>
+    <string name="settings_theme_mode_label">Theme mode</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_accent_color_label">Accent color</string>
+    <string name="settings_font_title">Font &amp; Typography</string>
+    <string name="settings_font_subtitle">Font family</string>
+    <string name="settings_font_family_label">Font family</string>
+    <string name="settings_font_default">Default</string>
+    <string name="settings_font_monospace">Monospace</string>
+    <string name="settings_font_serif">Serif</string>
+    <string name="settings_font_size_label">Font size</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_section_title">Language settings</string>
+    <string name="settings_language_subtitle">Application display language</string>
+    <string name="settings_language_label">Select language</string>
+    <string name="settings_sync_title">Git Sync</string>
+    <string name="settings_sync_section_title">Conflict resolution</string>
+    <string name="settings_sync_section_subtitle">Configure how merge conflicts are handled</string>
+    <string name="settings_conflict_strategy_label">Resolution strategy</string>
+    <string name="settings_conflict_manual">Manual merge</string>
+    <string name="settings_conflict_auto">Auto merge</string>
+    <string name="settings_auto_merge_preference_label">Auto merge preference</string>
+    <string name="settings_auto_accept_local">Always accept local changes</string>
+    <string name="settings_auto_accept_remote">Always accept remote changes</string>
+
 </resources>

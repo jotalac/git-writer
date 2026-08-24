@@ -1,11 +1,6 @@
 package dev.jotalac.feature.editor_sidebar.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
@@ -13,11 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -33,6 +24,7 @@ import dev.jotalac.core.ui.theme.dimensions
 @Composable
 fun EditorSidebar(
     isVisible: Boolean,
+    openSettingsOnMobile: () -> Unit,
 ) {
     val initialWidth = MaterialTheme.dimensions.navDrawerWidth
     var sidebarWidth by remember(initialWidth) { mutableStateOf(initialWidth) }
@@ -57,7 +49,10 @@ fun EditorSidebar(
         ) {
 
             Row {
-                SidebarContent(modifier = Modifier.weight(1f))
+                SidebarContent(
+                    modifier = Modifier.weight(1f),
+                    onOpenSettingsOnMobile = openSettingsOnMobile
+                )
 
                 SidebarDraggableHandle(
                     onDragDelta = { delta ->

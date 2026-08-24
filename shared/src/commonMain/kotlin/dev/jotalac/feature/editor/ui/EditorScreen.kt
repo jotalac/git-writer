@@ -25,18 +25,19 @@ import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
 import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.closed_sidebar
-import git_writer.shared.generated.resources.opened_sidebar
-import git_writer.shared.generated.resources.x_icon
+import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
+fun EditorScreen(
+    openSettingsOnMobile: () -> Unit,
+    viewModel: EditorViewModel = koinViewModel()
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val blocks = viewModel.markdownBlocks
 
@@ -94,7 +95,8 @@ fun EditorScreen(viewModel: EditorViewModel = koinViewModel()) {
                 isLoading = state.isLoading,
                 onNoteClose = viewModel::closeActiveNote,
                 onAction = viewModel::onAction,
-                gitSyncStatus = state.gitSyncStatus
+                gitSyncStatus = state.gitSyncStatus,
+                openSettingsOnMobile = openSettingsOnMobile
             )
         } else {
             ExpandedEditorLayout(
@@ -121,6 +123,7 @@ private fun CompactEditorLayout(
     onNoteClose: () -> Unit,
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
+    openSettingsOnMobile: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -131,7 +134,8 @@ private fun CompactEditorLayout(
         drawerContent = {
             ModalDrawerSheet(modifier = Modifier.width(MaterialTheme.dimensions.navDrawerWidth)) {
                 SidebarContent(
-                    closeSidebarOnNoteOpen = { scope.launch { drawerState.close() } }
+                    onSidebarClose = { scope.launch { drawerState.close() } },
+                    onOpenSettingsOnMobile = openSettingsOnMobile
                 )
             }
         }
@@ -165,11 +169,15 @@ private fun ExpandedEditorLayout(
     onNoteClose: () -> Unit,
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
+    openSettingsOnMobile: () -> Unit = {},
 ) {
     var isSidebarVisible by remember { mutableStateOf(true) }
 
     Row(modifier = Modifier.fillMaxSize()) {
-        EditorSidebar(isVisible = isSidebarVisible)
+        EditorSidebar(
+            isVisible = isSidebarVisible,
+            openSettingsOnMobile = openSettingsOnMobile,
+        )
 
         MainEditorScaffold(
             modifier = Modifier.weight(1f),
@@ -244,7 +252,7 @@ fun MainEditorScaffold(
                             ) {
                                 Icon(
                                     painter = painterResource(Res.drawable.x_icon),
-                                    contentDescription = "close icon",
+                                    contentDescription = stringResource(Res.string.close),
                                     tint = MaterialTheme.colorScheme.outline,
                                     modifier = Modifier.size(MaterialTheme.dimensions.iconMedium)
                                 )

@@ -9,12 +9,14 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.utils.buildClipEntry
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor_sidebar.ui.components.ActiveNotebookMenu
 import dev.jotalac.feature.editor_sidebar.ui.components.SidebarGlobalActions
 import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.FileTree
 import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListDialog
+import dev.jotalac.feature.settings.ui.SettingsDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -23,11 +25,13 @@ import org.koin.compose.viewmodel.koinViewModel
 fun SidebarContent(
     viewModel: EditorSidebarViewModel = koinViewModel(),
     modifier: Modifier = Modifier,
-    closeSidebarOnNoteOpen: () -> Unit = {},
+    onSidebarClose: () -> Unit = {},
+    onOpenSettingsOnMobile: () -> Unit,
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var showListDialog by remember { mutableStateOf(false) }
     var showEditNotebookDialog by remember { mutableStateOf(false) }
+    var showDesktopSettingsDialog by remember { mutableStateOf(false) }
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -63,6 +67,10 @@ fun SidebarContent(
         )
     }
 
+    if (showDesktopSettingsDialog) {
+        SettingsDialog(onDismiss = { showDesktopSettingsDialog = false })
+    }
+
 
     Column(
         modifier = modifier
@@ -72,7 +80,14 @@ fun SidebarContent(
         SidebarGlobalActions(
             onNotebookOpen = { showListDialog = true },
             onNotebookCreate = { showCreateDialog = true },
-            onSettingsOpen = {},
+            onSettingsOpen = {
+                if (isDesktopPlatform) {
+                    showDesktopSettingsDialog = true
+                } else {
+                    onSidebarClose()
+                    onOpenSettingsOnMobile()
+                }
+            },
         )
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
@@ -107,7 +122,7 @@ fun SidebarContent(
                         }
                     }
                     // close the sidebar
-                    if (action is SidebarAction.OpenNote) closeSidebarOnNoteOpen()
+                    if (action is SidebarAction.OpenNote) onSidebarClose()
                     viewModel.onAction(action)
                 }
             )

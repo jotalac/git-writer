@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AlertDialogTitleWithIcon
 import dev.jotalac.feature.notebooks_management.domain.Notebook
+import dev.jotalac.feature.notebooks_management.ui.components.SubmittableTextField
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -34,6 +35,12 @@ fun EditNotebookDialog(
         )
     }
 
+    fun onSubmit() {
+        viewModel.onEvent(EditNotebookViewModel.EditNotebookEvent.SaveNotebook {
+            onDismiss()
+        })
+    }
+
     AlertDialog(
         onDismissRequest = { if (!state.isLoading) onDismiss() },
         title = {
@@ -47,12 +54,12 @@ fun EditNotebookDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                OutlinedTextField(
+                SubmittableTextField(
                     value = state.notebookName,
                     onValueChange = { viewModel.onEvent(EditNotebookViewModel.EditNotebookEvent.NameChanged(it)) },
-                    label = { Text(stringResource(Res.string.notebook_name_placeholder)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    label = Res.string.notebook_name_placeholder,
+                    modifier = Modifier.fillMaxWidth(),
+                    submit = { onSubmit() }
                 )
 
                 HorizontalDivider()
@@ -166,11 +173,7 @@ fun EditNotebookDialog(
         },
         confirmButton = {
             Button(
-                onClick = {
-                    viewModel.onEvent(EditNotebookViewModel.EditNotebookEvent.SaveNotebook {
-                        onDismiss()
-                    })
-                },
+                onClick = { onSubmit() },
                 enabled = state.notebookName.isNotBlank() && !state.isLoading
             ) {
                 Row(

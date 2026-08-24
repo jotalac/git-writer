@@ -13,6 +13,7 @@ import dev.jotalac.core.ui.components.AlertDialogTitleWithIcon
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.toSafeFileName
+import dev.jotalac.feature.notebooks_management.ui.components.SubmittableTextField
 import dev.jotalac.feature.notebooks_management.ui.validateRemoteUrl
 import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.FileKit
@@ -67,6 +68,32 @@ fun CreateNotebookDialog(
         }
     }
 
+    fun submitForm() {
+        if (state.selectedTabIndex == 0) {
+            viewModel.onEvent(
+                CreateNotebookViewModel.CreateNotebookEvent.CreateLocalNotebook(
+                    actualDirectory
+                ) {
+                    onDismiss()
+                })
+        } else {
+            val validationResult = validateCloneForm()
+            if (validationResult != null) {
+                viewModel.onEvent(
+                    CreateNotebookViewModel.CreateNotebookEvent.AddErrorMessage(
+                        validationResult
+                    )
+                )
+            } else {
+                viewModel.onEvent(
+                    CreateNotebookViewModel.CreateNotebookEvent.CloneRemoteNotebook(
+                        actualDirectory
+                    ) {
+                        onDismiss()
+                    })
+            }
+        }
+    }
 
 
 
@@ -127,7 +154,8 @@ fun CreateNotebookDialog(
                                 )
                             },
                             directory = actualDirectory,
-                            onBrowseClick = { browseForDirectory() }
+                            onBrowseClick = { browseForDirectory() },
+                            onSubmit = { submitForm() }
                         )
 
                         1 -> CloneNotebookForm(
@@ -180,32 +208,7 @@ fun CreateNotebookDialog(
         },
         confirmButton = {
             Button(
-                onClick = {
-                    if (state.selectedTabIndex == 0) {
-                        viewModel.onEvent(
-                            CreateNotebookViewModel.CreateNotebookEvent.CreateLocalNotebook(
-                                actualDirectory
-                            ) {
-                                onDismiss()
-                            })
-                    } else {
-                        val validationResult = validateCloneForm()
-                        if (validationResult != null) {
-                            viewModel.onEvent(
-                                CreateNotebookViewModel.CreateNotebookEvent.AddErrorMessage(
-                                    validationResult
-                                )
-                            )
-                        } else {
-                            viewModel.onEvent(
-                                CreateNotebookViewModel.CreateNotebookEvent.CloneRemoteNotebook(
-                                    actualDirectory
-                                ) {
-                                    onDismiss()
-                                })
-                        }
-                    }
-                },
+                onClick = { submitForm() },
                 enabled = if (state.selectedTabIndex == 0) {
                     state.notebookName.isNotBlank() && actualDirectory.isNotBlank() && !state.isLoading
                 } else {
@@ -265,15 +268,16 @@ private fun LocalNotebookForm(
     name: String,
     onNameChange: (String) -> Unit,
     directory: String?,
-    onBrowseClick: () -> Unit
+    onBrowseClick: () -> Unit,
+    onSubmit: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        OutlinedTextField(
+        SubmittableTextField(
             value = name,
             onValueChange = onNameChange,
-            label = { Text(stringResource(Res.string.notebook_name_placeholder)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = Res.string.notebook_name_placeholder,
+            modifier = Modifier.fillMaxWidth(),
+            submit = onSubmit
         )
 
         if (isDesktopPlatform) {

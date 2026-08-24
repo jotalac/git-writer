@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface Route {
     @Serializable
-    data object Editor : Route
+    data object Settings : Route
 
     @Serializable
     data object MainApp : Route

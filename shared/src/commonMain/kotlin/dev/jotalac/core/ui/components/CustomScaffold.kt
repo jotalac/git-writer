@@ -28,11 +28,6 @@ fun CustomScaffold(
             }
         },
         floatingActionButton = floatingActionButton,
-//        floatingActionButton = {
-//            FloatingActionButton(onClick = { /* Commit to Git */ }) {
-//                Text("Sync")
-//            }
-//        }
     ) { paddingValues ->
         content(paddingValues)
     }
