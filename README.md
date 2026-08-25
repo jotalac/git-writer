@@ -6,7 +6,7 @@
 
 - apply the language settings to the app
 - apply the git conflict resolution strategy
-- add more themes
+- make ctrl+n create new note
 
 > medium priority
 

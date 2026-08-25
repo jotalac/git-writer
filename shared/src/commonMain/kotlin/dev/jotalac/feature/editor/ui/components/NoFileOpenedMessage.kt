@@ -17,7 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.info_icon
+import git_writer.shared.generated.resources.no_file_opened_subtitle
+import git_writer.shared.generated.resources.no_file_opened_title
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NoFileOpenedMessage() {
@@ -39,13 +42,13 @@ fun NoFileOpenedMessage() {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "No file is opened",
+                text = stringResource(Res.string.no_file_opened_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Select a file from the sidebar to start editing",
+                text = stringResource(Res.string.no_file_opened_subtitle),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             )

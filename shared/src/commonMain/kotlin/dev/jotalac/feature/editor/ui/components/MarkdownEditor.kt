@@ -50,7 +50,8 @@ fun MarkdownEditor(
         editorState.requestRootFocus = {
             try {
                 surfaceFocusRequester.requestFocus()
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
         onDispose {
             editorState.requestRootFocus = null
@@ -72,7 +73,8 @@ fun MarkdownEditor(
                     }
                     try {
                         surfaceFocusRequester.requestFocus()
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                    }
                 }
             }
             .onExternalImageDrop(
@@ -86,7 +88,7 @@ fun MarkdownEditor(
 
                 val isShortcutModifier = event.isCtrlPressed || event.isMetaPressed
 
-                // Handle Undo (Ctrl+Z / Cmd+Z) and Redo (Ctrl+Shift+Z / Cmd+Shift+Z)
+                // handle undo and redo
                 if (isShortcutModifier && event.key == Key.Z) {
                     if (event.isShiftPressed) {
                         editorState.redo()
@@ -96,42 +98,43 @@ fun MarkdownEditor(
                     return@onPreviewKeyEvent true
                 }
 
-                // Handle Redo (Ctrl+Y / Cmd+Y)
+                // Handle redo (ctrl+y)
                 if (isShortcutModifier && event.key == Key.Y) {
                     editorState.redo()
                     return@onPreviewKeyEvent true
                 }
 
+
                 // Navigation and creation when no block is actively focused
-                if (editorState.focusedIndex == null) {
-                    when (event.key) {
-                        Key.DirectionUp -> {
-                            val lastIndex = markdownBlocks.lastIndex
-                            if (lastIndex >= 0) {
-                                editorState.focusBlock(
-                                    lastIndex,
-                                    TextRange(markdownBlocks[lastIndex].length)
-                                )
+                    if (editorState.focusedIndex == null) {
+                        when (event.key) {
+                            Key.DirectionUp -> {
+                                val lastIndex = markdownBlocks.lastIndex
+                                if (lastIndex >= 0) {
+                                    editorState.focusBlock(
+                                        lastIndex,
+                                        TextRange(markdownBlocks[lastIndex].length)
+                                    )
+                                    return@onPreviewKeyEvent true
+                                }
+                            }
+
+                            Key.DirectionDown -> {
+                                if (markdownBlocks.isNotEmpty()) {
+                                    editorState.focusBlock(
+                                        0,
+                                        TextRange(markdownBlocks[0].length)
+                                    )
+                                    return@onPreviewKeyEvent true
+                                }
+                            }
+
+                            Key.Enter -> {
+                                editorState.addBlockAtEnd()
                                 return@onPreviewKeyEvent true
                             }
-                        }
-
-                        Key.DirectionDown -> {
-                            if (markdownBlocks.isNotEmpty()) {
-                                editorState.focusBlock(
-                                    0,
-                                    TextRange(markdownBlocks[0].length)
-                                )
-                                return@onPreviewKeyEvent true
-                            }
-                        }
-
-                        Key.Enter -> {
-                            editorState.addBlockAtEnd()
-                            return@onPreviewKeyEvent true
                         }
                     }
-                }
                 false
             },
         contentAlignment = Alignment.TopCenter

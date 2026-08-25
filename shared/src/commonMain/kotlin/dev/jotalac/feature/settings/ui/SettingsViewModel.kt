@@ -25,7 +25,7 @@ class SettingsViewModel(
             when (action) {
                 is SettingsAction.ChangeThemeMode ->
                     userSettingsManager.setThemeMode(action.themeMode)
-
+                
                 is SettingsAction.ChangeThemeAccentColor ->
                     userSettingsManager.setThemeAccentColor(action.accentColor)
 

@@ -23,6 +23,8 @@
     <string name="destination_directory_label">Destination directory</string>
     <string name="browse_destination_button">Browse</string>
     <string name="no_file_loaded_msg">No file loaded</string>
+    <string name="no_file_opened_title">No file is opened</string>
+    <string name="no_file_opened_subtitle">Select a file from the sidebar to start editing</string>
     <string name="create_new_file">Add note</string>
     <string name="create_new_folder">Create folder</string>
     <string name="collapse_folders">Collapse folders</string>
@@ -110,8 +112,5 @@
     <string name="settings_auto_merge_preference_label">Auto merge preference</string>
     <string name="settings_auto_accept_local">Always accept local changes</string>
     <string name="settings_auto_accept_remote">Always accept remote changes</string>
-    <string name="english_language">English</string>
-    <string name="spanish_language">Spanish</string>
-    <string name="czech_language">Czech</string>
 
 </resources>

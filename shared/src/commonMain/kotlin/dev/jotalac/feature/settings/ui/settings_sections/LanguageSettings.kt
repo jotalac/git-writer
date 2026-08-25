@@ -24,12 +24,6 @@ fun LanguageSettings(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
-    val languageLabels = mapOf(
-        AppLanguage.ENGLISH to stringResource(Res.string.english_language),
-        AppLanguage.SPANISH to stringResource(Res.string.spanish_language),
-        AppLanguage.CZECH to stringResource(Res.string.czech_language),
-    )
-
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -58,7 +52,7 @@ fun LanguageSettings(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
-                        value = languageLabels[selectedLanguage]!!,
+                        value = selectedLanguage.title,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -77,7 +71,7 @@ fun LanguageSettings(
                     ) {
                         AppLanguage.entries.forEach { language ->
                             DropdownMenuItem(
-                                text = { Text(languageLabels[language]!!) },
+                                text = { Text(language.title) },
                                 onClick = {
                                     onLanguageChange(language)
                                     isExpanded = false
