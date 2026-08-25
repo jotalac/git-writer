@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.jotalac.core.data.UserSettingsManager
+import dev.jotalac.core.domain.GitConflictResolutionStrategy
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.detectImageExtension
 import dev.jotalac.core.utils.isImageFile
@@ -38,6 +40,7 @@ class EditorViewModel(
     private val notebookRepository: NotebookRepository,
     private val editorRepository: EditorRepository,
     private val snackbarManager: SnackbarManager,
+    private val userSettingsManager: UserSettingsManager,
     private val gitSyncRepository: GitSyncRepository,
 ) : ViewModel() {
 
@@ -45,7 +48,6 @@ class EditorViewModel(
     val uiState: StateFlow<EditorScreenState> = _uiState.asStateFlow()
 
     val markdownBlocks = mutableStateListOf<String>()
-
 
     init {
         // load the file data
@@ -156,8 +158,23 @@ class EditorViewModel(
             result.onSuccess { syncResult ->
                 // check if we need to resolve conflicts
                 if (syncResult is GitSyncStatus.Conflict) {
-                    _uiState.update { state ->
-                        state.copy(conflictedFiles = syncResult.files.toList())
+                    val strategy = userSettingsManager.userSettingsStateFlow.first().gitConflictStrategy
+                    // if auto conflict resolution is set
+                    if (strategy != GitConflictResolutionStrategy.MANUAL) {
+                        val keepLocal = strategy == GitConflictResolutionStrategy.LOCAL
+                        executeResolveAllConflicts(
+                            notebookPath = notebook.directoryPath,
+                            remotePassword = notebook.remotePassword,
+                            remoteUsername = notebook.remoteUsername,
+                            keepLocal = keepLocal
+                        )
+                    } else {
+                        _uiState.update { state ->
+                            state.copy(
+                                conflictedFiles = syncResult.files.toList(),
+                                gitSyncStatus = syncResult
+                            )
+                        }
                     }
                 } else {
                     val activePath = _uiState.value.activeNotePath
@@ -200,6 +217,7 @@ class EditorViewModel(
                             username = notebook.remoteUsername
                         )
                     }
+                    _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.UpToDate) }
                     snackbarManager.showMessage("All conflicts resolved and synced")
                 }
             }.onFailure {
@@ -211,30 +229,50 @@ class EditorViewModel(
     fun resolveAllConflicts(keepLocal: Boolean) {
         viewModelScope.launch {
             val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
-            val result = gitSyncRepository.resolveAllConflicts(
-                currentNotebookPath = notebook.directoryPath,
-                keepLocalChanges = keepLocal
+            executeResolveAllConflicts(
+                notebookPath = notebook.directoryPath,
+                remotePassword = notebook.remotePassword,
+                remoteUsername = notebook.remoteUsername,
+                keepLocal = keepLocal
             )
-            result.onSuccess {
-                _uiState.update { it.copy(conflictedFiles = emptyList()) }
+        }
+    }
 
-                // reload the opened note
-                val currentActive = _uiState.value.activeNotePath
-                if (currentActive != null) {
-                    loadFileContent(currentActive)
-                }
-
-                if (!notebook.remotePassword.isNullOrBlank()) {
-                    gitSyncRepository.pushChanges(
-                        currentNotebookPath = notebook.directoryPath,
-                        tokenOrPassword = notebook.remotePassword,
-                        username = notebook.remoteUsername
-                    )
-                }
-                snackbarManager.showMessage("All conflicts resolved and synced")
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to resolve conflicts")
+    private suspend fun executeResolveAllConflicts(
+        notebookPath: String,
+        remotePassword: String?,
+        remoteUsername: String?,
+        keepLocal: Boolean
+    ) {
+        val result = gitSyncRepository.resolveAllConflicts(
+            currentNotebookPath = notebookPath,
+            keepLocalChanges = keepLocal
+        )
+        result.onSuccess {
+            _uiState.update {
+                it.copy(
+                    conflictedFiles = emptyList(),
+                    gitSyncStatus = GitSyncStatus.UpToDate
+                )
             }
+
+            // reload the opened note
+            val currentActive = _uiState.value.activeNotePath
+            if (currentActive != null) {
+                loadFileContent(currentActive)
+            }
+
+            if (!remotePassword.isNullOrBlank()) {
+                gitSyncRepository.pushChanges(
+                    currentNotebookPath = notebookPath,
+                    tokenOrPassword = remotePassword,
+                    username = remoteUsername
+                )
+            }
+            snackbarManager.showMessage("All conflicts resolved and synced")
+        }.onFailure {
+            _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
+            snackbarManager.showMessage(it.message ?: "Failed to resolve conflicts")
         }
     }
 
@@ -245,7 +283,7 @@ class EditorViewModel(
 
             result.onSuccess {
                 snackbarManager.showMessage("Sync aborted")
-                _uiState.update { it.copy(conflictedFiles = emptyList()) }
+                _uiState.update { it.copy(conflictedFiles = emptyList(), gitSyncStatus = GitSyncStatus.UpToDate) }
             }.onFailure {
                 snackbarManager.showMessage(it.message ?: "Failed to abort sync")
             }
