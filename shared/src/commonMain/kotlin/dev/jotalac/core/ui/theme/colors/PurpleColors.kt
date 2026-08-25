@@ -1,0 +1,156 @@
+package dev.jotalac.core.ui.theme.colors
+
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
+
+object PurpleColors {
+    val primaryLight = Color(0xFF2D29BC)
+    val onPrimaryLight = Color(0xFFFFFFFF)
+    val primaryContainerLight = Color(0xFF4747D4)
+    val onPrimaryContainerLight = Color(0xFFD1D0FF)
+    val secondaryLight = Color(0xFF585992)
+    val onSecondaryLight = Color(0xFFFFFFFF)
+    val secondaryContainerLight = Color(0xFFBEBEFF)
+    val onSecondaryContainerLight = Color(0xFF4A4B83)
+    val tertiaryLight = Color(0xFF790483)
+    val onTertiaryLight = Color(0xFFFFFFFF)
+    val tertiaryContainerLight = Color(0xFF952B9D)
+    val onTertiaryContainerLight = Color(0xFFFFC0FB)
+    val errorLight = Color(0xFFBA1A1A)
+    val onErrorLight = Color(0xFFFFFFFF)
+    val errorContainerLight = Color(0xFFFFDAD6)
+    val onErrorContainerLight = Color(0xFF93000A)
+    val backgroundLight = Color(0xFFFCF8FF)
+    val onBackgroundLight = Color(0xFF1B1B23)
+    val surfaceLight = Color(0xFFFCF8FF)
+    val onSurfaceLight = Color(0xFF1B1B23)
+    val surfaceVariantLight = Color(0xFFE3E0F3)
+    val onSurfaceVariantLight = Color(0xFF464554)
+    val outlineLight = Color(0xFF767586)
+    val outlineVariantLight = Color(0xFFC7C4D7)
+    val scrimLight = Color(0xFF000000)
+    val inverseSurfaceLight = Color(0xFF302F39)
+    val inverseOnSurfaceLight = Color(0xFFF2EFFB)
+    val inversePrimaryLight = Color(0xFFC1C1FF)
+    val surfaceDimLight = Color(0xFFDBD8E4)
+    val surfaceBrightLight = Color(0xFFFCF8FF)
+    val surfaceContainerLowestLight = Color(0xFFFFFFFF)
+    val surfaceContainerLowLight = Color(0xFFF5F2FE)
+    val surfaceContainerLight = Color(0xFFEFECF8)
+    val surfaceContainerHighLight = Color(0xFFEAE6F3)
+    val surfaceContainerHighestLight = Color(0xFFE4E1ED)
+
+    val primaryDark = Color(0xFFC1C1FF)
+    val onPrimaryDark = Color(0xFF1300A9)
+    val primaryContainerDark = Color(0xFF4747D4)
+    val onPrimaryContainerDark = Color(0xFFD1D0FF)
+    val secondaryDark = Color(0xFFC1C1FF)
+    val onSecondaryDark = Color(0xFF292A61)
+    val secondaryContainerDark = Color(0xFF404179)
+    val onSecondaryContainerDark = Color(0xFFAFAFEF)
+    val tertiaryDark = Color(0xFFFFA9FD)
+    val onTertiaryDark = Color(0xFF590061)
+    val tertiaryContainerDark = Color(0xFF952B9D)
+    val onTertiaryContainerDark = Color(0xFFFFC0FB)
+    val errorDark = Color(0xFFFFB4AB)
+    val onErrorDark = Color(0xFF690005)
+    val errorContainerDark = Color(0xFF93000A)
+    val onErrorContainerDark = Color(0xFFFFDAD6)
+    val backgroundDark = Color(0xFF13131B)
+    val onBackgroundDark = Color(0xFFE4E1ED)
+    val surfaceDark = Color(0xFF13131B)
+    val onSurfaceDark = Color(0xFFE4E1ED)
+    val surfaceVariantDark = Color(0xFF464554)
+    val onSurfaceVariantDark = Color(0xFFC7C4D7)
+    val outlineDark = Color(0xFF908FA0)
+    val outlineVariantDark = Color(0xFF464554)
+    val scrimDark = Color(0xFF000000)
+    val inverseSurfaceDark = Color(0xFFE4E1ED)
+    val inverseOnSurfaceDark = Color(0xFF302F39)
+    val inversePrimaryDark = Color(0xFF4A4AD7)
+    val surfaceDimDark = Color(0xFF13131B)
+    val surfaceBrightDark = Color(0xFF393841)
+    val surfaceContainerLowestDark = Color(0xFF0D0D15)
+    val surfaceContainerLowDark = Color(0xFF1B1B23)
+    val surfaceContainerDark = Color(0xFF1F1F27)
+    val surfaceContainerHighDark = Color(0xFF292932)
+    val surfaceContainerHighestDark = Color(0xFF34343D)
+}
+
+
+internal val purpleLightScheme = lightColorScheme(
+    primary = PurpleColors.primaryLight,
+    onPrimary = PurpleColors.onPrimaryLight,
+    primaryContainer = PurpleColors.primaryContainerLight,
+    onPrimaryContainer = PurpleColors.onPrimaryContainerLight,
+    secondary = PurpleColors.secondaryLight,
+    onSecondary = PurpleColors.onSecondaryLight,
+    secondaryContainer = PurpleColors.secondaryContainerLight,
+    onSecondaryContainer = PurpleColors.onSecondaryContainerLight,
+    tertiary = PurpleColors.tertiaryLight,
+    onTertiary = PurpleColors.onTertiaryLight,
+    tertiaryContainer = PurpleColors.tertiaryContainerLight,
+    onTertiaryContainer = PurpleColors.onTertiaryContainerLight,
+    error = PurpleColors.errorLight,
+    onError = PurpleColors.onErrorLight,
+    errorContainer = PurpleColors.errorContainerLight,
+    onErrorContainer = PurpleColors.onErrorContainerLight,
+    background = PurpleColors.backgroundLight,
+    onBackground = PurpleColors.onBackgroundLight,
+    surface = PurpleColors.surfaceLight,
+    onSurface = PurpleColors.onSurfaceLight,
+    surfaceVariant = PurpleColors.surfaceVariantLight,
+    onSurfaceVariant = PurpleColors.onSurfaceVariantLight,
+    outline = PurpleColors.outlineLight,
+    outlineVariant = PurpleColors.outlineVariantLight,
+    scrim = PurpleColors.scrimLight,
+    inverseSurface = PurpleColors.inverseSurfaceLight,
+    inverseOnSurface = PurpleColors.inverseOnSurfaceLight,
+    inversePrimary = PurpleColors.inversePrimaryLight,
+    surfaceDim = PurpleColors.surfaceDimLight,
+    surfaceBright = PurpleColors.surfaceBrightLight,
+    surfaceContainerLowest = PurpleColors.surfaceContainerLowestLight,
+    surfaceContainerLow = PurpleColors.surfaceContainerLowLight,
+    surfaceContainer = PurpleColors.surfaceContainerLight,
+    surfaceContainerHigh = PurpleColors.surfaceContainerHighLight,
+    surfaceContainerHighest = PurpleColors.surfaceContainerHighestLight,
+)
+
+internal val purpleDarkScheme = darkColorScheme(
+    primary = PurpleColors.primaryDark,
+    onPrimary = PurpleColors.onPrimaryDark,
+    primaryContainer = PurpleColors.primaryContainerDark,
+    onPrimaryContainer = PurpleColors.onPrimaryContainerDark,
+    secondary = PurpleColors.secondaryDark,
+    onSecondary = PurpleColors.onSecondaryDark,
+    secondaryContainer = PurpleColors.secondaryContainerDark,
+    onSecondaryContainer = PurpleColors.onSecondaryContainerDark,
+    tertiary = PurpleColors.tertiaryDark,
+    onTertiary = PurpleColors.onTertiaryDark,
+    tertiaryContainer = PurpleColors.tertiaryContainerDark,
+    onTertiaryContainer = PurpleColors.onTertiaryContainerDark,
+    error = PurpleColors.errorDark,
+    onError = PurpleColors.onErrorDark,
+    errorContainer = PurpleColors.errorContainerDark,
+    onErrorContainer = PurpleColors.onErrorContainerDark,
+    background = PurpleColors.backgroundDark,
+    onBackground = PurpleColors.onBackgroundDark,
+    surface = PurpleColors.surfaceDark,
+    onSurface = PurpleColors.onSurfaceDark,
+    surfaceVariant = PurpleColors.surfaceVariantDark,
+    onSurfaceVariant = PurpleColors.onSurfaceVariantDark,
+    outline = PurpleColors.outlineDark,
+    outlineVariant = PurpleColors.outlineVariantDark,
+    scrim = PurpleColors.scrimDark,
+    inverseSurface = PurpleColors.inverseSurfaceDark,
+    inverseOnSurface = PurpleColors.inverseOnSurfaceDark,
+    inversePrimary = PurpleColors.inversePrimaryDark,
+    surfaceDim = PurpleColors.surfaceDimDark,
+    surfaceBright = PurpleColors.surfaceBrightDark,
+    surfaceContainerLowest = PurpleColors.surfaceContainerLowestDark,
+    surfaceContainerLow = PurpleColors.surfaceContainerLowDark,
+    surfaceContainer = PurpleColors.surfaceContainerDark,
+    surfaceContainerHigh = PurpleColors.surfaceContainerHighDark,
+    surfaceContainerHighest = PurpleColors.surfaceContainerHighestDark,
+)

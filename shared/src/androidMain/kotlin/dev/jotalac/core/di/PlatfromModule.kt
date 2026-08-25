@@ -3,9 +3,9 @@ package dev.jotalac.core.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.RoomDatabase
+import dev.jotalac.core.data.DATA_STORE_FILE_NAME
+import dev.jotalac.core.data.createDataStore
 import dev.jotalac.core.database.AppDatabase
-import dev.jotalac.core.database.DATA_STORE_FILE_NAME
-import dev.jotalac.core.database.createDataStore
 import dev.jotalac.core.database.getDatabaseBuilder
 import dev.jotalac.feature.git_sync.data.JGitSyncRepositoryImpl
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository

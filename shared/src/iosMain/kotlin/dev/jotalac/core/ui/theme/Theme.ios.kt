@@ -1,14 +1,15 @@
 package dev.jotalac.core.ui.theme
 
-import androidx.compose.material3.ColorScheme
-import androidx.compose.runtime.Composable
-
 @Composable
 actual fun determineColorScheme(
     isDark: Boolean,
-    dynamicColor: Boolean
+    dynamicColor: Boolean,
+    accentColor: ThemeAccentColor
 ): ColorScheme {
-    return if (isDark) darkScheme else lightScheme
+    return when (accentColor) {
+        ThemeAccentColor.DEFAULT -> if (isDark) defaultDarkScheme else defaultLightScheme
+        ThemeAccentColor.PURPLE -> if (isDark) purpleDarkScheme else purpleLightScheme
+    }
 }
 
 actual fun determineAppDimensions(): AppDimensions = MobileDimensions

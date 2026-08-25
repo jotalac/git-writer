@@ -2,7 +2,9 @@ package dev.jotalac.core.di
 
 import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import dev.jotalac.core.database.ActiveNotebookManager
+import dev.jotalac.AppViewModel
+import dev.jotalac.core.data.ActiveNotebookManager
+import dev.jotalac.core.data.UserSettingsManager
 import dev.jotalac.core.database.AppDatabase
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.editor.data.EditorRepositoryImpl
@@ -14,6 +16,7 @@ import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookViewModel
 import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookViewModel
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListViewModel
+import dev.jotalac.feature.settings.ui.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.core.context.startKoin
@@ -39,7 +42,9 @@ val coreModule = module {
 
     single { SnackbarManager() }
 
-    single { ActiveNotebookManager(dataStore = get()) }
+    single { ActiveNotebookManager(get()) }
+
+    single { UserSettingsManager(get()) }
 
 }
 
@@ -58,6 +63,8 @@ val featureModules = module {
     viewModelOf(::EditNotebookViewModel)
     viewModelOf(::NotebookListViewModel)
     viewModelOf(::EditorSidebarViewModel)
+    viewModelOf(::SettingsViewModel)
+    viewModelOf(::AppViewModel)
 }
 
 val appModules = listOf(coreModule, featureModules)

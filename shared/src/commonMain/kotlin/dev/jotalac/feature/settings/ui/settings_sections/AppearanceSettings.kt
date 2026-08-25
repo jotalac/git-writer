@@ -11,16 +11,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.domain.AppFontFamily
+import dev.jotalac.core.domain.AppThemeAccentColor
+import dev.jotalac.core.domain.AppThemeMode
+import dev.jotalac.core.ui.theme.JetBrainsMonoFont
 import dev.jotalac.feature.settings.ui.SectionTitle
 import dev.jotalac.feature.settings.ui.SettingsCollapsableSection
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun AppearanceSettings() {
+fun AppearanceSettings(
+    selectedTheme: AppThemeMode,
+    selectedThemeAccentColor: AppThemeAccentColor,
+    selectedFontFamily: AppFontFamily,
+    onThemeChange: (AppThemeMode) -> Unit,
+    onThemeAccentColorChange: (AppThemeAccentColor) -> Unit,
+    onFontFamilyChange: (AppFontFamily) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(
@@ -28,38 +41,40 @@ fun AppearanceSettings() {
             Res.drawable.palette
         )
 
-        ThemeSettings()
+        ThemeSettings(
+            selectedTheme = selectedTheme,
+            selectedColor = selectedThemeAccentColor,
+            onThemeChange = onThemeChange,
+            onColorChange = onThemeAccentColorChange
+        )
 
-        FontSettings()
+        FontSettings(
+            selectedFontFamily = selectedFontFamily,
+            onFontFamilyChange = onFontFamilyChange
+        )
     }
 }
 
-private val THEME_COLORS = listOf(
-    Color(0xFF6750A4), // Purple
-    Color(0xFF00639B), // Blue
-    Color(0xFF006A60), // Teal
-    Color(0xFF3B6939), // Green
-    Color(0xFF8B5000), // Amber
-    Color(0xFF984061), // Rose
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ThemeSettings() {
-    var selectedThemeIndex by remember { mutableStateOf(0) }
-    val themeOptions = listOf(
-        stringResource(Res.string.settings_theme_system),
-        stringResource(Res.string.settings_theme_light),
-        stringResource(Res.string.settings_theme_dark)
+private fun ThemeSettings(
+    selectedTheme: AppThemeMode,
+    selectedColor: AppThemeAccentColor,
+    onThemeChange: (AppThemeMode) -> Unit,
+    onColorChange: (AppThemeAccentColor) -> Unit
+) {
+    val themeLabels = mapOf(
+        AppThemeMode.SYSTEM to stringResource(Res.string.settings_theme_system),
+        AppThemeMode.LIGHT to stringResource(Res.string.settings_theme_light),
+        AppThemeMode.DARK to stringResource(Res.string.settings_theme_dark)
     )
-    var selectedColor by remember { mutableStateOf(THEME_COLORS.first()) }
 
     SettingsCollapsableSection(
         title = stringResource(Res.string.settings_theme_title),
         subtitle = stringResource(Res.string.settings_theme_subtitle),
         initiallyExpanded = true
     ) {
-        // Theme Mode Selector
+        // theme mode selector
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = stringResource(Res.string.settings_theme_mode_label),
@@ -70,16 +85,16 @@ private fun ThemeSettings() {
             SingleChoiceSegmentedButtonRow(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                themeOptions.forEachIndexed { index, label ->
+                AppThemeMode.entries.forEachIndexed { index, entry ->
                     SegmentedButton(
-                        selected = selectedThemeIndex == index,
-                        onClick = { selectedThemeIndex = index },
+                        selected = selectedTheme == entry,
+                        onClick = { onThemeChange(entry) },
                         shape = SegmentedButtonDefaults.itemShape(
                             index = index,
-                            count = themeOptions.size
+                            count = AppThemeMode.entries.size
                         )
                     ) {
-                        Text(label)
+                        Text(themeLabels[entry]!!)
                     }
                 }
             }
@@ -100,14 +115,14 @@ private fun ThemeSettings() {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                THEME_COLORS.forEach { color ->
-                    val isSelected = selectedColor == color
+                AppThemeAccentColor.entries.forEach { colorTheme ->
+                    val isSelected = selectedColor == colorTheme
 
                     Box(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(color)
+                            .background(Color(colorTheme.rgb))
                             .then(
                                 if (isSelected) {
                                     Modifier.border(
@@ -119,7 +134,7 @@ private fun ThemeSettings() {
                                     Modifier
                                 }
                             )
-                            .clickable { selectedColor = color },
+                            .clickable { onColorChange(colorTheme) },
                         contentAlignment = Alignment.Center
                     ) {
                         if (isSelected) {
@@ -139,11 +154,13 @@ private fun ThemeSettings() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FontSettings() {
-    var selectedFontIndex by remember { mutableStateOf(0) }
-    val fontOptions = listOf(
-        stringResource(Res.string.settings_font_default),
-        stringResource(Res.string.settings_font_monospace),
+private fun FontSettings(
+    selectedFontFamily: AppFontFamily,
+    onFontFamilyChange: (AppFontFamily) -> Unit
+) {
+    val fontLabels = mapOf(
+        AppFontFamily.DEFAULT to stringResource(Res.string.settings_font_default),
+        AppFontFamily.MONOSPACE to stringResource(Res.string.settings_font_monospace),
     )
 
     SettingsCollapsableSection(
@@ -161,16 +178,19 @@ private fun FontSettings() {
             SingleChoiceSegmentedButtonRow(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                fontOptions.forEachIndexed { index, label ->
+                AppFontFamily.entries.forEachIndexed { index, entry ->
                     SegmentedButton(
-                        selected = selectedFontIndex == index,
-                        onClick = { selectedFontIndex = index },
+                        selected = selectedFontFamily == entry,
+                        onClick = { onFontFamilyChange(entry) },
                         shape = SegmentedButtonDefaults.itemShape(
                             index = index,
-                            count = fontOptions.size
+                            count = fontLabels.size
                         )
                     ) {
-                        Text(label)
+                        Text(
+                            text = fontLabels[entry]!!,
+                            fontFamily = if (entry == AppFontFamily.MONOSPACE) JetBrainsMonoFont else FontFamily.Default
+                        )
                     }
                 }
             }

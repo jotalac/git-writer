@@ -9,21 +9,26 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    settingsViewModel: SettingsViewModel = koinViewModel(),
 ) {
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    val settingsState by settingsViewModel.userSettingsState.collectAsStateWithLifecycle()
 
     CustomScaffold(
         snackbarHostState = snackbarHostState,
@@ -56,6 +61,8 @@ fun SettingsScreen(
         }
     ) { innerPadding ->
         SettingsContent(
+            userSettingsState = settingsState,
+            onAction = settingsViewModel::onAction,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)

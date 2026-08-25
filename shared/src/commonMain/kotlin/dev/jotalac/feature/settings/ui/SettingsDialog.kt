@@ -4,20 +4,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.ui.theme.dimensions
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SettingsDialog(
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
+    val settingsState by settingsViewModel.userSettingsState.collectAsStateWithLifecycle()
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -76,6 +82,8 @@ fun SettingsDialog(
 
                 // Scrollable Content
                 SettingsContent(
+                    userSettingsState = settingsState,
+                    onAction = settingsViewModel::onAction,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)

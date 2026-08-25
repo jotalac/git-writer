@@ -1,22 +1,13 @@
-package dev.jotalac.core.database
+package dev.jotalac.core.data
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import okio.Path.Companion.toPath
 
-const val DATA_STORE_FILE_NAME = "app_preferences.preferences_pb"
-
-fun createDataStore(producePath: () -> String): DataStore<Preferences> {
-    return PreferenceDataStoreFactory.createWithPath(
-        produceFile = { producePath().toPath() }
-    )
-}
 
 data class ActiveNotebookState(
     val notebookId: Long?,
@@ -52,7 +43,6 @@ class ActiveNotebookManager(
             preferences[ACTIVE_NOTE_PATH_KEY] = notePath
         }
     }
-
 
 
     suspend fun clearActiveNotebook() {

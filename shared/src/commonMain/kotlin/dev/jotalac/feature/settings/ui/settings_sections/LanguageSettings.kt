@@ -8,21 +8,30 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.domain.AppLanguage
 import dev.jotalac.feature.settings.ui.SectionTitle
 import dev.jotalac.feature.settings.ui.SettingsCollapsableSection
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
-private val languageOptions = listOf("English", "Čeština", "Deutsch", "Español")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LanguageSettings() {
+fun LanguageSettings(
+    selectedLanguage: AppLanguage,
+    onLanguageChange: (AppLanguage) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedLanguage by remember { mutableStateOf(languageOptions.first()) }
+
+    val languageLabels = mapOf(
+        AppLanguage.ENGLISH to stringResource(Res.string.english_language),
+        AppLanguage.SPANISH to stringResource(Res.string.spanish_language),
+        AppLanguage.CZECH to stringResource(Res.string.czech_language),
+    )
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SectionTitle(
@@ -49,7 +58,7 @@ fun LanguageSettings() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
-                        value = selectedLanguage,
+                        value = languageLabels[selectedLanguage]!!,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = {
@@ -66,11 +75,11 @@ fun LanguageSettings() {
                         expanded = isExpanded,
                         onDismissRequest = { isExpanded = false }
                     ) {
-                        languageOptions.forEach { language ->
+                        AppLanguage.entries.forEach { language ->
                             DropdownMenuItem(
-                                text = { Text(language) },
+                                text = { Text(languageLabels[language]!!) },
                                 onClick = {
-                                    selectedLanguage = language
+                                    onLanguageChange(language)
                                     isExpanded = false
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding

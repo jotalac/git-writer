@@ -1,6 +1,6 @@
 package dev.jotalac.feature.notebooks_management.data
 
-import dev.jotalac.core.database.ActiveNotebookManager
+import dev.jotalac.core.data.ActiveNotebookManager
 import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.core.utils.toSafeFileName

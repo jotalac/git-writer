@@ -4,9 +4,9 @@
 
 > high priority
 
-- settings - theme, language, font type,
-- in the app settings there will be option to set the conflict resolution strategy - auto merge (always local/remote) or
-  always manual solve
+- apply the language settings to the app
+- apply the git conflict resolution strategy
+- add more themes
 
 > medium priority
 
@@ -22,6 +22,7 @@
 - add rounded corners to rendered image in the editor
 - add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for ranaming and ctrl+n
   for new file)
+- encrypt data before pushing to remote
 
 - make username and password optional for cloning when cloning public repo – then the sync would be disabled?
 

@@ -1,6 +1,5 @@
 package dev.jotalac.core.database
 
-import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
@@ -10,7 +9,7 @@ import dev.jotalac.feature.notebooks_management.data.NotebookEntity
 @Database(
     entities = [
         NotebookEntity::class,
-               ],
+    ],
     version = 1,
     exportSchema = true,
 )
@@ -23,5 +22,3 @@ abstract class AppDatabase : RoomDatabase() {
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }
-
-//fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>

@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.data.UserSettingsState
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.feature.settings.ui.settings_sections.AppearanceSettings
@@ -29,6 +30,8 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SettingsContent(
+    userSettingsState: UserSettingsState,
+    onAction: (SettingsViewModel.SettingsAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -41,11 +44,24 @@ fun SettingsContent(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            AppearanceSettings()
+            AppearanceSettings(
+                selectedTheme = userSettingsState.themeMode,
+                selectedThemeAccentColor = userSettingsState.themeAccentColor,
+                selectedFontFamily = userSettingsState.font,
+                onThemeChange = { onAction(SettingsViewModel.SettingsAction.ChangeThemeMode(it)) },
+                onThemeAccentColorChange = { onAction(SettingsViewModel.SettingsAction.ChangeThemeAccentColor(it)) },
+                onFontFamilyChange = { onAction(SettingsViewModel.SettingsAction.ChangeFont(it)) }
+            )
 
-            LanguageSettings()
+            LanguageSettings(
+                selectedLanguage = userSettingsState.language,
+                onLanguageChange = { onAction(SettingsViewModel.SettingsAction.ChangeLanguage(it)) }
+            )
 
-            SyncSettings()
+            SyncSettings(
+                selectedStrategy = userSettingsState.gitConflictStrategy,
+                onStrategyChange = { onAction(SettingsViewModel.SettingsAction.ChangeGitConflictStrategy(it)) }
+            )
         }
 
         AppVerticalScrollbar(
@@ -72,7 +88,7 @@ fun SectionTitle(
             modifier = Modifier.size(MaterialTheme.dimensions.iconLarge),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
