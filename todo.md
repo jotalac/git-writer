@@ -3,11 +3,12 @@
 > high priority
 
 - some labels translations break the app
-- when open and close app the git sync buttion is always disabled and have to resave the notebook edit dialog (at least
-  on android)
+- when open and close app the git sync buttion is always disabled and have to resave the notebook edit dialog
+- add dynamic color options
 
 > medium priority
 
+- enable proguad and manually configure it
 - make ctrl+n create new note
 - right click on filetree background should also bring up the context menu with create file and create folder options
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories

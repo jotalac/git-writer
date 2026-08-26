@@ -28,9 +28,23 @@ compose.desktop {
                 TargetFormat.Rpm,
                 TargetFormat.AppImage
             )
-            packageName = "dev.jotalac"
-            packageVersion = "1.0.0"
+            packageName = "git-writer"
+            packageVersion = "0.0.1"
+            description = "Git-backed note-taking app"
 
+            modules(
+                "jdk.unsupported",
+                "java.sql",
+                "java.naming",
+                "java.desktop",
+                "java.management",
+                "java.security.jgss"
+            )
+
+            buildTypes.release.proguard {
+                // disable ProGuard to prevent it from stripping background libraries - later configure it properly
+                isEnabled.set(false)
+            }
         }
 
     }
