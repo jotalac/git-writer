@@ -177,11 +177,12 @@ fun MarkdownEditor(
                 textFieldValue = editorState.activeTextFieldValue,
                 onValueChange = editorState::updateActiveText,
                 onImageAdd = {
+                    val targetIndex = editorState.focusedIndex
                     scope.launch {
                         val files = FileKit.openFilePicker(type = FileKitType.Image, mode = FileKitMode.Multiple())
                             ?: return@launch
                         val bytesArray = files.map { it.readBytes() }
-                        editorState.pasteImages(bytesArray)
+                        editorState.pasteImages(bytesArray, targetIndex)
                     }
                 },
                 onCameraOpen = {

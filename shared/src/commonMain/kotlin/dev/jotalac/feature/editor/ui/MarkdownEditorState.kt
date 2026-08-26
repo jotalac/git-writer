@@ -255,8 +255,9 @@ class MarkdownEditorState(
         }
     }
 
-    fun pasteImages(imageBytesList: List<ByteArray>) {
-        val index = focusedIndex ?: return
+    fun pasteImages(imageBytesList: List<ByteArray>, targetIndex: Int? = null) {
+        if (imageBytesList.isEmpty()) return
+        val index = targetIndex ?: focusedIndex ?: maxOf(0, blocksState.value.lastIndex)
         historyManager.record(createCurrentSnapshot(), true)
 
         dispatchAction(
