@@ -112,5 +112,6 @@
     <string name="settings_auto_merge_preference_label">Auto merge preference</string>
     <string name="settings_auto_accept_local">Always accept local changes</string>
     <string name="settings_auto_accept_remote">Always accept remote changes</string>
+    <string name="settings_use_dynamic_color">Use Dynamic Color</string>
 
 </resources>

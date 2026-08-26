@@ -6,17 +6,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.domain.AppFontFamily
 import dev.jotalac.core.domain.AppThemeAccentColor
 import dev.jotalac.core.domain.AppThemeMode
 import dev.jotalac.core.ui.theme.JetBrainsMonoFont
+import dev.jotalac.feature.settings.platform.UseDynamicColorSetting
 import dev.jotalac.feature.settings.ui.SectionTitle
 import dev.jotalac.feature.settings.ui.SettingsCollapsableSection
 import git_writer.shared.generated.resources.*
@@ -30,6 +32,8 @@ fun AppearanceSettings(
     onThemeChange: (AppThemeMode) -> Unit,
     onThemeAccentColorChange: (AppThemeAccentColor) -> Unit,
     onFontFamilyChange: (AppFontFamily) -> Unit,
+    useDynamicColor: Boolean,
+    onDynamicColorToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -45,7 +49,9 @@ fun AppearanceSettings(
             selectedTheme = selectedTheme,
             selectedColor = selectedThemeAccentColor,
             onThemeChange = onThemeChange,
-            onColorChange = onThemeAccentColorChange
+            onColorChange = onThemeAccentColorChange,
+            useDynamicColor = useDynamicColor,
+            onUseDynamicColorToggle = onDynamicColorToggle
         )
 
         FontSettings(
@@ -55,13 +61,14 @@ fun AppearanceSettings(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ThemeSettings(
     selectedTheme: AppThemeMode,
     selectedColor: AppThemeAccentColor,
     onThemeChange: (AppThemeMode) -> Unit,
-    onColorChange: (AppThemeAccentColor) -> Unit
+    onColorChange: (AppThemeAccentColor) -> Unit,
+    useDynamicColor: Boolean,
+    onUseDynamicColorToggle: (Boolean) -> Unit
 ) {
     val themeLabels = mapOf(
         AppThemeMode.SYSTEM to stringResource(Res.string.settings_theme_system),
@@ -94,11 +101,22 @@ private fun ThemeSettings(
                             count = AppThemeMode.entries.size
                         )
                     ) {
-                        Text(themeLabels[entry]!!)
+                        Text(
+                            themeLabels[entry]!!,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
             }
         }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+        UseDynamicColorSetting(
+            useDynamicColor,
+            onUseDynamicColorToggle
+        )
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
@@ -152,7 +170,6 @@ private fun ThemeSettings(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FontSettings(
     selectedFontFamily: AppFontFamily,
@@ -189,7 +206,9 @@ private fun FontSettings(
                     ) {
                         Text(
                             text = fontLabels[entry]!!,
-                            fontFamily = if (entry == AppFontFamily.MONOSPACE) JetBrainsMonoFont else FontFamily.Default
+                            fontFamily = if (entry == AppFontFamily.MONOSPACE) JetBrainsMonoFont else FontFamily.Default,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }

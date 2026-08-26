@@ -2,6 +2,7 @@ package dev.jotalac.core.data
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import dev.jotalac.core.domain.*
@@ -14,6 +15,7 @@ data class UserSettingsState(
     val font: AppFontFamily = AppFontFamily.DEFAULT,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val gitConflictStrategy: GitConflictResolutionStrategy = GitConflictResolutionStrategy.MANUAL,
+    val useDynamicColor: Boolean = true,
 )
 
 class UserSettingsManager(
@@ -25,6 +27,7 @@ class UserSettingsManager(
         private val FONT_FAMILY_KEY = stringPreferencesKey("font_family")
         private val LANGUAGE_KEY = stringPreferencesKey("language")
         private val CONFLICT_STRATEGY_KEY = stringPreferencesKey("conflict_strategy")
+        private val USE_DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color")
     }
 
     val userSettingsStateFlow: Flow<UserSettingsState> = dataStore.data
@@ -44,7 +47,8 @@ class UserSettingsManager(
                 } ?: AppLanguage.ENGLISH,
                 gitConflictStrategy = preferences[CONFLICT_STRATEGY_KEY]?.let { name ->
                     GitConflictResolutionStrategy.entries.find { it.name == name }
-                } ?: GitConflictResolutionStrategy.MANUAL
+                } ?: GitConflictResolutionStrategy.MANUAL,
+                useDynamicColor = preferences[USE_DYNAMIC_COLOR_KEY] ?: true,
             )
         }
 
@@ -75,6 +79,12 @@ class UserSettingsManager(
     suspend fun setGitConflictStrategy(strategy: GitConflictResolutionStrategy) {
         dataStore.edit { preferences ->
             preferences[CONFLICT_STRATEGY_KEY] = strategy.name
+        }
+    }
+
+    suspend fun setUseDynamicColor(useDynamicColor: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[USE_DYNAMIC_COLOR_KEY] = useDynamicColor
         }
     }
 

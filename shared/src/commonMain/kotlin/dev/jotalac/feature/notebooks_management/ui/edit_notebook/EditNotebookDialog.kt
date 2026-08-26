@@ -72,13 +72,17 @@ fun EditNotebookDialog(
                     Text(
                         text = stringResource(Res.string.remote_credentials_section_title),
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
                     )
 
                     TextButton(
                         onClick = { viewModel.onEvent(EditNotebookViewModel.EditNotebookEvent.ClearRemoteCredentials) },
                     ) {
-                        Text(text = stringResource(Res.string.clear_button))
+                        Text(
+                            text = stringResource(Res.string.clear_button),
+                            maxLines = 1,
+                        )
                     }
 
                 }

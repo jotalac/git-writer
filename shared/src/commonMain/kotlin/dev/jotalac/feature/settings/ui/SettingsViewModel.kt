@@ -25,7 +25,7 @@ class SettingsViewModel(
             when (action) {
                 is SettingsAction.ChangeThemeMode ->
                     userSettingsManager.setThemeMode(action.themeMode)
-                
+
                 is SettingsAction.ChangeThemeAccentColor ->
                     userSettingsManager.setThemeAccentColor(action.accentColor)
 
@@ -37,6 +37,9 @@ class SettingsViewModel(
 
                 is SettingsAction.ChangeGitConflictStrategy ->
                     userSettingsManager.setGitConflictStrategy(action.strategy)
+
+                is SettingsAction.ChangeUseDynamicColor ->
+                    userSettingsManager.setUseDynamicColor(action.useDynamicColor)
             }
         }
     }
@@ -48,5 +51,6 @@ class SettingsViewModel(
         data class ChangeFont(val font: AppFontFamily) : SettingsAction
         data class ChangeLanguage(val language: AppLanguage) : SettingsAction
         data class ChangeGitConflictStrategy(val strategy: GitConflictResolutionStrategy) : SettingsAction
+        data class ChangeUseDynamicColor(val useDynamicColor: Boolean) : SettingsAction
     }
 }

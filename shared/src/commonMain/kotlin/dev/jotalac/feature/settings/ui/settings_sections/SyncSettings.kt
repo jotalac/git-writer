@@ -5,10 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.domain.GitConflictResolutionStrategy
 import dev.jotalac.feature.settings.ui.SectionTitle
@@ -16,7 +17,6 @@ import dev.jotalac.feature.settings.ui.SettingsCollapsableSection
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SyncSettings(
     selectedStrategy: GitConflictResolutionStrategy,
@@ -56,7 +56,11 @@ fun SyncSettings(
                                 count = 2
                             )
                         ) {
-                            Text(stringResource(Res.string.settings_conflict_manual))
+                            Text(
+                                stringResource(Res.string.settings_conflict_manual),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
 
                         SegmentedButton(
@@ -71,7 +75,11 @@ fun SyncSettings(
                                 count = 2
                             )
                         ) {
-                            Text(stringResource(Res.string.settings_conflict_auto))
+                            Text(
+                                stringResource(Res.string.settings_conflict_auto),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
                 }

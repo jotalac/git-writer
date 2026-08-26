@@ -50,7 +50,9 @@ fun SettingsContent(
                 selectedFontFamily = userSettingsState.font,
                 onThemeChange = { onAction(SettingsViewModel.SettingsAction.ChangeThemeMode(it)) },
                 onThemeAccentColorChange = { onAction(SettingsViewModel.SettingsAction.ChangeThemeAccentColor(it)) },
-                onFontFamilyChange = { onAction(SettingsViewModel.SettingsAction.ChangeFont(it)) }
+                onFontFamilyChange = { onAction(SettingsViewModel.SettingsAction.ChangeFont(it)) },
+                useDynamicColor = userSettingsState.useDynamicColor,
+                onDynamicColorToggle = { onAction(SettingsViewModel.SettingsAction.ChangeUseDynamicColor(it)) }
             )
 
             LanguageSettings(

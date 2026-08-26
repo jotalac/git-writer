@@ -2,8 +2,6 @@
 
 > high priority
 
-- some labels translations break the app
-- when open and close app the git sync buttion is always disabled and have to resave the notebook edit dialog
 - add dynamic color options
 
 > medium priority
@@ -23,5 +21,6 @@
 - add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for ranaming and ctrl+n
   for new file)
 - encrypt data before pushing to remote
+- better messages while syncing (eg. when nothing is commited or pulled - dispaly up to date message)
 
 - make username and password optional for cloning when cloning public repo – then the sync would be disabled?

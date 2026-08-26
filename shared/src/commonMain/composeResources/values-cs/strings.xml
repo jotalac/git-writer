@@ -96,7 +96,7 @@
     <string name="settings_font_subtitle">Rodina písma</string>
     <string name="settings_font_family_label">Rodina písma</string>
     <string name="settings_font_default">Výchozí</string>
-    <string name="settings_font_monospace">Neproporcionální</string>
+    <string name="settings_font_monospace">Monospace</string>
     <string name="settings_font_serif">Patkové</string>
     <string name="settings_font_size_label">Velikost písma</string>
     <string name="settings_language_title">Jazyk</string>
@@ -112,5 +112,6 @@
     <string name="settings_auto_merge_preference_label">Předvolba automatického sloučení</string>
     <string name="settings_auto_accept_local">Vždy přijmout místní změny</string>
     <string name="settings_auto_accept_remote">Vždy přijmout vzdálené změny</string>
+    <string name="settings_use_dynamic_color">Použít Dynamic Color</string>
 
 </resources>

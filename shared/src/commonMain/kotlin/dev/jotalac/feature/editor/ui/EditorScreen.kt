@@ -197,7 +197,6 @@ private fun ExpandedEditorLayout(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainEditorScaffold(
     modifier: Modifier = Modifier,
@@ -308,7 +307,7 @@ private fun EditorContent(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            LoadingIndicator(modifier = Modifier.size(150.dp))
+            CircularProgressIndicator(modifier = Modifier.size(64.dp))
         }
     } else if (filename == null) {
         NoFileOpenedMessage()

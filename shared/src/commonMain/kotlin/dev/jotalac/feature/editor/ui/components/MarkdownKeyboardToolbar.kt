@@ -20,7 +20,6 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarkdownKeyboardToolbar(
     textFieldValue: TextFieldValue,
@@ -180,7 +179,6 @@ fun MarkdownKeyboardToolbar(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ToolbarButton(
     icon: DrawableResource = Res.drawable.x_icon,

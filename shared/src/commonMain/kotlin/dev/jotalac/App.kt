@@ -37,7 +37,8 @@ fun App(
         AppTheme(
             darkTheme = isDarkTheme,
             accentColor = settingsState.themeAccentColor,
-            fontFamily = settingsState.font
+            fontFamily = settingsState.font,
+            dynamicColor = settingsState.useDynamicColor,
         ) {
             val navController = rememberNavController()
             NavHost(navController = navController, startDestination = Route.MainApp) {

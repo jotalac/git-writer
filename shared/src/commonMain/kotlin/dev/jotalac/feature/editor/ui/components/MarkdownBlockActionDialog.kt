@@ -19,7 +19,7 @@ fun MarkdownBlockActionsBottomSheet(
     blockIndex: Int,
     onDismissRequest: () -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,

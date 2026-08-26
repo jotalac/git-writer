@@ -24,13 +24,12 @@ kotlin {
     jvm()
 
 
-    androidLibrary {
+    android {
         namespace = "dev.jotalac.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         compilerOptions {
-//            jvmTarget = JvmTarget.JVM_11
             jvmTarget = JvmTarget.JVM_17
         }
         androidResources {

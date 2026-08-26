@@ -1,19 +1,14 @@
 package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.info_icon
@@ -50,7 +45,8 @@ fun NoFileOpenedMessage() {
             Text(
                 text = stringResource(Res.string.no_file_opened_subtitle),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                textAlign = TextAlign.Center
             )
         }
     }

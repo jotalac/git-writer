@@ -72,6 +72,10 @@ class EditorViewModel(
         }
 
         viewModelScope.launch {
+            // handle the initial sync state
+            gitSyncRepository.updateSyncStatus(notebookRepository.activeNotebookState.firstOrNull()?.remoteUrl)
+
+            // update the ui sync state based on the repository updated
             gitSyncRepository.gitSyncStatus.collect { status ->
                 _uiState.update { it.copy(gitSyncStatus = status) }
             }
