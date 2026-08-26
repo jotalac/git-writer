@@ -2,11 +2,10 @@
 
 > high priority
 
-- add dynamic color options
 
 > medium priority
 
-- enable proguad and manually configure it
+- enable proguad and manually configure it (android and desktop)
 - make ctrl+n create new note
 - right click on filetree background should also bring up the context menu with create file and create folder options
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories

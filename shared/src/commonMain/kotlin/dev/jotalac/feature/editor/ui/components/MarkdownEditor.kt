@@ -11,9 +11,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
@@ -42,9 +42,18 @@ fun MarkdownEditor(
 
     val listScrollState = rememberScrollState()
 
-    val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
-
     val scope = rememberCoroutineScope()
+
+    val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
+
+    // clear focus when the mobile keyboard is closed
+    LaunchedEffect(isKeyboardOpen) {
+        if (!isDesktopPlatform && !isKeyboardOpen && editorState.focusedIndex != null) {
+            editorState.clearFocus()
+            focusManager.clearFocus()
+        }
+    }
+
 
     DisposableEffect(editorState, surfaceFocusRequester) {
         editorState.requestRootFocus = {
@@ -106,41 +115,44 @@ fun MarkdownEditor(
 
 
                 // Navigation and creation when no block is actively focused
-                    if (editorState.focusedIndex == null) {
-                        when (event.key) {
-                            Key.DirectionUp -> {
-                                val lastIndex = markdownBlocks.lastIndex
-                                if (lastIndex >= 0) {
-                                    editorState.focusBlock(
-                                        lastIndex,
-                                        TextRange(markdownBlocks[lastIndex].length)
-                                    )
-                                    return@onPreviewKeyEvent true
-                                }
-                            }
-
-                            Key.DirectionDown -> {
-                                if (markdownBlocks.isNotEmpty()) {
-                                    editorState.focusBlock(
-                                        0,
-                                        TextRange(markdownBlocks[0].length)
-                                    )
-                                    return@onPreviewKeyEvent true
-                                }
-                            }
-
-                            Key.Enter -> {
-                                editorState.addBlockAtEnd()
+                if (editorState.focusedIndex == null) {
+                    when (event.key) {
+                        Key.DirectionUp -> {
+                            val lastIndex = markdownBlocks.lastIndex
+                            if (lastIndex >= 0) {
+                                editorState.focusBlock(
+                                    lastIndex,
+                                    TextRange(markdownBlocks[lastIndex].length)
+                                )
                                 return@onPreviewKeyEvent true
                             }
                         }
+
+                        Key.DirectionDown -> {
+                            if (markdownBlocks.isNotEmpty()) {
+                                editorState.focusBlock(
+                                    0,
+                                    TextRange(markdownBlocks[0].length)
+                                )
+                                return@onPreviewKeyEvent true
+                            }
+                        }
+
+                        Key.Enter -> {
+                            editorState.addBlockAtEnd()
+                            return@onPreviewKeyEvent true
+                        }
                     }
+                }
                 false
             },
         contentAlignment = Alignment.TopCenter
     ) {
         MarkdownEditorBlocksList(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = if (isKeyboardOpen) 75.dp else 0.dp) // see what is currently being edited
+            ,
             blocks = markdownBlocks,
             editorState = editorState,
             scrollState = listScrollState
@@ -160,7 +172,8 @@ fun MarkdownEditor(
             MarkdownKeyboardToolbar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .imePadding(),
                 textFieldValue = editorState.activeTextFieldValue,
                 onValueChange = editorState::updateActiveText,
                 onImageAdd = {

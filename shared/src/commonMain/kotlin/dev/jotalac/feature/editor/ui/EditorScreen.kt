@@ -278,7 +278,8 @@ fun MainEditorScaffold(
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
             EditorContent(
