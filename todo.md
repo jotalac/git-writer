@@ -1,0 +1,26 @@
+## TODO
+
+> high priority
+
+- some labels translations break the app
+- when open and close app the git sync buttion is always disabled and have to resave the notebook edit dialog (at least
+  on android)
+
+> medium priority
+
+- make ctrl+n create new note
+- right click on filetree background should also bring up the context menu with create file and create folder options
+- follow clean architecture and introduce UseCases instead of injecting repositories into repositories
+- run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
+
+> other ideas - low priority
+
+- default warning, tip, success github like quotes that should be supported by mikepenz markdown library - doesnt work
+- when renaming image resource – refactor the notes to use the new image name?
+- maybe add the action bar on desktop - like it is in the IDEA markdown editor
+- add rounded corners to rendered image in the editor
+- add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for ranaming and ctrl+n
+  for new file)
+- encrypt data before pushing to remote
+
+- make username and password optional for cloning when cloning public repo – then the sync would be disabled?

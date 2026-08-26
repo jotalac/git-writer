@@ -1,31 +1,76 @@
-# Git-writer - git synced markdown editor
+# Git-Writer
 
-## TODO
+A minimalistic, cross-platform note-taking app that uses Git repositories to keep your Markdown notes version-controlled
+and synchronized across devices.
+Supports all major platforms (Linux, macOS, Windows, Android, iOS).
 
-> high priority
+> [!WARNING]
+> This project is still in active development, and there is no stable release yet.  
+> New features and bug fixes are being added regularly.
 
-- apply the language settings to the app
-- apply the git conflict resolution strategy
-- make ctrl+n create new note
+---
 
-> medium priority
+## Download
 
-- right click on filetree background should also bring up the context menu with create file and create folder options
-- follow clean architecture and introduce UseCases instead of injecting repositories into repositories
-- run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
+Pre-built binaries are available on the [**Release**](https://github.com/jotalac/git-writer/releases) page.
 
-> other ideas - low priority
+> [!NOTE]
+> MacOS and iOS builds are not yet available as I don't have access to macOS device.
 
-- default warning, tip, success github like quotes that should be supported by mikepenz markdown library - doesnt work
-- when renaming image resource – refactor the notes to use the new image name?
-- maybe add the action bar on desktop - like it is in the IDEA markdown editor
-- add rounded corners to rendered image in the editor
-- add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for ranaming and ctrl+n
-  for new file)
-- encrypt data before pushing to remote
+---
 
-- make username and password optional for cloning when cloning public repo – then the sync would be disabled?
+## Technologies
 
+- [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) & [Compose Multiplatform](https://github.com/jetbrains/compose-multiplatform)
+- **Git Integration**: [JGit](https://www.eclipse.org/jgit/) (Desktop and Android)
+- **Image & File Handling**: [Coil 3](https://github.com/coil-kt/coil) & [FileKit](https://github.com/vinceglb/FileKit)
+- **Markdown parsing & rendering
+  **: [multiplatform-markdown-renderer](https://github.com/mikepenz/multiplatform-markdown-renderer)
+  & [jetbrains-markdown](https://github.com/JetBrains/markdown)
 
-- ![img.png](img.png)
-- ![img_1.png](img_1.png)
+---
+
+### Building for Release
+
+#### Desktop Distributions
+
+> [!NOTE]
+> Desktop native packages are built using `jpackage` on the respective host OS (e.g., build Windows packages on Windows,
+> Linux packages on Linux, macOS packages on macOS).
+
+- **Linux (`.deb` / `.rpm` / `.appImage`)**:
+  ```bash
+  ./gradlew :desktopApp:packageDeb
+  ./gradlew :desktopApp:packageRpm
+  ./gradlew :desktopApp:packageAppImage
+  ```
+- **macOS (`.dmg` / `.pkg`)**:
+  ```bash
+  ./gradlew :desktopApp:packageDmg
+  ./gradlew :desktopApp:packagePkg
+  ```
+- **Windows (`.msi` / `.exe`)**:
+  ```bash
+  ./gradlew :desktopApp:packageMsi
+  ./gradlew :desktopApp:packageExe
+  ```
+
+*Output location: `desktopApp/build/compose/binaries/main/`*
+
+#### Android Release
+
+- **Release APK**:
+  ```bash
+  ./gradlew :androidApp:assembleRelease
+  ```
+  *Output location: `androidApp/build/outputs/apk/release/`*
+
+#### iOS Release
+
+- build in Xcode
+
+---
+
+## Contributing
+
+Contributions are always welcome! If you find a bug or have an idea for an enhancement, feel free to open an **Issue**.
