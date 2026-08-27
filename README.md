@@ -1,8 +1,7 @@
 # Git-Writer
 
 A minimalistic, cross-platform note-taking app that uses Git repositories to keep your Markdown notes version-controlled
-and synchronized across devices.
-Supports all major platforms (Linux, macOS, Windows, Android, iOS).
+and synchronized across devices. Supports all major platforms (Linux, macOS, Windows, Android, iOS).
 
 > [!WARNING]
 > This project is still in active development, and there is no stable release yet.  
@@ -16,6 +15,10 @@ Pre-built binaries are available on the [**Releases**](https://github.com/jotala
 
 > [!NOTE]
 > macOS and iOS builds are not yet available as I don't have access to a macOS device
+
+---
+
+<img src="readme_images/showcase_image.png" alt="Desktop screenshot" width=900 />
 
 ---
 

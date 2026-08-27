@@ -2,8 +2,6 @@
 
 > high priority
 
-- hide accent color picker when dynamic color is enabled
-
 > medium priority
 
 - enable proguad and manually configure it (android and desktop)
