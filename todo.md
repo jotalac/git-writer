@@ -2,9 +2,8 @@
 
 > high priority
 
-- top bar on windows is white even when on dark mode
 - when no notebook is created and opened - git-sync status is up-to-date
-- windows is parsing the blocks differently? - the spaces or newlines are handled differently and the rendered code looks different
+- mobile keyboard sometimes keep the editor shifted even after keyboard hide
 
 > medium priority
 
@@ -13,6 +12,7 @@
 - right click on filetree background should also bring up the context menu with create file and create folder options
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
+- made custom top app bar - it looks horrible on Windows at least
 
 > other ideas - low priority
 

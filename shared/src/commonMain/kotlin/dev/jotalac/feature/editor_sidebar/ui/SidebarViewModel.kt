@@ -54,14 +54,13 @@ class EditorSidebarViewModel(
                                 expandedFolders = emptySet()
                             )
                         }
+
+                        gitSyncRepository.updateSyncStatus(null)
                     }
                 }
         }
 
         viewModelScope.launch {
-            // update the initial state
-            gitSyncRepository.updateSyncStatus(_uiState.value.activeNotebook?.remoteUrl)
-
             // refresh file tree on git sync
             gitSyncRepository.gitSyncStatus.collect { status ->
                 if (status is GitSyncStatus.UpToDate) {

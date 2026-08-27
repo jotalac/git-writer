@@ -320,7 +320,7 @@ private fun EditorContent(
             contentScale = ContentScale.Inside
         )
     } else {
-        key(activeNotePath) {
+        key(activeNotePath) { // for undo/redo logic to reset
             MarkdownEditor(
                 markdownBlocks = markdownBlocks,
                 onAction = onAction,
