@@ -2,6 +2,7 @@
 
 > high priority
 
+- hide accent color picker when dynamic color is enabled
 
 > medium priority
 

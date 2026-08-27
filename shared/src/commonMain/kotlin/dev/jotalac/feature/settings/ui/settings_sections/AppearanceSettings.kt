@@ -1,5 +1,6 @@
 package dev.jotalac.feature.settings.ui.settings_sections
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -118,50 +119,55 @@ private fun ThemeSettings(
             onUseDynamicColorToggle
         )
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
         // Custom Theme Color
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                text = stringResource(Res.string.settings_accent_color_label),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        AnimatedVisibility(
+            visible = !useDynamicColor,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = stringResource(Res.string.settings_accent_color_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AppThemeAccentColor.entries.forEach { colorTheme ->
-                    val isSelected = selectedColor == colorTheme
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AppThemeAccentColor.entries.forEach { colorTheme ->
+                        val isSelected = selectedColor == colorTheme
 
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color(colorTheme.rgb))
-                            .then(
-                                if (isSelected) {
-                                    Modifier.border(
-                                        width = 3.dp,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        shape = CircleShape
-                                    )
-                                } else {
-                                    Modifier
-                                }
-                            )
-                            .clickable { onColorChange(colorTheme) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isSelected) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White)
-                            )
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(Color(colorTheme.rgb))
+                                .then(
+                                    if (isSelected) {
+                                        Modifier.border(
+                                            width = 3.dp,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            shape = CircleShape
+                                        )
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                                .clickable { onColorChange(colorTheme) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isSelected) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White)
+                                )
+                            }
                         }
                     }
                 }

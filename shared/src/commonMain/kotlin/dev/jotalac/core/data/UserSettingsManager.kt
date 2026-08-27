@@ -15,7 +15,7 @@ data class UserSettingsState(
     val font: AppFontFamily = AppFontFamily.DEFAULT,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val gitConflictStrategy: GitConflictResolutionStrategy = GitConflictResolutionStrategy.MANUAL,
-    val useDynamicColor: Boolean = true,
+    val useDynamicColor: Boolean = false,
 )
 
 class UserSettingsManager(
@@ -48,7 +48,7 @@ class UserSettingsManager(
                 gitConflictStrategy = preferences[CONFLICT_STRATEGY_KEY]?.let { name ->
                     GitConflictResolutionStrategy.entries.find { it.name == name }
                 } ?: GitConflictResolutionStrategy.MANUAL,
-                useDynamicColor = preferences[USE_DYNAMIC_COLOR_KEY] ?: true,
+                useDynamicColor = preferences[USE_DYNAMIC_COLOR_KEY] ?: false,
             )
         }
 

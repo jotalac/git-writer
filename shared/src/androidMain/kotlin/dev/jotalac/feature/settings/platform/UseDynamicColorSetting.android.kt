@@ -2,6 +2,7 @@ package dev.jotalac.feature.settings.platform
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -30,4 +31,6 @@ actual fun UseDynamicColorSetting(isEnabled: Boolean, onToggle: (Boolean) -> Uni
             onCheckedChange = onToggle
         )
     }
+
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 }
