@@ -2,6 +2,10 @@
 
 > high priority
 
+- top bar on windows is white even when on dark mode
+- when no notebook is created and opened - git-sync status is up-to-date
+- windows is parsing the blocks differently? - the spaces or newlines are handled differently and the rendered code looks different
+
 > medium priority
 
 - enable proguad and manually configure it (android and desktop)

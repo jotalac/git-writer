@@ -24,6 +24,7 @@ compose.desktop {
                 TargetFormat.Dmg,
                 TargetFormat.Pkg,
                 TargetFormat.Msi,
+                TargetFormat.Exe,
                 TargetFormat.Deb,
                 TargetFormat.Rpm,
                 TargetFormat.AppImage
