@@ -2,11 +2,11 @@
 
 > high priority
 
-- when no notebook is created and opened - git-sync status is up-to-date
 - mobile keyboard sometimes keep the editor shifted even after keyboard hide
 
 > medium priority
 
+- launcher icon doenst work on linux (tested only on fedora via .rpm and appImage)
 - enable proguad and manually configure it to lower the binary size (android and desktop)
 - make ctrl+n create new note
 - right click on filetree background should also bring up the context menu with create file and create folder options

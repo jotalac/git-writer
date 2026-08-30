@@ -113,5 +113,6 @@
     <string name="settings_auto_accept_local">Always accept local changes</string>
     <string name="settings_auto_accept_remote">Always accept remote changes</string>
     <string name="settings_use_dynamic_color">Use Dynamic Color</string>
+    <string name="delete_block_content_description">Delete block</string>
 
 </resources>

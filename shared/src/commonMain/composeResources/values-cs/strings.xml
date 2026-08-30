@@ -113,5 +113,6 @@
     <string name="settings_auto_accept_local">Vždy přijmout místní změny</string>
     <string name="settings_auto_accept_remote">Vždy přijmout vzdálené změny</string>
     <string name="settings_use_dynamic_color">Použít Dynamic Color</string>
+    <string name="delete_block_content_description">Smazat blok</string>
 
 </resources>

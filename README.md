@@ -3,6 +3,8 @@
 A minimalistic, cross-platform note-taking app that uses Git repositories to keep your Markdown notes version-controlled
 and synchronized across devices. Supports all major platforms (Linux, macOS, Windows, Android, iOS).
 
+<img src="readme_images/git-writer-logo.svg" height="150">
+
 > [!WARNING]
 > This project is still in active development, and there is no stable release yet.  
 > New features and bug fixes are being added regularly.
@@ -22,7 +24,7 @@ Pre-built binaries are available on the [**Releases**](https://github.com/jotala
 
 ---
 
-### Used Technologies
+### Using:
 
 - [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) & [Compose Multiplatform](https://github.com/jetbrains/compose-multiplatform)
 - **Git Integration**: [JGit](https://www.eclipse.org/jgit/) (Desktop and Android)

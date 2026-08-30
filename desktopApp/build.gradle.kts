@@ -13,6 +13,8 @@ dependencies {
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.compose.uiToolingPreview)
+
+    implementation(libs.compose.components.resources)
 }
 
 compose.desktop {
@@ -45,6 +47,18 @@ compose.desktop {
             buildTypes.release.proguard {
                 // disable ProGuard to prevent it from stripping background libraries - later configure it properly
                 isEnabled.set(false)
+            }
+
+            linux {
+                iconFile.set(project.file("launcher_icons/icon.png"))
+            }
+
+            windows {
+                iconFile.set(project.file("launcher_icons/icon.ico"))
+            }
+
+            macOS {
+                iconFile.set(project.file("launcher_icons/icon.icns"))
             }
         }
 

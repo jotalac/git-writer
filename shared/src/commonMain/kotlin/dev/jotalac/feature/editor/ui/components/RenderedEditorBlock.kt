@@ -31,12 +31,15 @@ import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
 import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.delete_block_content_description
 import git_writer.shared.generated.resources.x_icon
 import org.intellij.markdown.ast.getTextInNode
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RenderedEditorBlock(
@@ -81,7 +84,7 @@ fun RenderedEditorBlock(
                         )
                     },
                     paragraph = { model ->
-                        if (!renderedLatexInParagraph(model, isDarkTheme)) {
+                        if (!renderedLatexInParagraph(model)) {
                             MarkdownParagraph(
                                 content = model.content,
                                 node = model.node
@@ -113,21 +116,23 @@ fun RenderedEditorBlock(
         }
 
         // the delete button
-        Icon(
-            painter = painterResource(Res.drawable.x_icon),
-            contentDescription = "Delete Block",
-            modifier = Modifier
-                .alpha(if (isHovered) 1f else 0f)
-                .padding(start = 10.dp)
-                .size(MaterialTheme.dimensions.iconMedium)
-                .clickable(onClick = onDeleteClick),
-            tint = MaterialTheme.colorScheme.outline
-        )
+        if (isDesktopPlatform) {
+            Icon(
+                painter = painterResource(Res.drawable.x_icon),
+                contentDescription = stringResource(Res.string.delete_block_content_description),
+                modifier = Modifier
+                    .alpha(if (isHovered) 1f else 0f)
+                    .padding(start = 10.dp)
+                    .size(MaterialTheme.dimensions.iconMedium)
+                    .clickable(onClick = onDeleteClick),
+                tint = MaterialTheme.colorScheme.outline
+            )
+        }
     }
 }
 
 @Composable
-private fun renderedLatexInParagraph(model: MarkdownComponentModel, isDarkTheme: Boolean): Boolean {
+private fun renderedLatexInParagraph(model: MarkdownComponentModel): Boolean {
     val mathChild = model.node.children.find { it.type.name in listOf("BLOCK_MATH", "INLINE_MATH") }
     return if (mathChild != null) {
         val mathText = mathChild.getTextInNode(model.content).toString()
