@@ -15,18 +15,16 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.utils.getImageBytesFromClipboard
 import dev.jotalac.core.utils.hasClipboardImage
 import dev.jotalac.feature.editor.ui.MarkdownEditorState
-import dev.jotalac.feature.editor.ui.utils.handleIndentation
-import dev.jotalac.feature.editor.ui.utils.handleMarkdownListContinuation
-import dev.jotalac.feature.editor.ui.utils.handleNewLineWithinBlock
-import dev.jotalac.feature.editor.ui.utils.isInsideCodeBlock
+import dev.jotalac.feature.editor.ui.utils.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -94,6 +92,22 @@ fun ActiveEditorBlock(
 
     }
 
+
+    // make the header style WYSIWYG
+    val firstLine = textFieldValue.text.substringBefore('\n')
+    val headerLevel = getHeaderLevel(firstLine)
+    val activeTextStyle = getHeaderFontSize(headerLevel).copy(color = MaterialTheme.colorScheme.onSurface)
+    val prefixDimStyle = SpanStyle(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f))
+    val prefixVisualTransformation = remember(prefixDimStyle, headerLevel) {
+        if (headerLevel == 0) VisualTransformation.None
+        else VisualTransformation { text ->
+            val prefixLen = minOf(headerLevel + 1, text.text.length)
+            val builder = AnnotatedString.Builder(text)
+            builder.addStyle(prefixDimStyle, 0, prefixLen)
+            TransformedText(builder.toAnnotatedString(), OffsetMapping.Identity)
+        }
+    }
+
     BasicTextField(
         value = textFieldValue,
         onValueChange = {
@@ -104,7 +118,7 @@ fun ActiveEditorBlock(
         keyboardActions = KeyboardActions(),
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp)
+            .padding(horizontal = 8.dp, vertical = 12.dp)
             .bringIntoViewRequester(localBringIntoViewRequester)
             .focusRequester(focusRequester)
             .onFocusChanged { focusState ->
@@ -233,9 +247,8 @@ fun ActiveEditorBlock(
                     false
                 }
             },
-        textStyle = MaterialTheme.typography.bodyLarge.copy(
-            color = MaterialTheme.colorScheme.onSurface
-        ),
+        textStyle = activeTextStyle,
+        visualTransformation = prefixVisualTransformation,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
     )
 

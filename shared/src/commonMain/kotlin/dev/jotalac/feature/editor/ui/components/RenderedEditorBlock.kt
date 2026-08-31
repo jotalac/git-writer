@@ -18,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hrm.latex.renderer.LatexAutoWrap
 import com.hrm.latex.renderer.model.LatexConfig
@@ -32,6 +31,7 @@ import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
+import dev.jotalac.feature.editor.ui.utils.getHeaderFontSize
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 import git_writer.shared.generated.resources.Res
@@ -104,14 +104,13 @@ fun RenderedEditorBlock(
                 components = customMarkdownComponents,
                 imageTransformer = Coil3ImageTransformerImpl,
                 typography = markdownTypography(
-                    h1 = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
-                    h2 = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-                    h3 = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    h4 = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
-                    h5 = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium),
-                    h6 = MaterialTheme.typography.titleMedium,
-
-                    )
+                    h1 = getHeaderFontSize(1),
+                    h2 = getHeaderFontSize(2),
+                    h3 = getHeaderFontSize(3),
+                    h4 = getHeaderFontSize(4),
+                    h5 = getHeaderFontSize(5),
+                    h6 = getHeaderFontSize(6)
+                )
             )
         }
 
