@@ -76,13 +76,24 @@ fun ByteArray.detectImageExtension(): String {
     if (size >= 3 && this[0] == 0xFF.toByte() && this[1] == 0xD8.toByte() && this[2] == 0xFF.toByte()) {
         return ".jpg"
     }
+
     if (size >= 3 && this[0] == 0x47.toByte() && this[1] == 0x49.toByte() && this[2] == 0x46.toByte()) {
         return ".gif"
     }
+
     if (size >= 12 && this[0] == 0x52.toByte() && this[1] == 0x49.toByte() && this[2] == 0x46.toByte() && this[3] == 0x46.toByte() &&
         this[8] == 0x57.toByte() && this[9] == 0x45.toByte() && this[10] == 0x42.toByte() && this[11] == 0x50.toByte()
     ) {
         return ".webp"
+    }
+
+    if (size >= 4 && this[0] == 0x89.toByte() && this[1] == 0x50.toByte() && this[2] == 0x4E.toByte() && this[3] == 0x47.toByte()) {
+        return ".png"
+    }
+
+    val headerString = this.take(100).toByteArray().decodeToString()
+    if (headerString.contains("<svg", ignoreCase = true)) {
+        return ".svg"
     }
     return ".png"
 }

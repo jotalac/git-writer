@@ -48,11 +48,10 @@ Pre-built binaries are available on the [**Releases**](https://github.com/jotala
   ./gradlew :desktopApp:packageDistributionForCurrentOS
   ```
 
-- **Linux (`.deb` / `.rpm` / `.appImage`)**:
+- **Linux (`.deb` / `.rpm`)**:
   ```bash
   ./gradlew :desktopApp:packageDeb
   ./gradlew :desktopApp:packageRpm
-  ./gradlew :desktopApp:packageAppImage
   ```
 - **macOS (`.dmg` / `.pkg`)**:
   ```bash
