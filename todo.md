@@ -7,8 +7,8 @@
 
 > medium priority
 
-- launcher icon doenst work on linux (tested only on fedora via .rpm and appImage)
 - enable proguad and manually configure it to lower the binary size (android and desktop)
+- add some help to topAppBar - usage, shortcuts in the app, markdown cheatsheet, etc.
 - make ctrl+n create new note
 - right click on filetree background should also bring up the context menu with create file and create folder options
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories

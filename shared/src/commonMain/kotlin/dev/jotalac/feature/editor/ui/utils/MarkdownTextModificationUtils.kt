@@ -58,6 +58,26 @@ fun handleUnorderedList(
     return null
 }
 
+fun handleCheckboxes(
+    fullText: String,
+    currentLineText: String,
+    lastLineIndex: Int,
+    cursorIndex: Int,
+    startSpaces: Int
+): TextFieldValue? {
+    if (currentLineText in listOf("- [ ] ", "- [x] ")) {
+        return exitListContinuation(lastLineIndex, cursorIndex, fullText)
+    } else if (currentLineText.startsWith("- [ ] ") || currentLineText.startsWith("- [x] ")) {
+        val insertText = "\n" + " ".repeat(startSpaces) + "- [ ] "
+        val newText = insertTextBetween(text = fullText, leftSplitIndex = cursorIndex, insertText = insertText)
+
+        val newCursor = TextRange(cursorIndex + insertText.length)
+        return TextFieldValue(text = newText, selection = newCursor)
+    }
+
+    return null
+}
+
 fun handleOrderedList(
     fullText: String,
     currentLineText: String,
@@ -112,7 +132,8 @@ fun handleMarkdownListContinuation(currentValue: TextFieldValue): TextFieldValue
     val spacesStart = currentLineToCursor.takeWhile { it == ' ' }.length
     val cleanCurrentLine = currentLineToCursor.trimStart()
 
-    return handleUnorderedList(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)
+    return handleCheckboxes(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)
+        ?: handleUnorderedList(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)
         ?: handleOrderedList(text, cleanCurrentLine, lastLineIndex, cursorIndex, spacesStart)
         ?: handleBlockQuotes(text, cleanCurrentLine, lastLineIndex, cursorIndex)
 }
