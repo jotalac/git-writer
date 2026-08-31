@@ -47,12 +47,12 @@ fun MarkdownEditor(
     val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
 
     // clear focus when the mobile keyboard is closed
-    LaunchedEffect(isKeyboardOpen) {
-        if (!isDesktopPlatform && !isKeyboardOpen && editorState.focusedIndex != null) {
-            editorState.clearFocus()
-            focusManager.clearFocus()
-        }
-    }
+//    LaunchedEffect(isKeyboardOpen) {
+//        if (!isDesktopPlatform && !isKeyboardOpen && editorState.focusedIndex != null) {
+//            editorState.clearFocus()
+//            focusManager.clearFocus()
+//        }
+//    }
 
 
     DisposableEffect(editorState, surfaceFocusRequester) {
@@ -172,8 +172,7 @@ fun MarkdownEditor(
             MarkdownKeyboardToolbar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .imePadding(),
+                    .fillMaxWidth(),
                 textFieldValue = editorState.activeTextFieldValue,
                 onValueChange = editorState::updateActiveText,
                 onImageAdd = {

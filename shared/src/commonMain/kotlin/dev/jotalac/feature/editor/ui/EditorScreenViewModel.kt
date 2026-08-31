@@ -72,10 +72,6 @@ class EditorViewModel(
         }
 
         viewModelScope.launch {
-            // handle the initial sync state
-            val activeNotebookRemoteUrl = notebookRepository.activeNotebookState.firstOrNull()?.remoteUrl
-            gitSyncRepository.updateSyncStatus(activeNotebookRemoteUrl)
-
             // update the ui sync state based on the repository updated
             gitSyncRepository.gitSyncStatus.collect { status ->
                 _uiState.update { it.copy(gitSyncStatus = status) }

@@ -125,6 +125,9 @@ class MarkdownEditorState(
     // block actions
 
     fun evaluateFocusLost(index: Int) {
+        if (index == focusedIndex) {
+            focusedIndex = null
+        }
         dispatchAction(
             EditorAction.EvaluateBlockOnFocusLost(
                 index = index,

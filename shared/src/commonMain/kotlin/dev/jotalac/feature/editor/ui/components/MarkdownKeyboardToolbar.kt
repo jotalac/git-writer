@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import dev.jotalac.feature.editor.ui.utils.*
@@ -31,7 +29,7 @@ fun MarkdownKeyboardToolbar(
 ) {
     Row(
         modifier = modifier
-            .clip(CircleShape)
+//            .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceBright)
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(4.dp),

@@ -61,6 +61,10 @@ class EditorSidebarViewModel(
         }
 
         viewModelScope.launch {
+            // handle the initial sync state
+            val activeNotebookRemoteUrl = notebookRepository.activeNotebookState.firstOrNull()?.remoteUrl
+            gitSyncRepository.updateSyncStatus(activeNotebookRemoteUrl)
+
             // refresh file tree on git sync
             gitSyncRepository.gitSyncStatus.collect { status ->
                 if (status is GitSyncStatus.UpToDate) {
