@@ -2,7 +2,7 @@
 
 > high priority
 
-- mobile keyboard sometimes keep the editor shifted even after keyboard hide
+- mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press
 
 > medium priority
 
