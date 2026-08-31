@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,12 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.jotalac.feature.notebooks_management.domain.Notebook
 import git_writer.shared.generated.resources.*
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ActiveNotebookMenu(
-    notebookName: String?,
+    notebook: Notebook?,
     anyFolderExpanded: Boolean,
     onCollapseToggled: () -> Unit,
     onAddNoteClick: () -> Unit,
@@ -40,11 +43,11 @@ fun ActiveNotebookMenu(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ActiveNotebookName(notebookName)
+        ActiveNotebookName(notebook?.name, notebook?.remoteUrl)
         Spacer(Modifier.height(12.dp))
         ActiveNotebookActions(
             anyFolderExpanded,
-            notebookName == null,
+            notebook == null,
             onCollapseToggled,
             onAddNoteClick,
             onAddFolderClick,
@@ -54,7 +57,7 @@ fun ActiveNotebookMenu(
 }
 
 @Composable
-private fun ActiveNotebookName(notebookName: String?) {
+private fun ActiveNotebookName(notebookName: String?, remoteUrl: String?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -67,8 +70,18 @@ private fun ActiveNotebookName(notebookName: String?) {
             fontWeight = FontWeight.SemiBold,
             color = if (notebookName != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
         )
+
+        if (remoteUrl != null) {
+            Icon(
+                painter = painterResource(Res.drawable.git_fork),
+                tint = MaterialTheme.colorScheme.outline,
+                contentDescription = stringResource(Res.string.git_merge_icon),
+                modifier = Modifier.offset(x = (-4).dp).size(20.dp),
+            )
+        }
     }
 }
 

@@ -92,7 +92,7 @@ fun SidebarContent(
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
         ActiveNotebookMenu(
-            notebookName = state.activeNotebook?.name,
+            notebook = state.activeNotebook,
             onCollapseToggled = viewModel::toggleFolderCollapse,
             anyFolderExpanded = state.expandedFolders.isNotEmpty(),
             onAddNoteClick = { viewModel.onAction(SidebarAction.AddNote()) },
