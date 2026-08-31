@@ -2,7 +2,8 @@
 
 > high priority
 
-- mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press
+- mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (works
+  on older android 12 for some reason)
 
 > medium priority
 
@@ -16,6 +17,7 @@
 
 > other ideas - lower priority
 
+- in the file tree show which files are modified (based on the git status)
 - when renaming image resource – refactor the notes to use the new image name?
 - maybe add the action bar on desktop - like it is in the IDEA markdown editor
 - add rounded corners to rendered image in the editor

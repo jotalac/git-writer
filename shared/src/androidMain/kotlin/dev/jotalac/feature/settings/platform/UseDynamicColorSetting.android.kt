@@ -1,5 +1,6 @@
 package dev.jotalac.feature.settings.platform
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.HorizontalDivider
@@ -16,6 +17,8 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 actual fun UseDynamicColorSetting(isEnabled: Boolean, onToggle: (Boolean) -> Unit) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
