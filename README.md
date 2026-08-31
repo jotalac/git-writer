@@ -39,10 +39,6 @@ Pre-built binaries are available on the [**Releases**](https://github.com/jotala
 
 #### Desktop Distributions
 
-> [!NOTE]
-> Desktop native packages are built using `jpackage` on the respective host OS (e.g., build Windows packages on Windows,
-> Linux packages on Linux, macOS packages on macOS).
-
 - **Current OS**:
   ```bash
   ./gradlew :desktopApp:packageDistributionForCurrentOS
