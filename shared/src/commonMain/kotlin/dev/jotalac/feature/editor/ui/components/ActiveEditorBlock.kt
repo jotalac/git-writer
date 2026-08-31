@@ -114,8 +114,10 @@ fun ActiveEditorBlock(
             editorState.updateActiveText(it, index)
         },
         onTextLayout = { textLayoutResult = it },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-        keyboardActions = KeyboardActions(),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+            handlePlainEnterPress()
+        }),
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 12.dp)
