@@ -14,6 +14,7 @@
 - follow clean architecture and introduce UseCases instead of injecting repositories into repositories
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - made custom top app bar - it looks horrible on Windows at least
+- empty blocks are automatically deleted by markdown parsing
 
 > other ideas - lower priority
 

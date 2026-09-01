@@ -29,6 +29,7 @@ import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.markdownPadding
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor.ui.utils.getHeaderFontSize
@@ -55,7 +56,7 @@ fun RenderedEditorBlock(
         modifier = modifier
             .fillMaxWidth()
             .hoverable(interactionSource)
-            .padding(horizontal = 8.dp, vertical = 12.dp)
+            .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         // the displayed text content
         if (text.isBlank()) {
@@ -95,6 +96,7 @@ fun RenderedEditorBlock(
                         val newCheckbox = if (isChecked) "[x]" else "[ ]"
                         currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
                     },
+                    unorderedList = { CustomUnorderedListComponent(it) }
                 )
             }
 
@@ -110,7 +112,11 @@ fun RenderedEditorBlock(
                     h4 = getHeaderFontSize(4),
                     h5 = getHeaderFontSize(5),
                     h6 = getHeaderFontSize(6)
+                ),
+                padding = markdownPadding(
+                    listItemBottom = 1.dp,
                 )
+
             )
         }
 
