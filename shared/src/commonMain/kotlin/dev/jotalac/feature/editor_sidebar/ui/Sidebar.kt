@@ -3,10 +3,7 @@ package dev.jotalac.feature.editor_sidebar.ui
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +17,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.utils.isDesktopPlatform
 
 @Composable
 fun EditorSidebar(
@@ -46,6 +44,7 @@ fun EditorSidebar(
                 .width(sidebarWidth.coerceAtMost(maxSidebarWidth))
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surfaceContainer)
+                .padding(top = if (!isDesktopPlatform) 25.dp else 0.dp)
         ) {
 
             Row {

@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.view.WindowCompat
 import dev.jotalac.core.di.initFileKitAndroid
 
 class MainActivity : ComponentActivity() {
@@ -16,7 +15,7 @@ class MainActivity : ComponentActivity() {
 
         initFileKitAndroid(this)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             App()
@@ -25,7 +24,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview()
+@Preview
 @Composable
 fun AppAndroidPreview() {
     App()

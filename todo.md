@@ -2,8 +2,9 @@
 
 > high priority
 
-- mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (works
-  on older android 12 for some reason)
+- mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (doesnt
+  work only on my Android 17 Pixel 8 - all other tested devices work )
+- current jgit version works only on android 13+ (decreate jgit version/increase minSdk version)
 
 > medium priority
 
@@ -21,7 +22,7 @@
 - when renaming image resource – refactor the notes to use the new image name?
 - maybe add the action bar on desktop - like it is in the IDEA markdown editor
 - add rounded corners to rendered image in the editor
-- add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for ranaming and ctrl+n
+- add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for renaming and ctrl+n
   for new file)
 - encrypt data before pushing to remote
 - better messages while syncing (eg. when nothing is commited or pulled - display up to date message)

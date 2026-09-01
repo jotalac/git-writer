@@ -107,7 +107,8 @@ fun EditorScreen(
                 isLoading = state.isLoading,
                 onNoteClose = viewModel::closeActiveNote,
                 onAction = viewModel::onAction,
-                gitSyncStatus = state.gitSyncStatus
+                gitSyncStatus = state.gitSyncStatus,
+                openSettingsOnMobile = openSettingsOnMobile
             )
         }
     }
