@@ -44,9 +44,11 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.jgit.v5)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.jgit.latest)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -94,10 +96,10 @@ kotlin {
         }
 
         //shared platform for android and jvm (both running on JVM)
-        val jvmAndAndroidMain by creating {
+        val jvmAndAndroidMain = create("jvmAndAndroidMain") {
             dependsOn(commonMain.get())
             dependencies {
-                implementation(libs.jgit)
+
             }
         }
 

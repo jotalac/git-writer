@@ -2,9 +2,8 @@
 
 > high priority
 
-- mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (doesnt
-  work only on my Android 17 Pixel 8 - all other tested devices work )
-- current jgit version works only on android 13+ (decreate jgit version/increase minSdk version)
+- mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (android
+  17 issue only now)
 
 > medium priority
 
