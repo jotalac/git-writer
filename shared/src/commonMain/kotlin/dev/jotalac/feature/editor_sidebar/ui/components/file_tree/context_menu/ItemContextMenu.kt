@@ -19,7 +19,8 @@ fun AdaptiveContextMenu(
     itemType: FileType,
     itemPath: String,
     onDismissRequest: () -> Unit,
-    onAction: (SidebarAction) -> Unit
+    onAction: (SidebarAction) -> Unit,
+    isRoot: Boolean = false
 ) {
     if (isDesktopPlatform) {
         FileTreeContextMenu(
@@ -28,7 +29,8 @@ fun AdaptiveContextMenu(
             itemType = itemType,
             itemPath = itemPath,
             onAction = onAction,
-            onDismissRequest = onDismissRequest
+            onDismissRequest = onDismissRequest,
+            isRoot = isRoot
         )
     } else {
         MobileContextMenu(
@@ -85,6 +87,7 @@ fun FolderContextMenuContent(
     onAction: (SidebarAction) -> Unit,
     itemPath: String,
     onDismissRequest: () -> Unit,
+    isRoot: Boolean = false
 ) {
 
     ContextMenuItem(
@@ -101,20 +104,22 @@ fun FolderContextMenuContent(
         onDismissRequest = onDismissRequest,
     )
 
-    ContextMenuItem(
-        text = stringResource(Res.string.rename_contect_menu_item),
-        iconPainter = Res.drawable.pencil,
-        onClick = { onAction(SidebarAction.SetRenameItem(itemPath)) },
-        onDismissRequest = onDismissRequest,
-    )
+    if (!isRoot) {
+        ContextMenuItem(
+            text = stringResource(Res.string.rename_contect_menu_item),
+            iconPainter = Res.drawable.pencil,
+            onClick = { onAction(SidebarAction.SetRenameItem(itemPath)) },
+            onDismissRequest = onDismissRequest,
+        )
 
-    ContextMenuItem(
-        text = stringResource(Res.string.delete_item),
-        iconPainter = Res.drawable.delete,
-        onClick = { onAction(SidebarAction.DeleteItem(itemPath)) },
-        onDismissRequest = onDismissRequest,
-        itemColor = MaterialTheme.colorScheme.error
-    )
+        ContextMenuItem(
+            text = stringResource(Res.string.delete_item),
+            iconPainter = Res.drawable.delete,
+            onClick = { onAction(SidebarAction.DeleteItem(itemPath)) },
+            onDismissRequest = onDismissRequest,
+            itemColor = MaterialTheme.colorScheme.error
+        )
+    }
 
     if (isDesktopPlatform) {
         HorizontalDivider()

@@ -14,6 +14,7 @@ fun FileTreeContextMenu(
     itemType: FileType,
     itemPath: String,
     onAction: (SidebarAction) -> Unit,
+    isRoot: Boolean,
 ) {
     DesktopContextMenu(
         expanded = showMenu,
@@ -30,7 +31,8 @@ fun FileTreeContextMenu(
             FolderContextMenuContent(
                 onAction = onAction,
                 itemPath = itemPath,
-                onDismissRequest = onDismissRequest
+                onDismissRequest = onDismissRequest,
+                isRoot = isRoot
             )
         }
     }

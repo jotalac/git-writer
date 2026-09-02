@@ -85,7 +85,8 @@ fun RenderedEditorBlock(
                         val newCheckbox = if (isChecked) "[x]" else "[ ]"
                         currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
                     },
-                    unorderedList = { CustomUnorderedListComponent(it) }
+                    unorderedList = { CustomUnorderedListComponent(it) },
+                    image = { CustomImageComponent(it) },
                 )
             }
 

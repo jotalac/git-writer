@@ -1,12 +1,15 @@
 package dev.jotalac.feature.editor.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hrm.latex.renderer.LatexAutoWrap
@@ -14,6 +17,7 @@ import com.hrm.latex.renderer.model.LatexConfig
 import com.hrm.latex.renderer.model.LatexTheme
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.MarkdownComponentModel
+import com.mikepenz.markdown.compose.elements.MarkdownImage
 import com.mikepenz.markdown.compose.elements.MarkdownListItems
 import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.compose.elements.listDepth
@@ -78,5 +82,13 @@ private fun renderedLatexInParagraph(model: MarkdownComponentModel): Boolean {
         true
     } else {
         false
+    }
+}
+
+// custom image component
+@Composable
+fun CustomImageComponent(model: MarkdownComponentModel) {
+    Box(modifier = Modifier.clip(RoundedCornerShape(8.dp))) {
+        MarkdownImage(content = model.content, node = model.node)
     }
 }

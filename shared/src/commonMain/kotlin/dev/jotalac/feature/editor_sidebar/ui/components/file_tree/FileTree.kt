@@ -23,13 +23,17 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
+import dev.jotalac.core.ui.components.onContextMenuOpen
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.feature.editor_sidebar.domain.FileNode
+import dev.jotalac.feature.editor_sidebar.domain.FileType
 import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
 import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
+import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.empty_notebook_label
 import org.jetbrains.compose.resources.stringResource
@@ -70,6 +74,9 @@ fun FileTree(
     val highlightFill = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
     val highlightStroke = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
 
+    var showContextMenu by remember { mutableStateOf(false) }
+    var menuOffset by remember { mutableStateOf(DpOffset.Zero) }
+
     CompositionLocalProvider(LocalDragDropState provides dragDropState) {
         Box(
             modifier = Modifier
@@ -88,6 +95,10 @@ fun FileTree(
                     treeSize = it.size
                 }
                 .padding(bottom = 20.dp)
+                .onContextMenuOpen { offset ->
+                    showContextMenu = true
+                    menuOffset = offset
+                }
         ) {
             if (visibleItems.isEmpty()) {
                 Text(
@@ -169,6 +180,16 @@ fun FileTree(
                 dragDropState = dragDropState,
                 treeGlobalPosition = treeGlobalPosition,
                 treeSize = treeSize
+            )
+
+            AdaptiveContextMenu(
+                showMenu = showContextMenu,
+                menuOffset = menuOffset,
+                onDismissRequest = { showContextMenu = false },
+                onAction = onAction,
+                itemType = FileType.DIRECTORY,
+                itemPath = rootPath,
+                isRoot = true
             )
         }
     }

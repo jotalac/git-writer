@@ -2,7 +2,6 @@ package dev.jotalac.core.ui.components
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -14,14 +13,18 @@ fun Modifier.onContextMenuOpen(onEvent: (DpOffset) -> Unit): Modifier = composed
     pointerInput(Unit) {
         awaitPointerEventScope {
             while (true) {
-                val event = awaitPointerEvent(PointerEventPass.Initial)
+                val event = awaitPointerEvent()
                 if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
-                    val position = event.changes.first().position
-                    val offset = with(density) {
-                        DpOffset(position.x.toDp(), (position.y - 10).toDp())
+                    val pressChange = event.changes.first()
+
+                    if (!pressChange.isConsumed) {
+                        val position = pressChange.position
+                        val offset = with(density) {
+                            DpOffset(position.x.toDp(), (position.y - 10).toDp())
+                        }
+                        onEvent(offset)
+                        pressChange.consume()
                     }
-                    onEvent(offset)
-                    event.changes.forEach { it.consume() }
                 }
             }
         }
