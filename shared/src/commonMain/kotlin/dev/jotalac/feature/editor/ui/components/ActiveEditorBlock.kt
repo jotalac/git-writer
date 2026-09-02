@@ -153,9 +153,14 @@ fun ActiveEditorBlock(
                         }
 
                         Key.DirectionUp -> {
-                            val cursorStart = textFieldValue.selection.start
-                            val firstNewline = textFieldValue.text.indexOf('\n')
-                            val isFirstLine = if (firstNewline == -1) true else cursorStart <= firstNewline
+                            val cursorOffset = textFieldValue.selection.min.coerceIn(0, textFieldValue.text.length)
+                            val isFirstLine = textLayoutResult?.let { layout ->
+                                val offset = cursorOffset.coerceIn(0, layout.layoutInput.text.length)
+                                layout.getLineForOffset(offset) == 0
+                            } ?: run {
+                                val firstNewline = textFieldValue.text.indexOf('\n')
+                                if (firstNewline == -1) true else cursorOffset <= firstNewline
+                            }
 
                             if (event.isAltPressed) {
                                 editorState.swapBlockUp()
@@ -168,9 +173,14 @@ fun ActiveEditorBlock(
                         }
 
                         Key.DirectionDown -> {
-                            val cursorStart = textFieldValue.selection.start
-                            val lastNewline = textFieldValue.text.lastIndexOf('\n')
-                            val isLastLine = if (lastNewline == -1) true else cursorStart > lastNewline
+                            val cursorOffset = textFieldValue.selection.max.coerceIn(0, textFieldValue.text.length)
+                            val isLastLine = textLayoutResult?.let { layout ->
+                                val offset = cursorOffset.coerceIn(0, layout.layoutInput.text.length)
+                                layout.getLineForOffset(offset) == layout.lineCount - 1
+                            } ?: run {
+                                val lastNewline = textFieldValue.text.lastIndexOf('\n')
+                                if (lastNewline == -1) true else cursorOffset > lastNewline
+                            }
 
                             if (event.isAltPressed) {
                                 editorState.swapBlockDown()

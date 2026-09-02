@@ -19,14 +19,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import com.hrm.latex.renderer.LatexAutoWrap
-import com.hrm.latex.renderer.model.LatexConfig
-import com.hrm.latex.renderer.model.LatexTheme
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
-import com.mikepenz.markdown.compose.components.MarkdownComponentModel
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
-import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.markdownPadding
@@ -38,7 +33,6 @@ import dev.snipme.highlights.model.SyntaxThemes
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.delete_block_content_description
 import git_writer.shared.generated.resources.x_icon
-import org.intellij.markdown.ast.getTextInNode
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -81,16 +75,11 @@ fun RenderedEditorBlock(
                             content = it.content,
                             node = it.node,
                             highlightsBuilder = highlightsBuilder,
-                            showHeader = true
+                            showHeader = true,
                         )
                     },
                     paragraph = { model ->
-                        if (!renderedLatexInParagraph(model)) {
-                            MarkdownParagraph(
-                                content = model.content,
-                                node = model.node
-                            )
-                        }
+                        CustomParagraphComponent(model)
                     },
                     checkbox = customCheckboxComponent { offset, isChecked ->
                         val newCheckbox = if (isChecked) "[x]" else "[ ]"
@@ -115,9 +104,9 @@ fun RenderedEditorBlock(
                 ),
                 padding = markdownPadding(
                     listItemBottom = 1.dp,
-                )
+                ),
 
-            )
+                )
         }
 
         // the delete button
@@ -136,21 +125,3 @@ fun RenderedEditorBlock(
     }
 }
 
-@Composable
-private fun renderedLatexInParagraph(model: MarkdownComponentModel): Boolean {
-    val mathChild = model.node.children.find { it.type.name in listOf("BLOCK_MATH", "INLINE_MATH") }
-    return if (mathChild != null) {
-        val mathText = mathChild.getTextInNode(model.content).toString()
-            .removeSurrounding("$$")
-            .removeSurrounding("$").trim()
-        LatexAutoWrap(
-            mathText,
-            config = LatexConfig(
-                theme = LatexTheme.material3()
-            )
-        )
-        true
-    } else {
-        false
-    }
-}

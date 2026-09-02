@@ -9,9 +9,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.hrm.latex.renderer.LatexAutoWrap
+import com.hrm.latex.renderer.model.LatexConfig
+import com.hrm.latex.renderer.model.LatexTheme
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.MarkdownComponentModel
 import com.mikepenz.markdown.compose.elements.MarkdownListItems
+import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.compose.elements.listDepth
 import org.intellij.markdown.ast.getTextInNode
 
@@ -29,6 +33,7 @@ fun customCheckboxComponent(onCheckedChange: (Int, Boolean) -> Unit): MarkdownCo
     }
 }
 
+// unordered list
 @Composable
 fun CustomUnorderedListComponent(model: MarkdownComponentModel) {
     MarkdownListItems(
@@ -44,4 +49,34 @@ fun CustomUnorderedListComponent(model: MarkdownComponentModel) {
             }
         }
     )
+}
+
+// paragraph with latex block
+@Composable
+fun CustomParagraphComponent(model: MarkdownComponentModel) {
+    if (!renderedLatexInParagraph(model)) {
+        MarkdownParagraph(
+            content = model.content,
+            node = model.node
+        )
+    }
+}
+
+@Composable
+private fun renderedLatexInParagraph(model: MarkdownComponentModel): Boolean {
+    val mathChild = model.node.children.find { it.type.name in listOf("BLOCK_MATH", "INLINE_MATH") }
+    return if (mathChild != null) {
+        val mathText = mathChild.getTextInNode(model.content).toString()
+            .removeSurrounding("$$")
+            .removeSurrounding("$").trim()
+        LatexAutoWrap(
+            mathText,
+            config = LatexConfig(
+                theme = LatexTheme.material3()
+            )
+        )
+        true
+    } else {
+        false
+    }
 }

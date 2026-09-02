@@ -4,6 +4,7 @@
 
 - mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (android
   17 issue only now)
+- make code block content line wrap - now it just overflows
 
 > medium priority
 
