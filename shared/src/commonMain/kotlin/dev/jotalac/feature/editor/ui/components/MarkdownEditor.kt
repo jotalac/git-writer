@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
+import dev.jotalac.feature.editor.platform.isKeyboardVisible
 import dev.jotalac.feature.editor.platform.pickCameraImage
 import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.rememberMarkdownEditorState
@@ -44,7 +45,7 @@ fun MarkdownEditor(
 
     val scope = rememberCoroutineScope()
 
-    val isKeyboardOpen = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
+    val isKeyboardOpen = isKeyboardVisible()
 
     // clear focus when the mobile keyboard is closed
 //    LaunchedEffect(isKeyboardOpen) {
