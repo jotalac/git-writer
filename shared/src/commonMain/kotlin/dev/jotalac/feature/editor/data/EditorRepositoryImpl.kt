@@ -19,6 +19,7 @@ class EditorRepositoryImpl : EditorRepository {
         return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val fileContent = file.readString()
+                println(chunkMarkdownIntoBlocks(fileContent))
                 chunkMarkdownIntoBlocks(fileContent)
             }
         }

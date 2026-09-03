@@ -18,13 +18,25 @@ fun chunkMarkdownIntoBlocks(fullText: CharSequence): List<String> {
     // slice the original text using the Tree's coordinates
     val blocks = mutableListOf<String>()
 
+    var previousContentEnd = -1
+
     for (node in parsedTree.children) {
         // We only want actual content blocks, not the empty white-space between them
-        if (node.type.name != "WHITE_SPACE" && node.type.name != "EOL") {
-            // Cut the specific chunk out of the original string
-            val blockText = normalizedText.substring(node.startOffset, node.endOffset)
-            blocks.add(blockText)
+        if (node.type.name == "WHITE_SPACE" || node.type.name == "EOL") continue
+
+        // make sure the empty lines are inserted (by default line ends with two new-lines)
+        if (previousContentEnd >= 0) {
+            val gap = normalizedText.substring(previousContentEnd, node.startOffset)
+            val newlineCount = gap.count { it == '\n' }
+            val emptyBlockCount = ((newlineCount - 2) / 2).coerceAtLeast(0)
+            repeat(emptyBlockCount) {
+                blocks.add("")
+            }
         }
+
+        // Cut the specific chunk out of the original string
+        blocks.add(normalizedText.substring(node.startOffset, node.endOffset))
+        previousContentEnd = node.endOffset
     }
 
     return blocks
