@@ -32,7 +32,7 @@ compose.desktop {
                 TargetFormat.AppImage
             )
             packageName = "git-writer"
-            packageVersion = "0.0.1"
+            packageVersion = "0.0.2"
             description = "Git-backed note-taking app"
 
             modules(

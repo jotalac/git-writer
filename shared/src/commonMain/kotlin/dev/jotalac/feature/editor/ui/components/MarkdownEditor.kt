@@ -4,6 +4,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,7 @@ fun MarkdownEditor(
     val editorState = rememberMarkdownEditorState(markdownBlocks, onAction)
 
     var isDraggingImageOver by remember { mutableStateOf(false) }
+    var selectedBlockIndex by remember { mutableStateOf<Int?>(null) }
     val focusManager = LocalFocusManager.current
 
     val surfaceFocusRequester = remember { FocusRequester() }
@@ -149,15 +151,26 @@ fun MarkdownEditor(
             },
         contentAlignment = Alignment.TopCenter
     ) {
-        MarkdownEditorBlocksList(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = if (isKeyboardOpen) 75.dp else 0.dp) // see what is currently being edited
-            ,
-            blocks = markdownBlocks,
-            editorState = editorState,
-            scrollState = listScrollState
-        )
+        SelectionContainer {
+            MarkdownEditorBlocksList(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = if (isKeyboardOpen) 75.dp else 0.dp) // see what is currently being edited
+                ,
+                blocks = markdownBlocks,
+                editorState = editorState,
+                scrollState = listScrollState,
+                onBlockLongClick = { selectedBlockIndex = it }
+            )
+        }
+
+        selectedBlockIndex?.let { index ->
+            MarkdownBlockActionsBottomSheet(
+                editorState = editorState,
+                blockIndex = index,
+                onDismissRequest = { selectedBlockIndex = null }
+            )
+        }
 
         AppVerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),

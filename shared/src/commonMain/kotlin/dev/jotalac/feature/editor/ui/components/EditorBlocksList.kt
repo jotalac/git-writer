@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.utils.isDesktopPlatform
-import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.add_new_block_message
@@ -20,10 +19,9 @@ fun MarkdownEditorBlocksList(
     blocks: List<String>,
     editorState: MarkdownEditorState,
     modifier: Modifier = Modifier,
-    scrollState: ScrollState = rememberScrollState()
+    scrollState: ScrollState = rememberScrollState(),
+    onBlockLongClick: (Int) -> Unit,
 ) {
-    var selectedBlockIndex by remember { mutableStateOf<Int?>(null) }
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -49,7 +47,7 @@ fun MarkdownEditorBlocksList(
                                 onClick = { editorState.focusBlock(index, null) },
                                 onLongClick = {
                                     if (!isDesktopPlatform) {
-                                        selectedBlockIndex = index
+                                        onBlockLongClick(index)
                                     }
                                 }
                             ),
@@ -64,14 +62,6 @@ fun MarkdownEditorBlocksList(
             AddNewBlockButton(editorState)
             Spacer(modifier = Modifier.height(50.dp))
 
-        }
-
-        selectedBlockIndex?.let { index ->
-            MarkdownBlockActionsBottomSheet(
-                editorState = editorState,
-                blockIndex = index,
-                onDismissRequest = { selectedBlockIndex = null }
-            )
         }
     }
 }
