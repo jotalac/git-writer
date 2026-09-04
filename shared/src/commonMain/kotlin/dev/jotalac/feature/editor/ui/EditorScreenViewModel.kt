@@ -348,13 +348,6 @@ class EditorViewModel(
                 val text = markdownBlocks[action.index]
                 val currentFocused = action.currentFocusedIndex
 
-//                if (text.isBlank()) {
-//                    // Block is empty - remove it
-//                    markdownBlocks.removeAt(action.index)
-//                    if (currentFocused != null && currentFocused > action.index) {
-//                        action.onFocusAdjusted(currentFocused - 1)
-//                    }
-//                } else {
                 // Block has text - check if it needs to be chunked
                 val newChunks = createChunksFromText(text)
 
@@ -372,7 +365,6 @@ class EditorViewModel(
                         action.onFocusAdjusted(currentFocused + (newChunks.size - 1))
                     }
                 }
-//                }
             }
 
             is EditorAction.PasteImages -> {

@@ -2,9 +2,7 @@
 
 > high priority
 
-- empty blocks are automatically deleted by markdown parsing
-- switching between blocks flickers the screen - there might be different padding on the active and rendered block - the
-  last block gets gliteched with the 'tap to add new text...' label
+- add multiple tabs on the top action bar
 
 > medium priority
 

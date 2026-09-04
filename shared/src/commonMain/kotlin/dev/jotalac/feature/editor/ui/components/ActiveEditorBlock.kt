@@ -120,7 +120,7 @@ fun ActiveEditorBlock(
         }),
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 12.dp)
+            .padding(horizontal = 8.dp, vertical = 9.dp)
             .bringIntoViewRequester(localBringIntoViewRequester)
             .focusRequester(focusRequester)
             .onFocusChanged { focusState ->

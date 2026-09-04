@@ -24,7 +24,9 @@ import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.ReferenceLinkHandlerImpl
 import com.mikepenz.markdown.model.markdownPadding
+import com.mikepenz.markdown.model.parseMarkdown
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor.ui.utils.getHeaderFontSize
@@ -33,6 +35,9 @@ import dev.snipme.highlights.model.SyntaxThemes
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.delete_block_content_description
 import git_writer.shared.generated.resources.x_icon
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
+import org.intellij.markdown.parser.CancellationToken
+import org.intellij.markdown.parser.MarkdownParser
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -60,54 +65,11 @@ fun RenderedEditorBlock(
                 modifier = Modifier.weight(1f)
             )
         } else {
-            val isDarkTheme = isSystemInDarkTheme()
-            val highlightsBuilder = remember(isDarkTheme) {
-                Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
-            }
-
-            val currentText by rememberUpdatedState(text)
-            val currentOnTextChange by rememberUpdatedState(onTextChange)
-
-            val customMarkdownComponents = remember(highlightsBuilder) {
-                markdownComponents(
-                    codeFence = {
-                        MarkdownHighlightedCodeFence(
-                            content = it.content,
-                            node = it.node,
-                            highlightsBuilder = highlightsBuilder,
-                            showHeader = true,
-                        )
-                    },
-                    paragraph = { model ->
-                        CustomParagraphComponent(model)
-                    },
-                    checkbox = customCheckboxComponent { offset, isChecked ->
-                        val newCheckbox = if (isChecked) "[x]" else "[ ]"
-                        currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
-                    },
-                    unorderedList = { CustomUnorderedListComponent(it) },
-                    image = { CustomImageComponent(it) },
-                )
-            }
-
-            Markdown(
-                content = currentText,
+            RenderedMarkdownBlock(
+                text = text,
                 modifier = Modifier.weight(1f),
-                components = customMarkdownComponents,
-                imageTransformer = Coil3ImageTransformerImpl,
-                typography = markdownTypography(
-                    h1 = getHeaderFontSize(1),
-                    h2 = getHeaderFontSize(2),
-                    h3 = getHeaderFontSize(3),
-                    h4 = getHeaderFontSize(4),
-                    h5 = getHeaderFontSize(5),
-                    h6 = getHeaderFontSize(6)
-                ),
-                padding = markdownPadding(
-                    listItemBottom = 1.dp,
-                ),
-
-                )
+                onTextChange = onTextChange,
+            )
         }
 
         // the delete button
@@ -126,3 +88,72 @@ fun RenderedEditorBlock(
     }
 }
 
+@Composable
+private fun RenderedMarkdownBlock(
+    text: String,
+    modifier: Modifier = Modifier,
+    onTextChange: (String) -> Unit = {},
+) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val highlightsBuilder = remember(isDarkTheme) {
+        Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
+    }
+
+    val currentText by rememberUpdatedState(text)
+    val currentOnTextChange by rememberUpdatedState(onTextChange)
+
+    val customMarkdownComponents = remember(highlightsBuilder) {
+        markdownComponents(
+            codeFence = {
+                MarkdownHighlightedCodeFence(
+                    content = it.content,
+                    node = it.node,
+                    highlightsBuilder = highlightsBuilder,
+                    showHeader = true,
+                )
+            },
+            paragraph = { model ->
+                CustomParagraphComponent(model)
+            },
+            checkbox = customCheckboxComponent { offset, isChecked ->
+                val newCheckbox = if (isChecked) "[x]" else "[ ]"
+                currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
+            },
+            unorderedList = { CustomUnorderedListComponent(it) },
+            image = { CustomImageComponent(it) },
+        )
+    }
+
+    val markdownFlavour = remember { GFMFlavourDescriptor() }
+    val markdownParser = remember(markdownFlavour) {
+        MarkdownParser(markdownFlavour, cancellationToken = CancellationToken.NonCancellable)
+    }
+    val markdownReferenceLinkHandler = remember { ReferenceLinkHandlerImpl() }
+
+    val markdownState = remember(currentText, markdownFlavour, markdownParser, markdownReferenceLinkHandler) {
+        parseMarkdown(
+            content = currentText,
+            flavour = markdownFlavour,
+            parser = markdownParser,
+            referenceLinkHandler = markdownReferenceLinkHandler,
+        )
+    }
+
+    Markdown(
+        state = markdownState,
+        modifier = modifier,
+        components = customMarkdownComponents,
+        imageTransformer = Coil3ImageTransformerImpl,
+        typography = markdownTypography(
+            h1 = getHeaderFontSize(1),
+            h2 = getHeaderFontSize(2),
+            h3 = getHeaderFontSize(3),
+            h4 = getHeaderFontSize(4),
+            h5 = getHeaderFontSize(5),
+            h6 = getHeaderFontSize(6)
+        ),
+        padding = markdownPadding(
+            listItemBottom = 1.dp,
+        ),
+    )
+}
