@@ -1,16 +1,12 @@
 package dev.jotalac.feature.editor.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -18,6 +14,8 @@ import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.feature.editor.domain.EditorTabItem
+import dev.jotalac.feature.editor.ui.components.EditorTabsRow
 import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
 import dev.jotalac.feature.editor.ui.components.SyncFloatingButton
@@ -25,11 +23,11 @@ import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
 import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
-import git_writer.shared.generated.resources.*
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.closed_sidebar
+import git_writer.shared.generated.resources.opened_sidebar
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -66,22 +64,32 @@ fun EditorScreen(
         modifier = Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { event ->
-                //handle global editor shortcuts - later refactor all the keyshortcuts to separate file
-                if (event.type != KeyEventType.KeyDown || !event.isCtrlPressed) {
-                    return@onPreviewKeyEvent false
-                }
+                // handle global editor shortcuts - later refactor all the key shortcuts to separate file
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+
+                val isShortcut = event.isCtrlPressed || event.isMetaPressed
+                if (!isShortcut) return@onPreviewKeyEvent false
 
                 when (event.key) {
                     Key.W -> {
-                        viewModel.closeActiveNote()
+                        viewModel.onAction(EditorAction.CloseActiveTab)
+                        true
+                    }
+
+                    Key.T -> {
+                        viewModel.onAction(EditorAction.NewTab)
+                        true
+                    }
+
+                    Key.Tab -> {
+                        viewModel.onAction(
+                            if (event.isShiftPressed) EditorAction.PreviousTab else EditorAction.NextTab
+                        )
                         true
                     }
 
                     else -> false
-
                 }
-
-
             }
     ) {
         val isCompactScreen = maxWidth < 600.dp
@@ -93,10 +101,14 @@ fun EditorScreen(
                 activeNotePath = state.activeNotePath,
                 isImage = state.isImage,
                 isLoading = state.isLoading,
-                onNoteClose = viewModel::closeActiveNote,
                 onAction = viewModel::onAction,
                 gitSyncStatus = state.gitSyncStatus,
-                openSettingsOnMobile = openSettingsOnMobile
+                openSettingsOnMobile = openSettingsOnMobile,
+                openedTabs = state.openedTabs,
+                activeTabId = state.activeTabId,
+                onTabClick = viewModel::openTab,
+                onTabClose = viewModel::closeTab,
+                onNewTab = viewModel::addNewTab,
             )
         } else {
             ExpandedEditorLayout(
@@ -105,10 +117,14 @@ fun EditorScreen(
                 activeNotePath = state.activeNotePath,
                 isImage = state.isImage,
                 isLoading = state.isLoading,
-                onNoteClose = viewModel::closeActiveNote,
                 onAction = viewModel::onAction,
                 gitSyncStatus = state.gitSyncStatus,
-                openSettingsOnMobile = openSettingsOnMobile
+                openSettingsOnMobile = openSettingsOnMobile,
+                openedTabs = state.openedTabs,
+                activeTabId = state.activeTabId,
+                onTabClick = viewModel::openTab,
+                onTabClose = viewModel::closeTab,
+                onNewTab = viewModel::addNewTab,
             )
         }
     }
@@ -121,10 +137,14 @@ private fun CompactEditorLayout(
     activeNotePath: String?,
     isImage: Boolean,
     isLoading: Boolean,
-    onNoteClose: () -> Unit,
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
-    openSettingsOnMobile: () -> Unit
+    openSettingsOnMobile: () -> Unit,
+    openedTabs: List<EditorTabItem>,
+    activeTabId: Long,
+    onTabClick: (Long) -> Unit,
+    onTabClose: (Long) -> Unit,
+    onNewTab: () -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -151,11 +171,15 @@ private fun CompactEditorLayout(
                     if (drawerState.isOpen) drawerState.close() else drawerState.open()
                 }
             },
-            onNoteClose = onNoteClose,
             isLoading = isLoading,
             markdownBlocks = markdownBlocks,
             onAction = onAction,
             gitSyncStatus = gitSyncStatus,
+            openedTabs = openedTabs,
+            activeTabId = activeTabId,
+            onTabClick = onTabClick,
+            onTabClose = onTabClose,
+            onNewTab = onNewTab,
         )
     }
 }
@@ -167,10 +191,14 @@ private fun ExpandedEditorLayout(
     activeNotePath: String?,
     isImage: Boolean,
     isLoading: Boolean,
-    onNoteClose: () -> Unit,
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
     openSettingsOnMobile: () -> Unit = {},
+    openedTabs: List<EditorTabItem>,
+    activeTabId: Long,
+    onTabClick: (Long) -> Unit,
+    onTabClose: (Long) -> Unit,
+    onNewTab: () -> Unit,
 ) {
     var isSidebarVisible by remember { mutableStateOf(true) }
 
@@ -189,11 +217,15 @@ private fun ExpandedEditorLayout(
             onToggleSidebar = {
                 isSidebarVisible = !isSidebarVisible
             },
-            onNoteClose = onNoteClose,
             isLoading = isLoading,
             markdownBlocks = markdownBlocks,
             onAction = onAction,
             gitSyncStatus = gitSyncStatus,
+            openedTabs = openedTabs,
+            activeTabId = activeTabId,
+            onTabClick = onTabClick,
+            onTabClose = onTabClose,
+            onNewTab = onNewTab,
         )
     }
 }
@@ -206,11 +238,15 @@ fun MainEditorScaffold(
     isImage: Boolean,
     isSidebarOpen: Boolean,
     onToggleSidebar: () -> Unit,
-    onNoteClose: () -> Unit,
     isLoading: Boolean,
     markdownBlocks: List<String>,
     onAction: (EditorAction) -> Unit,
-    gitSyncStatus: GitSyncStatus
+    gitSyncStatus: GitSyncStatus,
+    openedTabs: List<EditorTabItem>,
+    activeTabId: Long,
+    onTabClick: (Long) -> Unit,
+    onTabClose: (Long) -> Unit,
+    onNewTab: () -> Unit,
 ) {
 
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
@@ -229,36 +265,13 @@ fun MainEditorScaffold(
         topAppBar = {
             TopAppBar(
                 title = {
-                    if (filename != null) {
-                        Row(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceContainer)
-                                .padding(start = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                filename,
-                                modifier = Modifier.weight(1f, fill = false),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-
-                            IconButton(
-                                onClick = { onNoteClose() },
-                            ) {
-                                Icon(
-                                    painter = painterResource(Res.drawable.x_icon),
-                                    contentDescription = stringResource(Res.string.close),
-                                    tint = MaterialTheme.colorScheme.outline,
-                                    modifier = Modifier.size(MaterialTheme.dimensions.iconMedium)
-                                )
-                            }
-                        }
-                    }
+                    EditorTabsRow(
+                        tabs = openedTabs,
+                        activeTabId = activeTabId,
+                        onItemClick = { onTabClick(it.id) },
+                        onItemClose = { onTabClose(it.id) },
+                        onNewTab = onNewTab,
+                    )
                 },
                 navigationIcon = {
                     TopAppBarIcon(

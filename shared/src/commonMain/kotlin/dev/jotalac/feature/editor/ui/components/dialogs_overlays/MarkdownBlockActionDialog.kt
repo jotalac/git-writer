@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components
+package dev.jotalac.feature.editor.ui.components.dialogs_overlays
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

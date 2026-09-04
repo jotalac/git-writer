@@ -4,12 +4,14 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor.ui.MarkdownEditorState
+import dev.jotalac.feature.editor.ui.components.active_block.ActiveEditorBlock
+import dev.jotalac.feature.editor.ui.components.markdown_rendering.RenderedEditorBlock
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.add_new_block_message
 import org.jetbrains.compose.resources.stringResource

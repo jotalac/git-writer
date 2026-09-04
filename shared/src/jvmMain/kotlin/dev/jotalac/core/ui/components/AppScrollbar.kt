@@ -1,11 +1,9 @@
 package dev.jotalac.core.ui.components
 
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.VerticalScrollbar
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.foundation.defaultScrollbarStyle
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -33,6 +31,22 @@ actual fun AppVerticalScrollbar(
 ) {
     VerticalScrollbar(
         modifier = modifier.width(6.dp),
+        adapter = rememberScrollbarAdapter(scrollState = listState),
+        style = defaultScrollbarStyle().copy(
+            unhoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+            hoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
+    )
+}
+
+
+@Composable
+actual fun AppHorizontalScrollbar(
+    listState: LazyListState,
+    modifier: Modifier
+) {
+    HorizontalScrollbar(
+        modifier = modifier.height(4.dp),
         adapter = rememberScrollbarAdapter(scrollState = listState),
         style = defaultScrollbarStyle().copy(
             unhoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),

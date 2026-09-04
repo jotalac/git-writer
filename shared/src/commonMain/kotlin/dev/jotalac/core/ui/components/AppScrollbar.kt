@@ -16,3 +16,10 @@ expect fun AppVerticalScrollbar(
     listState: ScrollState,
     modifier: Modifier = Modifier
 )
+
+
+@Composable
+expect fun AppHorizontalScrollbar(
+    listState: LazyListState,
+    modifier: Modifier = Modifier
+)

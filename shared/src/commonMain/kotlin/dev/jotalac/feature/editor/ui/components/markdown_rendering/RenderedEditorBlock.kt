@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components
+package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -153,7 +153,7 @@ private fun RenderedMarkdownBlock(
             h6 = getHeaderFontSize(6)
         ),
         padding = markdownPadding(
-            listItemBottom = 1.dp,
+            listItemBottom = 2.dp,
         ),
     )
 }

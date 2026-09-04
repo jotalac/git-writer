@@ -29,4 +29,10 @@ sealed interface EditorAction {
     data class ResolveSingleConflict(val filePath: String, val keepLocalChanges: Boolean) : EditorAction
     data class ResolveAllConflicts(val keepLocalChanges: Boolean) : EditorAction
     data object AbortConflictResolve : EditorAction
+
+    // tab management
+    data object CloseActiveTab : EditorAction
+    data object NewTab : EditorAction
+    data object NextTab : EditorAction
+    data object PreviousTab : EditorAction
 }

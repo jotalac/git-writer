@@ -3,8 +3,8 @@ package dev.jotalac.feature.editor.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import dev.jotalac.feature.editor.ui.components.EditorHistoryItem
-import dev.jotalac.feature.editor.ui.components.EditorHistoryManager
+import dev.jotalac.feature.editor.ui.components.active_block.EditorHistoryItem
+import dev.jotalac.feature.editor.ui.components.active_block.EditorHistoryManager
 import dev.jotalac.feature.editor.ui.utils.addLink
 import dev.jotalac.feature.editor.ui.utils.applyBold
 import dev.jotalac.feature.editor.ui.utils.applyInlineCode

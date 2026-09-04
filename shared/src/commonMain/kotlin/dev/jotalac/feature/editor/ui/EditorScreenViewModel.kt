@@ -1,18 +1,15 @@
 package dev.jotalac.feature.editor.ui
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.data.UserSettingsManager
-import dev.jotalac.core.domain.GitConflictResolutionStrategy
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.detectImageExtension
 import dev.jotalac.core.utils.isImageFile
-import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
+import dev.jotalac.feature.editor.domain.EditorTabItem
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
-import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
@@ -25,73 +22,90 @@ import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
-data class EditorScreenState(
-    val activeFilename: String? = null,
-    val activeNotePath: String? = null,
-    val isImage: Boolean = false,
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val gitSyncStatus: GitSyncStatus = GitSyncStatus.UpToDate,
-    val conflictedFiles: List<String> = emptyList(),
-)
-
 @OptIn(FlowPreview::class)
 class EditorViewModel(
     private val notebookRepository: NotebookRepository,
     private val editorRepository: EditorRepository,
     private val snackbarManager: SnackbarManager,
     private val userSettingsManager: UserSettingsManager,
-    private val gitSyncRepository: GitSyncRepository,
+    gitSyncRepository: GitSyncRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorScreenState())
     val uiState: StateFlow<EditorScreenState> = _uiState.asStateFlow()
 
-    val markdownBlocks = mutableStateListOf<String>()
+    private val blocksState = EditorBlocksState()
+    val markdownBlocks = blocksState.blocks
+
+    private val syncController = EditorSyncController(
+        gitSyncRepository = gitSyncRepository,
+        notebookRepository = notebookRepository,
+        snackbarManager = snackbarManager,
+        userSettingsManager = userSettingsManager,
+        state = _uiState,
+        saveCurrentNote = { saveNotesContent(markdownBlocks) },
+        reloadNote = { loadFileContent(it) },
+    )
+
+    private var nextTabId = 1L
+
+    // the note whose content is currently held in markdownBlocks
+    private var loadedNotePath: String? = null
 
     init {
-        // load the file data
+        // load / unload the file whenever the active note changes
         viewModelScope.launch {
-            // handle the file changing rendering
             notebookRepository.activeNotePath.collect { notePath ->
-                //save old files
+                // save old files
                 saveNotesContent(markdownBlocks)
 
+                // keep the active tab in sync with the opened note
+                applyNoteToActiveTab(notePath)
+
                 if (notePath != null) {
-                    //load file content
                     loadFileContent(notePath)
                 } else {
-                    // 'unload' the file
+                    loadedNotePath = null
                     markdownBlocks.clear()
-                    _uiState.update {
-                        it.copy(activeFilename = null, activeNotePath = null, isImage = false)
-                    }
+                    _uiState.update { it.copy(isImage = false) }
                 }
             }
-
         }
 
+        // reset the tabs when the active notebook changes - tabs from another notebook are stale
         viewModelScope.launch {
-            // update the ui sync state based on the repository updated
+            var previousNotebookId: Long? = null
+            notebookRepository.activeNotebookState
+                .map { it?.id }
+                .collect { notebookId ->
+                    if (previousNotebookId != null && notebookId != previousNotebookId) {
+                        saveNotesContent(markdownBlocks)
+                        resetTabs()
+                    }
+                    previousNotebookId = notebookId
+                }
+        }
+
+        // mirror the sync status into the UI
+        viewModelScope.launch {
             gitSyncRepository.gitSyncStatus.collect { status ->
                 _uiState.update { it.copy(gitSyncStatus = status) }
             }
         }
 
-        // handle file saving
+        // debounced autosave
         viewModelScope.launch {
             snapshotFlow { markdownBlocks.toList() }
-                .debounce(1.seconds) // save every 1s debounced
-                .distinctUntilChanged() // dont do anything when the content didnt changed
+                .debounce(1.seconds)
+                .distinctUntilChanged()
                 .collectLatest { currentBlocks ->
                     saveNotesContent(currentBlocks)
                 }
         }
-
     }
 
     suspend fun loadFileContent(filePath: String) {
-        _uiState.update { it.copy(isLoading = true, activeNotePath = filePath) }
+        _uiState.update { it.copy(isLoading = true) }
 
         val file = PlatformFile(filePath)
 
@@ -103,8 +117,9 @@ class EditorViewModel(
             return
         }
 
-        val filename = file.name
-        val isImage = isImageFile(filename)
+        val isImage = isImageFile(file.name)
+
+        loadedNotePath = filePath
 
         if (isImage) {
             markdownBlocks.clear()
@@ -114,310 +129,186 @@ class EditorViewModel(
             loadResult.onSuccess { blocks -> markdownBlocks.addAll(blocks) }
         }
 
-        _uiState.update {
-            it.copy(isLoading = false, activeFilename = filename, isImage = isImage)
-        }
+        _uiState.update { it.copy(isLoading = false, isImage = isImage) }
     }
 
     private suspend fun saveNotesContent(currentBlocks: List<String>) {
-        val currentState = _uiState.value
+        val notePath = loadedNotePath ?: return
 
-        if (currentState.activeNotePath != null &&
-            !currentState.isLoading &&
-            !currentState.isImage
-        ) {
+        if (!_uiState.value.isLoading && !_uiState.value.isImage) {
             val contentToSave = currentBlocks.joinToString("\n\n")
-            editorRepository.saveFile(contentToSave, currentState.activeNotePath)
+            editorRepository.saveFile(contentToSave, notePath)
         }
     }
 
-    fun closeActiveNote() {
+    // --- tabs ---
+
+    fun openTab(id: Long) {
+        val state = _uiState.value
+        val tab = state.openedTabs.firstOrNull { it.id == id } ?: return
+        if (tab.id == state.activeTabId) return
+
         viewModelScope.launch {
-            val result = notebookRepository.closeActiveNote()
-
-            result.onFailure {
-                println("Failed to close active note - $it")
-            }
-        }
-    }
-
-    fun syncNotes() {
-        viewModelScope.launch {
-            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
-            if (notebook.remoteUrl.isNullOrBlank() || notebook.remotePassword.isNullOrBlank()) return@launch
-
-            _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.Syncing) }
-
             saveNotesContent(markdownBlocks)
 
-            val result = gitSyncRepository.syncNotes(
-                notebook.directoryPath,
-                notebook.remotePassword,
-                notebook.remoteUsername
-            )
+            // switch the active tab first, so the note change emitted below is applied to the right tab
+            _uiState.update { it.copy(activeTabId = tab.id) }
 
-            result.onSuccess { syncResult ->
-                // check if we need to resolve conflicts
-                if (syncResult is GitSyncStatus.Conflict) {
-                    val strategy = userSettingsManager.userSettingsStateFlow.first().gitConflictStrategy
-                    // if auto conflict resolution is set
-                    if (strategy != GitConflictResolutionStrategy.MANUAL) {
-                        val keepLocal = strategy == GitConflictResolutionStrategy.LOCAL
-                        executeResolveAllConflicts(
-                            notebookPath = notebook.directoryPath,
-                            remotePassword = notebook.remotePassword,
-                            remoteUsername = notebook.remoteUsername,
-                            keepLocal = keepLocal
-                        )
-                    } else {
-                        _uiState.update { state ->
-                            state.copy(
-                                conflictedFiles = syncResult.files.toList(),
-                                gitSyncStatus = syncResult
-                            )
-                        }
-                    }
-                } else {
-                    val activePath = _uiState.value.activeNotePath
-                    if (activePath != null) {
-                        loadFileContent(activePath)
-                    }
-                    _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.UpToDate) }
-                    snackbarManager.showMessage("Notes synced successfully")
-                }
-            }.onFailure { errorResult ->
-                _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
-                snackbarManager.showMessage(errorResult.message ?: "Error syncing notes")
+            when {
+                tab.notePath == null -> notebookRepository.closeActiveNote()
+                tab.notePath != state.activeNotePath -> notebookRepository.activateNote(tab.notePath)
+                else -> Unit // same note as the current one - only the tab changes
             }
         }
     }
 
-    fun resolveSingleConflict(filePath: String, keepLocal: Boolean) {
-        viewModelScope.launch {
-            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
-            val result = gitSyncRepository.resolveSingleConflict(
-                currentNotebookPath = notebook.directoryPath,
-                conflictedFilePath = filePath,
-                keepLocalChanges = keepLocal
-            )
-            result.onSuccess {
-                val remaining = _uiState.value.conflictedFiles.filter { it != filePath }
-                _uiState.update { it.copy(conflictedFiles = remaining) }
-
-                // if there was conflict resolved on the opened note - refresh the note
-                val activeNotePath = _uiState.value.activeNotePath
-                if (activeNotePath != null && (activeNotePath.endsWith(filePath) || _uiState.value.activeFilename == filePath)) {
-                    loadFileContent(activeNotePath)
-                }
-
-                if (remaining.isEmpty()) {
-                    if (!notebook.remotePassword.isNullOrBlank()) {
-                        gitSyncRepository.pushChanges(
-                            currentNotebookPath = notebook.directoryPath,
-                            tokenOrPassword = notebook.remotePassword,
-                            username = notebook.remoteUsername
-                        )
-                    }
-                    _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.UpToDate) }
-                    snackbarManager.showMessage("All conflicts resolved and synced")
-                }
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to resolve conflict")
-            }
-        }
+    fun openNextTab() {
+        val state = _uiState.value
+        val currentIndex = state.openedTabs.indexOfFirst { it.id == state.activeTabId }
+        if (currentIndex == -1) return
+        val next = state.openedTabs.getOrNull(currentIndex + 1) ?: state.openedTabs.first()
+        openTab(next.id)
     }
 
-    fun resolveAllConflicts(keepLocal: Boolean) {
-        viewModelScope.launch {
-            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
-            executeResolveAllConflicts(
-                notebookPath = notebook.directoryPath,
-                remotePassword = notebook.remotePassword,
-                remoteUsername = notebook.remoteUsername,
-                keepLocal = keepLocal
-            )
-        }
+    fun openPreviousTab() {
+        val state = _uiState.value
+        val currentIndex = state.openedTabs.indexOfFirst { it.id == state.activeTabId }
+        if (currentIndex == -1) return
+        val previous = state.openedTabs.getOrNull(currentIndex - 1) ?: state.openedTabs.last()
+        openTab(previous.id)
     }
 
-    private suspend fun executeResolveAllConflicts(
-        notebookPath: String,
-        remotePassword: String?,
-        remoteUsername: String?,
-        keepLocal: Boolean
-    ) {
-        val result = gitSyncRepository.resolveAllConflicts(
-            currentNotebookPath = notebookPath,
-            keepLocalChanges = keepLocal
-        )
-        result.onSuccess {
+    fun addNewTab() {
+        viewModelScope.launch {
+            saveNotesContent(markdownBlocks)
+
+            val newTab = EditorTabItem(id = nextTabId++, notePath = null)
             _uiState.update {
-                it.copy(
-                    conflictedFiles = emptyList(),
-                    gitSyncStatus = GitSyncStatus.UpToDate
-                )
+                it.copy(openedTabs = it.openedTabs + newTab, activeTabId = newTab.id)
             }
-
-            // reload the opened note
-            val currentActive = _uiState.value.activeNotePath
-            if (currentActive != null) {
-                loadFileContent(currentActive)
-            }
-
-            if (!remotePassword.isNullOrBlank()) {
-                gitSyncRepository.pushChanges(
-                    currentNotebookPath = notebookPath,
-                    tokenOrPassword = remotePassword,
-                    username = remoteUsername
-                )
-            }
-            snackbarManager.showMessage("All conflicts resolved and synced")
-        }.onFailure {
-            _uiState.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
-            snackbarManager.showMessage(it.message ?: "Failed to resolve conflicts")
+            notebookRepository.closeActiveNote()
         }
+
     }
 
-    fun dismissConflictDialog() {
+    fun closeTab(id: Long) {
+        val state = _uiState.value
+        if (state.openedTabs.none { it.id == id }) return
+
         viewModelScope.launch {
-            val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return@launch
-            val result = gitSyncRepository.abortMerge(notebook.directoryPath)
+            saveNotesContent(markdownBlocks)
 
-            result.onSuccess {
-                snackbarManager.showMessage("Sync aborted")
-                _uiState.update { it.copy(conflictedFiles = emptyList(), gitSyncStatus = GitSyncStatus.UpToDate) }
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to abort sync")
+            if (state.openedTabs.size == 1) {
+                // closing the only tab: replace it with a fresh empty one so at least one tab always exists
+                val newTab = EditorTabItem(id = nextTabId++, notePath = null)
+                _uiState.update { it.copy(openedTabs = listOf(newTab), activeTabId = newTab.id) }
+                notebookRepository.closeActiveNote()
+                return@launch
+            }
+
+            val closedIndex = state.openedTabs.indexOfFirst { it.id == id }
+            val wasActive = id == state.activeTabId
+            val newTabs = state.openedTabs.filterNot { it.id == id }
+
+            if (!wasActive) {
+                _uiState.update { it.copy(openedTabs = newTabs) }
+                return@launch
+            }
+
+            // the active tab was closed: activate the tab that took its place (or the previous one)
+            val newActiveTab = newTabs.getOrNull(closedIndex) ?: newTabs.last()
+            _uiState.update { it.copy(openedTabs = newTabs, activeTabId = newActiveTab.id) }
+
+            val newActiveNote = newActiveTab.notePath
+            when {
+                newActiveNote == null -> notebookRepository.closeActiveNote()
+                newActiveNote != state.activeNotePath -> notebookRepository.activateNote(newActiveNote)
+                else -> Unit // same note as the current one - no reload needed
             }
         }
     }
+
+    fun closeActiveTab() {
+        println("Active tab id: ${_uiState.value.activeTabId}")
+        closeTab(_uiState.value.activeTabId)
+    }
+
+    private fun applyNoteToActiveTab(notePath: String?) {
+        // when the note is opened already somewhere else, just open that tab
+        if (notePath != null) {
+            val existingTab = _uiState.value.openedTabs.firstOrNull { it.notePath == notePath }
+            if (existingTab != null) {
+                _uiState.update { it.copy(activeTabId = existingTab.id) }
+                return
+            }
+        }
+
+        _uiState.update { state ->
+            state.copy(
+                openedTabs = state.openedTabs.map { tab ->
+                    if (tab.id == state.activeTabId) tab.copy(notePath = notePath) else tab
+                }
+            )
+        }
+    }
+
+    private fun resetTabs() {
+        val newTab = EditorTabItem(id = nextTabId++, notePath = null)
+        _uiState.update { it.copy(openedTabs = listOf(newTab), activeTabId = newTab.id) }
+    }
+
+    // --- actions ---
 
     fun onAction(action: EditorAction) {
         when (action) {
-            is EditorAction.AddBlock -> {
-                if (action.index == null) {
-                    markdownBlocks.add("")
-                } else {
-                    markdownBlocks.add(action.index, "")
-                }
+            is EditorAction.AddBlock -> blocksState.addBlock(action.index)
+            is EditorAction.UpdateBlock -> blocksState.updateBlock(action.index, action.newText)
+            is EditorAction.RemoveBlock -> blocksState.removeBlock(action.index)
+            is EditorAction.AddBlocks -> blocksState.addBlocks(action.index, action.newBlocks)
+            is EditorAction.BlockTurnedIntoMoreBlocks -> blocksState.replaceBlockWithBlocks(
+                action.index,
+                action.newBlocks
+            )
+
+            is EditorAction.SplitBlock -> blocksState.splitBlock(action.index, action.cursorStart)
+                ?.let(action.onFocusCalculated)
+
+            is EditorAction.MergeWithPrevBlock -> blocksState.mergeWithPrevious(action.index)
+            is EditorAction.EvaluateBlockOnFocusLost ->
+                blocksState.evaluateBlockOnFocusLost(action.index, action.currentFocusedIndex)
+                    ?.let(action.onFocusAdjusted)
+
+            is EditorAction.SwapBlocks -> blocksState.swapBlocks(action.fromIndex, action.toIndex)
+            is EditorAction.SetBlocks -> blocksState.setBlocks(action.blocks)
+            is EditorAction.PasteImages -> savePastedImages(
+                action.imageBytesList,
+                action.focusedIndex,
+                action.onFocusCalculated
+            )
+
+            is EditorAction.SyncNotes -> viewModelScope.launch { syncController.sync() }
+            is EditorAction.ResolveSingleConflict -> viewModelScope.launch {
+                syncController.resolveSingleConflict(action.filePath, action.keepLocalChanges)
             }
 
-            is EditorAction.UpdateBlock -> {
-                if (action.index !in markdownBlocks.indices) return
-                markdownBlocks[action.index] = action.newText
+            is EditorAction.ResolveAllConflicts -> viewModelScope.launch {
+                syncController.resolveAllConflicts(action.keepLocalChanges)
             }
 
-            is EditorAction.RemoveBlock -> {
-                if (action.index !in markdownBlocks.indices) return
-                markdownBlocks.removeAt(action.index)
-            }
+            is EditorAction.AbortConflictResolve -> viewModelScope.launch { syncController.abort() }
 
-            is EditorAction.AddBlocks -> {
-                markdownBlocks.addAll(action.index, action.newBlocks)
-            }
-
-            is EditorAction.BlockTurnedIntoMoreBlocks -> {
-                if (action.index !in markdownBlocks.indices) return
-                addNewSplitBlocks(action.index, action.newBlocks)
-            }
-
-            is EditorAction.SplitBlock -> {
-                if (action.index !in markdownBlocks.indices) return
-                val text = markdownBlocks[action.index]
-                val textBefore = text.substring(0, action.cursorStart)
-                val textAfter = text.substring(action.cursorStart)
-
-                // split to text before cursor and after cursor (create valid blocks from the text before and after cursor)
-                val chunksBefore = createChunksFromText(textBefore)
-                val chunksAfter = createChunksFromText(textAfter)
-
-                addNewSplitBlocks(action.index, chunksBefore + chunksAfter)
-
-                val focusIndex = action.index + chunksBefore.size
-                action.onFocusCalculated(focusIndex)
-            }
-
-            is EditorAction.MergeWithPrevBlock -> {
-                if (action.index !in markdownBlocks.indices || action.index <= 0) return
-                markdownBlocks[action.index - 1] = markdownBlocks[action.index - 1] + markdownBlocks[action.index]
-                markdownBlocks.removeAt(action.index)
-            }
-
-            is EditorAction.EvaluateBlockOnFocusLost -> {
-                if (action.index >= markdownBlocks.size) return
-
-                val text = markdownBlocks[action.index]
-                val currentFocused = action.currentFocusedIndex
-
-                // Block has text - check if it needs to be chunked
-                val newChunks = createChunksFromText(text)
-
-                if (newChunks.isEmpty()) {
-                    markdownBlocks.removeAt(action.index)
-                    if (currentFocused != null && currentFocused > action.index) {
-                        action.onFocusAdjusted(currentFocused - 1)
-                    }
-                } else if (newChunks.size > 1) {
-                    // Block split into multiple chunks
-                    markdownBlocks.removeAt(action.index)
-                    markdownBlocks.addAll(action.index, newChunks)
-
-                    if (currentFocused != null && currentFocused > action.index) {
-                        action.onFocusAdjusted(currentFocused + (newChunks.size - 1))
-                    }
-                }
-            }
-
-            is EditorAction.PasteImages -> {
-                savePastedImages(action.imageBytesList, action.focusedIndex, action.onFocusCalculated)
-            }
-
-            is EditorAction.SwapBlocks -> {
-                val temp = markdownBlocks[action.toIndex]
-                markdownBlocks[action.toIndex] = markdownBlocks[action.fromIndex]
-                markdownBlocks[action.fromIndex] = temp
-            }
-
-            is EditorAction.SyncNotes -> {
-                syncNotes()
-            }
-
-            is EditorAction.ResolveSingleConflict -> {
-                resolveSingleConflict(action.filePath, action.keepLocalChanges)
-            }
-
-            is EditorAction.ResolveAllConflicts -> {
-                resolveAllConflicts(action.keepLocalChanges)
-            }
-
-            is EditorAction.AbortConflictResolve -> {
-                dismissConflictDialog()
-            }
-
-            is EditorAction.SetBlocks -> {
-                markdownBlocks.clear()
-                markdownBlocks.addAll(action.blocks)
-            }
+            is EditorAction.CloseActiveTab -> closeActiveTab()
+            is EditorAction.NewTab -> addNewTab()
+            is EditorAction.NextTab -> openNextTab()
+            is EditorAction.PreviousTab -> openPreviousTab()
         }
     }
 
-    private fun addNewSplitBlocks(index: Int, newBlocks: List<String>) {
-        markdownBlocks.removeAt(index)
-        markdownBlocks.addAll(index, newBlocks)
-    }
-
-
-    private fun createChunksFromText(text: String): List<String> {
-        val chunks = chunkMarkdownIntoBlocks(text)
-        return if (chunks.isEmpty() && text.isNotEmpty()) {
-            listOf(text)
-        } else if (text.isEmpty()) {
-            listOf("")
-        } else {
-            chunks
-        }
-    }
-
-    fun savePastedImages(imageBytesList: List<ByteArray>, focusedIndex: Int, onFocusCalculated: (Int) -> Unit) {
+    private fun savePastedImages(
+        imageBytesList: List<ByteArray>,
+        focusedIndex: Int,
+        onFocusCalculated: (Int) -> Unit
+    ) {
         if (imageBytesList.isEmpty()) return
 
         viewModelScope.launch {
@@ -440,34 +331,13 @@ class EditorViewModel(
                 if (result.isFailure) {
                     snackbarManager.showMessage("Failed to save one or more pasted images")
                 } else {
-                    val relativePath = "images/$filename"
-                    savedMarkdownSyntaxes.add("![pasted image]($relativePath)")
+                    savedMarkdownSyntaxes.add("![pasted image](images/$filename)")
                 }
             }
 
             if (savedMarkdownSyntaxes.isEmpty()) return@launch
 
-            var insertIndex = if (focusedIndex in markdownBlocks.indices) focusedIndex else markdownBlocks.size
-            if (insertIndex in markdownBlocks.indices && markdownBlocks[insertIndex].isBlank()) {
-                markdownBlocks[insertIndex] = savedMarkdownSyntaxes.first()
-                for (syntax in savedMarkdownSyntaxes.drop(1)) {
-                    insertIndex++
-                    markdownBlocks.add(insertIndex, syntax)
-                }
-            } else {
-                for (syntax in savedMarkdownSyntaxes) {
-                    insertIndex = if (insertIndex in markdownBlocks.indices) insertIndex + 1 else markdownBlocks.size
-                    markdownBlocks.add(insertIndex, syntax)
-                }
-            }
-
-            val targetFocusIndex: Int
-            if (insertIndex + 1 < markdownBlocks.size && markdownBlocks[insertIndex + 1].isBlank()) {
-                targetFocusIndex = insertIndex + 1
-            } else {
-                targetFocusIndex = insertIndex + 1
-                markdownBlocks.add(targetFocusIndex, "")
-            }
+            val targetFocusIndex = blocksState.insertImageBlocks(savedMarkdownSyntaxes, focusedIndex)
             onFocusCalculated(targetFocusIndex)
         }
     }

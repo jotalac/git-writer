@@ -114,6 +114,7 @@
     <string name="settings_auto_accept_remote">Aceptar siempre cambios remotos</string>
     <string name="settings_use_dynamic_color">Usar Dynamic Color</string>
     <string name="delete_block_content_description">Eliminar bloque</string>
+    <string name="new_tab">Nueva pestaña</string>
 
 
 </resources>

@@ -114,5 +114,6 @@
     <string name="settings_auto_accept_remote">Vždy přijmout vzdálené změny</string>
     <string name="settings_use_dynamic_color">Použít Dynamic Color</string>
     <string name="delete_block_content_description">Smazat blok</string>
+    <string name="new_tab">Nová karta</string>
 
 </resources>

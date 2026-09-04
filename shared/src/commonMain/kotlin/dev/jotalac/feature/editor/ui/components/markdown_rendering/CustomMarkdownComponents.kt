@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components
+package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding

@@ -21,6 +21,9 @@ import dev.jotalac.core.utils.onExternalImageDrop
 import dev.jotalac.feature.editor.platform.isKeyboardVisible
 import dev.jotalac.feature.editor.platform.pickCameraImage
 import dev.jotalac.feature.editor.ui.EditorAction
+import dev.jotalac.feature.editor.ui.components.active_block.MarkdownKeyboardToolbar
+import dev.jotalac.feature.editor.ui.components.dialogs_overlays.ImageDropOverlay
+import dev.jotalac.feature.editor.ui.components.dialogs_overlays.MarkdownBlockActionsBottomSheet
 import dev.jotalac.feature.editor.ui.rememberMarkdownEditorState
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitMode
@@ -70,6 +73,13 @@ fun MarkdownEditor(
         }
     }
 
+    LaunchedEffect(Unit) {
+        try {
+            surfaceFocusRequester.requestFocus()
+        } catch (_: Exception) {
+        }
+    }
+
     Box(
         modifier = modifier
             .focusRequester(surfaceFocusRequester)
@@ -114,6 +124,29 @@ fun MarkdownEditor(
                 if (isShortcutModifier && event.key == Key.Y) {
                     editorState.redo()
                     return@onPreviewKeyEvent true
+                }
+
+                // Tab management shortcuts - handled here too so they keep working while the
+                // editor surface (or a block inside it) has focus.
+                if (isShortcutModifier) {
+                    when (event.key) {
+                        Key.W -> {
+                            onAction(EditorAction.CloseActiveTab)
+                            return@onPreviewKeyEvent true
+                        }
+
+                        Key.T -> {
+                            onAction(EditorAction.NewTab)
+                            return@onPreviewKeyEvent true
+                        }
+
+                        Key.Tab -> {
+                            onAction(
+                                if (event.isShiftPressed) EditorAction.PreviousTab else EditorAction.NextTab
+                            )
+                            return@onPreviewKeyEvent true
+                        }
+                    }
                 }
 
 

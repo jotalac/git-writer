@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components
+package dev.jotalac.feature.editor.ui.components.active_block
 
 import androidx.compose.ui.text.TextRange
 import kotlin.time.Clock

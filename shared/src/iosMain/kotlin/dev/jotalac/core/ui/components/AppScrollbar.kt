@@ -20,3 +20,7 @@ actual fun AppVerticalScrollbar(
 ) {
     // No-op on iOS, as scrollbars are handled natively
 }
+
+@Composable
+actual fun AppHorizontalScrollbar(listState: LazyListState, modifier: Modifier) {
+}
