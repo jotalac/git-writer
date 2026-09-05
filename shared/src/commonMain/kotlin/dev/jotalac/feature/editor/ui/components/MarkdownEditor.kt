@@ -75,7 +75,7 @@ fun MarkdownEditor(
 
     LaunchedEffect(Unit) {
         try {
-            surfaceFocusRequester.requestFocus()
+            if (isDesktopPlatform) surfaceFocusRequester.requestFocus()
         } catch (_: Exception) {
         }
     }
@@ -126,8 +126,7 @@ fun MarkdownEditor(
                     return@onPreviewKeyEvent true
                 }
 
-                // Tab management shortcuts - handled here too so they keep working while the
-                // editor surface (or a block inside it) has focus.
+                // tab shortcuts management
                 if (isShortcutModifier) {
                     when (event.key) {
                         Key.W -> {

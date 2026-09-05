@@ -8,16 +8,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,12 +20,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppHorizontalScrollbar
 import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor.domain.EditorTabItem
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.close
-import git_writer.shared.generated.resources.new_tab
-import git_writer.shared.generated.resources.plus
-import git_writer.shared.generated.resources.x_icon
+import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -79,7 +71,7 @@ fun EditorTabsRow(
             }
 
             item {
-                IconButton(onClick = onNewTab) {
+                IconButton(onClick = onNewTab, modifier = Modifier.size(MaterialTheme.dimensions.iconLarge)) {
                     Icon(
                         painter = painterResource(Res.drawable.plus),
                         contentDescription = stringResource(Res.string.new_tab),
@@ -89,16 +81,17 @@ fun EditorTabsRow(
             }
         }
 
-        if (isScrollable) {
+        if (isScrollable && isDesktopPlatform) {
             AppHorizontalScrollbar(
                 rowState,
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             )
+        } else {
+//            HorizontalDivider(Modifier.height(2.dp).padding(top = 8.dp))
         }
 
-        HorizontalDivider(Modifier.height(2.dp).padding(top = 8.dp))
     }
 }
 
@@ -108,12 +101,11 @@ private fun EditorTab(
     isActive: Boolean,
     onClick: () -> Unit,
     onClose: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .width(150.dp)
-            .clip(TabShape)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
             .border(
                 width = 1.dp,
                 color = if (isActive) {
@@ -123,6 +115,8 @@ private fun EditorTab(
                 },
                 shape = TabShape
             )
+            .clip(TabShape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(onClick = onClick)
             .padding(vertical = 4.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,

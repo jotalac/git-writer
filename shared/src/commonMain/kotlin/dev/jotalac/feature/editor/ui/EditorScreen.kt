@@ -1,10 +1,13 @@
 package dev.jotalac.feature.editor.ui
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -39,6 +42,19 @@ fun EditorScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val blocks = viewModel.markdownBlocks
 
+    val rootFocusRequester = remember { FocusRequester() }
+
+    // when there is no note open - focus the root
+    LaunchedEffect(state.activeNotePath, state.isImage) {
+        val hasEditor = state.activeNotePath != null && !state.isImage
+        if (!hasEditor) {
+            try {
+                rootFocusRequester.requestFocus()
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     if (state.conflictedFiles.isNotEmpty()) {
         GitConflictResolveDialog(
             conflictedFileNames = state.conflictedFiles,
@@ -60,7 +76,7 @@ fun EditorScreen(
         )
     }
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { event ->
@@ -81,6 +97,13 @@ fun EditorScreen(
                         true
                     }
 
+                    Key.N -> {
+                        if (state.activeNotePath == null) {
+                            viewModel.onAction(EditorAction.NewNote)
+                            true
+                        } else false
+                    }
+
                     Key.Tab -> {
                         viewModel.onAction(
                             if (event.isShiftPressed) EditorAction.PreviousTab else EditorAction.NextTab
@@ -91,41 +114,47 @@ fun EditorScreen(
                     else -> false
                 }
             }
+            .focusRequester(rootFocusRequester)
+            .focusable()
     ) {
-        val isCompactScreen = maxWidth < 600.dp
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val isCompactScreen = maxWidth < 600.dp
 
-        if (isCompactScreen) {
-            CompactEditorLayout(
-                markdownBlocks = blocks,
-                filename = state.activeFilename,
-                activeNotePath = state.activeNotePath,
-                isImage = state.isImage,
-                isLoading = state.isLoading,
-                onAction = viewModel::onAction,
-                gitSyncStatus = state.gitSyncStatus,
-                openSettingsOnMobile = openSettingsOnMobile,
-                openedTabs = state.openedTabs,
-                activeTabId = state.activeTabId,
-                onTabClick = viewModel::openTab,
-                onTabClose = viewModel::closeTab,
-                onNewTab = viewModel::addNewTab,
-            )
-        } else {
-            ExpandedEditorLayout(
-                markdownBlocks = blocks,
-                filename = state.activeFilename,
-                activeNotePath = state.activeNotePath,
-                isImage = state.isImage,
-                isLoading = state.isLoading,
-                onAction = viewModel::onAction,
-                gitSyncStatus = state.gitSyncStatus,
-                openSettingsOnMobile = openSettingsOnMobile,
-                openedTabs = state.openedTabs,
-                activeTabId = state.activeTabId,
-                onTabClick = viewModel::openTab,
-                onTabClose = viewModel::closeTab,
-                onNewTab = viewModel::addNewTab,
-            )
+            if (isCompactScreen) {
+                CompactEditorLayout(
+                    markdownBlocks = blocks,
+                    filename = state.activeFilename,
+                    activeNotePath = state.activeNotePath,
+                    isImage = state.isImage,
+                    isLoading = state.isLoading,
+                    onAction = viewModel::onAction,
+                    gitSyncStatus = state.gitSyncStatus,
+                    openSettingsOnMobile = openSettingsOnMobile,
+                    openedTabs = state.openedTabs,
+                    activeTabId = state.activeTabId,
+                    onTabClick = viewModel::openTab,
+                    onTabClose = viewModel::closeTab,
+                    onNewTab = viewModel::addNewTab,
+                )
+            } else {
+                ExpandedEditorLayout(
+                    markdownBlocks = blocks,
+                    filename = state.activeFilename,
+                    activeNotePath = state.activeNotePath,
+                    isImage = state.isImage,
+                    isLoading = state.isLoading,
+                    onAction = viewModel::onAction,
+                    gitSyncStatus = state.gitSyncStatus,
+                    openSettingsOnMobile = openSettingsOnMobile,
+                    openedTabs = state.openedTabs,
+                    activeTabId = state.activeTabId,
+                    onTabClick = viewModel::openTab,
+                    onTabClose = viewModel::closeTab,
+                    onNewTab = viewModel::addNewTab,
+                )
+            }
         }
     }
 }

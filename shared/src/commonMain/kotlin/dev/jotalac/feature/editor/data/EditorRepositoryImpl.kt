@@ -2,6 +2,7 @@ package dev.jotalac.feature.editor.data
 
 import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.core.utils.suspendRunCatching
+import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import io.github.vinceglb.filekit.*
@@ -38,18 +39,25 @@ class EditorRepositoryImpl : EditorRepository {
         }
     }
 
-    override suspend fun addNote(filename: String, filePath: String): Result<Unit> {
+    override suspend fun createNote(directoryPath: String, baseName: String): Result<String> {
         return suspendRunCatching {
             withContext(Dispatchers.IO) {
-                val newFile = Path(Path(filePath), filename)
+                val directory = Path(directoryPath)
+                val safeBaseName = baseName.toSafeFileName()
+                val existingNames = SystemFileSystem.list(directory).map { it.name }.toSet()
 
-                if (SystemFileSystem.exists(newFile)) {
-                    throw IllegalStateException("File '$filename' already exists")
+                var filename = "$safeBaseName.md"
+                var counter = 0
+                while (filename in existingNames) {
+                    counter++
+                    filename = "$safeBaseName $counter.md"
                 }
 
+                val newFile = Path(directory, filename)
                 SystemFileSystem.sink(newFile).buffered().use { buffer ->
                     buffer.writeString("")
                 }
+                newFile.toString()
             }
         }
     }

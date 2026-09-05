@@ -19,6 +19,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 data class SidebarState(
     val activeNotebook: Notebook? = null,
+    val activeNotePath: String? = null,
     val fileTree: FileNode.Directory? = null,
     val expandedFolders: Set<String> = emptySet(),
     val itemToRename: String? = null
@@ -34,6 +35,8 @@ class EditorSidebarViewModel(
     val uiState: StateFlow<SidebarState> = _uiState.asStateFlow()
 
     private var filesRefreshJob: Job? = null
+
+    private var suppressRenameTrigger = false
 
 
     init {
@@ -70,6 +73,23 @@ class EditorSidebarViewModel(
                 if (status is GitSyncStatus.UpToDate) {
                     refreshFileTree()
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            notebookRepository.activeNotePath.collect { notePath ->
+                _uiState.update { it.copy(activeNotePath = notePath) }
+
+                // a note created outside the sidebar (Ctrl+N) isn't in the tree yet - refresh and
+                // start renaming it. Skip when we just created/renamed the note ourselves
+                if (notePath != null && _uiState.value.fileTree != null &&
+                    findNode(notePath) == null && !suppressRenameTrigger
+                ) {
+                    refreshFileTree()
+                    setRenameItem(notePath)
+                }
+
+                suppressRenameTrigger = false
             }
         }
     }
@@ -132,6 +152,7 @@ class EditorSidebarViewModel(
             editorRepository.renameItem(path, safeName)
                 .onSuccess {
                     setRenameItem(null)
+                    suppressRenameTrigger = true
                     val parentPath = Path(path).parent
                     val newPath = if (parentPath != null) Path(parentPath, safeName).toString() else safeName
                     notebookRepository.syncActiveNotePathOnMoved(path, newPath)
@@ -264,21 +285,18 @@ class EditorSidebarViewModel(
     private fun addNote(parentPath: String?, defaultName: String = "untitled") {
         val rootPath = _uiState.value.fileTree?.path ?: return
         val targetPath = parentPath ?: rootPath
-        val filename = getUniqueName(defaultName, false, targetPath)
 
         viewModelScope.launch {
-            val result = editorRepository.addNote(filename.toSafeFileName(), targetPath)
-
-            result.onSuccess {
-                val newPath = Path(Path(targetPath), filename.toSafeFileName()).toString()
-                expandFolder(targetPath)
-                refreshFileTree()
-                setActiveNote(newPath)
-                setRenameItem(newPath)
-
-            }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to add note")
-            }
+            editorRepository.createNote(targetPath, defaultName)
+                .onSuccess { newPath ->
+                    expandFolder(targetPath)
+                    refreshFileTree()
+                    setActiveNote(newPath)
+                    setRenameItem(newPath)
+                    suppressRenameTrigger = true
+                }.onFailure {
+                    snackbarManager.showMessage(it.message ?: "Failed to add note")
+                }
         }
     }
 

@@ -257,6 +257,20 @@ class EditorViewModel(
         _uiState.update { it.copy(openedTabs = listOf(newTab), activeTabId = newTab.id) }
     }
 
+    private fun createNewNote() {
+        viewModelScope.launch {
+            val notebookRootPath = notebookRepository.activeNotebookState.firstOrNull()?.directoryPath
+            if (notebookRootPath == null) {
+                snackbarManager.showMessage("Failed to create note: no active notebook")
+                return@launch
+            }
+
+            editorRepository.createNote(notebookRootPath)
+                .onSuccess { newPath -> notebookRepository.activateNote(newPath) }
+                .onFailure { snackbarManager.showMessage(it.message ?: "Failed to create note") }
+        }
+    }
+
     // --- actions ---
 
     fun onAction(action: EditorAction) {
@@ -301,6 +315,7 @@ class EditorViewModel(
             is EditorAction.NewTab -> addNewTab()
             is EditorAction.NextTab -> openNextTab()
             is EditorAction.PreviousTab -> openPreviousTab()
+            is EditorAction.NewNote -> createNewNote()
         }
     }
 

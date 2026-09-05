@@ -47,6 +47,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun FileTreeRow(
     flatNode: FlatFileNode,
+    isActive: Boolean = false,
     modifier: Modifier = Modifier,
     isRenaming: Boolean = false,
     onAction: (SidebarAction) -> Unit = {},
@@ -75,6 +76,7 @@ fun FileTreeRow(
         }
     }
 
+
     Box {
         Row(
             modifier = modifier
@@ -86,7 +88,7 @@ fun FileTreeRow(
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp, vertical = 1.dp)
                 .clip(RoundedCornerShape(6.dp))
-                .then(if (showMenu) Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest) else Modifier)
+                .then(if (showMenu || isActive) Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest) else Modifier)
                 .clickable(
                     enabled = !isRenaming,
                     onClick = onClick

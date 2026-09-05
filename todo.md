@@ -2,19 +2,17 @@
 
 > high priority
 
-- add multiple tabs on the top action bar
+- create release for iOS and macOS
 
 > medium priority
 
-- share notes on mobile? like normal share button to quickshare, email ...
-- create release for iOS and macOS
+- add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
+  markdown cheatsheet, etc.)
 - encrypt data before pushing to remote
 - make code block content line wrap - now it just overflows
 - mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (android
   17 issue only now - probably a Android 17 bug and will be fixed later - ime freezes)
 - enable proguad and manually configure it to lower the binary size (android and desktop)
-- add some help to topAppBar - usage, shortcuts in the app, markdown cheatsheet, etc.
-- make ctrl+n create new note
 - follow clean architecture and introduce UseCases instead of injecting repositories into *r*epositories
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - made custom top app bar - it looks horrible on Windows at least
@@ -22,6 +20,7 @@
 
 > other ideas - lower priority
 
+- share notes on mobile? like normal share button to quickshare, email ...
 - in the file tree show which files are modified (based on the git status)
 - when renaming image resource – refactor the notes to use the new image name?
 - maybe add the action bar on desktop - like it is in the IDEA markdown editor

@@ -111,6 +111,7 @@ fun SidebarContent(
 
             FileTree(
                 visibleItems = visibleItems,
+                activeNotePath = state.activeNotePath,
                 rootPath = state.fileTree!!.path,
                 onFolderToggle = { viewModel.toggleFolder(it) },
                 itemToRename = state.itemToRename,

@@ -43,6 +43,7 @@ fun FileTree(
     visibleItems: List<FlatFileNode>,
     rootPath: String,
     onFolderToggle: (String) -> Unit,
+    activeNotePath: String?,
     itemToRename: String? = null,
     onAction: (SidebarAction) -> Unit
 ) {
@@ -155,6 +156,7 @@ fun FileTree(
                             flatNode = flatNode,
                             modifier = Modifier.animateItem(),
                             isRenaming = flatNode.node.path == itemToRename,
+                            isActive = flatNode.node.path == activeNotePath,
                             onAction = onAction,
                             onClick = {
                                 when (val node = flatNode.node) {

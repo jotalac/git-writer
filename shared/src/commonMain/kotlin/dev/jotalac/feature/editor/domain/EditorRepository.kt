@@ -5,7 +5,7 @@ import io.github.vinceglb.filekit.PlatformFile
 interface EditorRepository {
     suspend fun loadMarkdownFileBlocks(file: PlatformFile): Result<List<String>>
     suspend fun saveFile(fileContent: String, filePath: String): Result<Unit>
-    suspend fun addNote(filename: String, filePath: String): Result<Unit>
+    suspend fun createNote(directoryPath: String, baseName: String = "untitled"): Result<String>
     suspend fun addFolder(folderName: String, filePath: String): Result<Unit>
     suspend fun moveItem(sourcePath: String, destinationDirectoryPath: String): Result<Unit>
     suspend fun renameItem(sourcePath: String, newName: String): Result<Unit>

@@ -35,4 +35,7 @@ sealed interface EditorAction {
     data object NewTab : EditorAction
     data object NextTab : EditorAction
     data object PreviousTab : EditorAction
+
+    // note management
+    data object NewNote : EditorAction
 }
