@@ -81,15 +81,13 @@ fun EditorTabsRow(
             }
         }
 
-        if (isScrollable && isDesktopPlatform) {
+        if (isScrollable) {
             AppHorizontalScrollbar(
                 rowState,
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             )
-        } else {
-//            HorizontalDivider(Modifier.height(2.dp).padding(top = 8.dp))
         }
 
     }
