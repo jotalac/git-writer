@@ -3,9 +3,6 @@
 > high priority
 
 - create release for iOS and macOS
-- remember scroll state of each tab
-- for some reason when i click to the text block it reorganizes, like there would be some different paddingEnd - it is
-  because the rendered version have the x button
 
 > medium priority
 
