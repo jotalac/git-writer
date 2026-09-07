@@ -59,6 +59,11 @@ class EditorViewModel(
                 // save old files
                 saveNotesContent(markdownBlocks)
 
+                // show the loading state before the active tab's note changes
+                if (notePath != null) {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
+
                 // keep the active tab in sync with the opened note
                 applyNoteToActiveTab(notePath)
 
@@ -151,12 +156,13 @@ class EditorViewModel(
         viewModelScope.launch {
             saveNotesContent(markdownBlocks)
 
-            // switch the active tab first, so the note change emitted below is applied to the right tab
-            _uiState.update { it.copy(activeTabId = tab.id) }
+            val loadsDifferentNote = tab.notePath != null && tab.notePath != state.activeNotePath
+
+            _uiState.update { it.copy(activeTabId = tab.id, isLoading = loadsDifferentNote) }
 
             when {
                 tab.notePath == null -> notebookRepository.closeActiveNote()
-                tab.notePath != state.activeNotePath -> notebookRepository.activateNote(tab.notePath)
+                loadsDifferentNote -> notebookRepository.activateNote(tab.notePath)
                 else -> Unit // same note as the current one - only the tab changes
             }
         }
@@ -217,19 +223,22 @@ class EditorViewModel(
 
             // the active tab was closed: activate the tab that took its place (or the previous one)
             val newActiveTab = newTabs.getOrNull(closedIndex) ?: newTabs.last()
-            _uiState.update { it.copy(openedTabs = newTabs, activeTabId = newActiveTab.id) }
-
             val newActiveNote = newActiveTab.notePath
+            val loadsDifferentNote = newActiveNote != null && newActiveNote != state.activeNotePath
+
+            _uiState.update {
+                it.copy(openedTabs = newTabs, activeTabId = newActiveTab.id, isLoading = loadsDifferentNote)
+            }
+
             when {
                 newActiveNote == null -> notebookRepository.closeActiveNote()
-                newActiveNote != state.activeNotePath -> notebookRepository.activateNote(newActiveNote)
+                loadsDifferentNote -> notebookRepository.activateNote(newActiveNote)
                 else -> Unit // same note as the current one - no reload needed
             }
         }
     }
 
     fun closeActiveTab() {
-        println("Active tab id: ${_uiState.value.activeTabId}")
         closeTab(_uiState.value.activeTabId)
     }
 

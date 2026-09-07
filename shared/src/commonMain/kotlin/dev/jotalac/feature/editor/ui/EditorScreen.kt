@@ -346,6 +346,9 @@ private fun EditorContent(
     markdownBlocks: List<String>,
     onAction: (EditorAction) -> Unit
 ) {
+    // remember scroll position per note, so switching tabs doesn't reset it
+    val scrollPositions = remember { mutableMapOf<String, Int>() }
+
     if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -363,11 +366,14 @@ private fun EditorContent(
             contentScale = ContentScale.Inside
         )
     } else {
-        key(activeNotePath) { // for undo/redo logic to reset
+        val notePath = requireNotNull(activeNotePath)
+        key(notePath) { // for undo/redo logic to reset
             MarkdownEditor(
                 markdownBlocks = markdownBlocks,
                 onAction = onAction,
                 modifier = Modifier.fillMaxSize(),
+                initialScroll = scrollPositions[notePath] ?: 0,
+                onScrollOffsetChanged = { offset -> scrollPositions[notePath] = offset },
             )
         }
     }

@@ -3,9 +3,13 @@
 > high priority
 
 - create release for iOS and macOS
+- remember scroll state of each tab
+- for some reason when i click to the text block it reorganizes, like there would be some different paddingEnd - it is
+  because the rendered version have the x button
 
 > medium priority
 
+- implement ctrl+f finding
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
   markdown cheatsheet, etc.)
 - encrypt data before pushing to remote

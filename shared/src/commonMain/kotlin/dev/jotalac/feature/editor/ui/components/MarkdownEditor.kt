@@ -30,13 +30,16 @@ import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.readBytes
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Composable
 fun MarkdownEditor(
     markdownBlocks: List<String>,
     onAction: (EditorAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialScroll: Int = 0,
+    onScrollOffsetChanged: (Int) -> Unit = {},
 ) {
     val editorState = rememberMarkdownEditorState(markdownBlocks, onAction)
 
@@ -46,7 +49,13 @@ fun MarkdownEditor(
 
     val surfaceFocusRequester = remember { FocusRequester() }
 
-    val listScrollState = rememberScrollState()
+    val listScrollState = rememberScrollState(initialScroll)
+
+    // report the scroll position so the caller can restore it when this note is shown again
+    LaunchedEffect(listScrollState) {
+        snapshotFlow { listScrollState.value }
+            .collect { onScrollOffsetChanged(it) }
+    }
 
     val scope = rememberCoroutineScope()
 
