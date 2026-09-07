@@ -115,6 +115,7 @@
     <string name="settings_use_dynamic_color">Usar Dynamic Color</string>
     <string name="delete_block_content_description">Eliminar bloque</string>
     <string name="new_tab">Nueva pestaña</string>
+    <string name="open_new_file_message">Abrir nuevo archivo</string>
 
 
 </resources>
