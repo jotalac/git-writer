@@ -116,6 +116,9 @@
     <string name="delete_block_content_description">Eliminar bloque</string>
     <string name="new_tab">Nueva pestaña</string>
     <string name="open_new_file_message">Abrir nuevo archivo</string>
+    <string name="find_placeholder">Encontrar</string>
+    <string name="find_previous">Requisitos previos</string>
+    <string name="find_next">Otro partido</string>
 
 
 </resources>

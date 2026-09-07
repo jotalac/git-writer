@@ -116,5 +116,8 @@
     <string name="delete_block_content_description">Smazat blok</string>
     <string name="new_tab">Nová karta</string>
     <string name="open_new_file_message">Otevřít nový soubor</string>
+    <string name="find_placeholder">Najít</string>
+    <string name="find_previous">Předchozí shoda</string>
+    <string name="find_next">Další shoda</string>
 
 </resources>

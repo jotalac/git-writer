@@ -24,13 +24,14 @@ import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.components.active_block.MarkdownKeyboardToolbar
 import dev.jotalac.feature.editor.ui.components.dialogs_overlays.ImageDropOverlay
 import dev.jotalac.feature.editor.ui.components.dialogs_overlays.MarkdownBlockActionsBottomSheet
+import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindBar
+import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindState
 import dev.jotalac.feature.editor.ui.rememberMarkdownEditorState
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.readBytes
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Composable
@@ -42,12 +43,14 @@ fun MarkdownEditor(
     onScrollOffsetChanged: (Int) -> Unit = {},
 ) {
     val editorState = rememberMarkdownEditorState(markdownBlocks, onAction)
+    val findState = remember { MarkdownFindState() }
 
     var isDraggingImageOver by remember { mutableStateOf(false) }
     var selectedBlockIndex by remember { mutableStateOf<Int?>(null) }
     val focusManager = LocalFocusManager.current
 
     val surfaceFocusRequester = remember { FocusRequester() }
+    val findQueryFocusRequester = remember { FocusRequester() }
 
     val listScrollState = rememberScrollState(initialScroll)
 
@@ -157,6 +160,44 @@ fun MarkdownEditor(
                     }
                 }
 
+                // open the find bar (Ctrl+F), or refocus its query field when already open
+                if (isShortcutModifier && event.key == Key.F) {
+                    if (findState.isOpen) {
+                        try {
+                            findQueryFocusRequester.requestFocus()
+                        } catch (_: Exception) {
+                        }
+                    } else {
+                        findState.open()
+                    }
+                    return@onPreviewKeyEvent true
+                }
+
+                // find navigation while the find bar is open
+                if (findState.isOpen) {
+                    when (event.key) {
+                        Key.Enter -> {
+                            val match =
+                                if (event.isShiftPressed) findState.findPrevious() else findState.findNext()
+                            if (match != null) {
+                                editorState.focusBlock(match.blockIndex, TextRange(match.start, match.end))
+                            }
+                            return@onPreviewKeyEvent true
+                        }
+
+                        Key.Escape -> {
+                            findState.close()
+                            try {
+                                surfaceFocusRequester.requestFocus()
+                            } catch (_: Exception) {
+                            }
+                            return@onPreviewKeyEvent true
+                        }
+
+                        else -> return@onPreviewKeyEvent false
+                    }
+                }
+
 
                 // Navigation and creation when no block is actively focused
                 if (editorState.focusedIndex == null) {
@@ -202,6 +243,35 @@ fun MarkdownEditor(
                 editorState = editorState,
                 scrollState = listScrollState,
                 onBlockLongClick = { selectedBlockIndex = it }
+            )
+        }
+
+        if (findState.isOpen) {
+            MarkdownFindBar(
+                findState = findState,
+                focusRequester = findQueryFocusRequester,
+                onQueryChange = { findState.updateQuery(it, markdownBlocks) },
+                onNext = {
+                    findState.findNext()?.let {
+                        editorState.focusBlock(it.blockIndex, TextRange(it.start, it.end))
+                    }
+                },
+                onPrevious = {
+                    findState.findPrevious()?.let {
+                        editorState.focusBlock(it.blockIndex, TextRange(it.start, it.end))
+                    }
+                },
+                onClose = {
+                    findState.close()
+                    try {
+                        surfaceFocusRequester.requestFocus()
+                    } catch (_: Exception) {
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .widthIn(max = 500.dp)
+                    .padding(16.dp),
             )
         }
 
