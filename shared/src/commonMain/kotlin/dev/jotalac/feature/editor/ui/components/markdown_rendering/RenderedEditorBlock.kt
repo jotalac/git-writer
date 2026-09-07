@@ -5,7 +5,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,8 +16,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
@@ -51,7 +55,7 @@ fun RenderedEditorBlock(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .hoverable(interactionSource)
@@ -62,12 +66,12 @@ fun RenderedEditorBlock(
             Text(
                 text = " ",
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f)
+//                modifier = Modifier.weight(1f)
             )
         } else {
             RenderedMarkdownBlock(
                 text = text,
-                modifier = Modifier.weight(1f),
+//                modifier = Modifier.weight(1f),
                 onTextChange = onTextChange,
             )
         }
@@ -79,7 +83,16 @@ fun RenderedEditorBlock(
                 contentDescription = stringResource(Res.string.delete_block_content_description),
                 modifier = Modifier
                     .alpha(if (isHovered) 1f else 0f)
-                    .padding(start = 10.dp)
+                    .dropShadow(
+                        shape = RectangleShape,
+                        shadow = Shadow(
+                            radius = 10.dp,
+                            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            spread = 5.dp
+                        )
+                    )
+                    .align(AbsoluteAlignment.TopRight)
+                    .padding(5.dp)
                     .size(MaterialTheme.dimensions.iconMedium)
                     .clickable(onClick = onDeleteClick),
                 tint = MaterialTheme.colorScheme.outline
