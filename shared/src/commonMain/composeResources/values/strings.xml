@@ -119,5 +119,6 @@
     <string name="find_placeholder">Find</string>
     <string name="find_previous">Previous match</string>
     <string name="find_next">Next match</string>
+    <string name="find_button">Find in note</string>
 
 </resources>

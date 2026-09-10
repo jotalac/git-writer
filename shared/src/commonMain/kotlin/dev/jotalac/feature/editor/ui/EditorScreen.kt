@@ -17,20 +17,26 @@ import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor.domain.EditorTabItem
 import dev.jotalac.feature.editor.ui.components.EditorTabsRow
 import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
 import dev.jotalac.feature.editor.ui.components.SyncFloatingButton
+import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindState
 import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
 import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.closed_sidebar
+import git_writer.shared.generated.resources.find_button
 import git_writer.shared.generated.resources.opened_sidebar
+import git_writer.shared.generated.resources.search
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -281,6 +287,10 @@ fun MainEditorScaffold(
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
     val snackbarManager = koinInject<SnackbarManager>()
 
+    // shared between the find FAB (mobile) and the editor content; recreated per note so the
+    // find bar doesn't carry over between tabs
+    val findState = key(activeNotePath) { remember { MarkdownFindState() } }
+
     LaunchedEffect(Unit) {
         snackbarManager.messages.collect { message ->
             snackbarHostState.showSnackbar(message = message)
@@ -312,10 +322,24 @@ fun MainEditorScaffold(
             )
         },
         floatingActionButton = {
-            SyncFloatingButton(
-                onClick = { onAction(EditorAction.SyncNotes) },
-                gitSyncStatus = gitSyncStatus
-            )
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                if (!isDesktopPlatform) {
+                    FloatingActionButton(onClick = { findState.open() }) {
+                        Icon(
+                            painter = painterResource(Res.drawable.search),
+                            contentDescription = stringResource(Res.string.find_button),
+                        )
+                    }
+                }
+
+                SyncFloatingButton(
+                    onClick = { onAction(EditorAction.SyncNotes) },
+                    gitSyncStatus = gitSyncStatus
+                )
+            }
         }
     ) { innerPadding ->
         Surface(
@@ -331,7 +355,8 @@ fun MainEditorScaffold(
                 isImage = isImage,
                 activeNotePath = activeNotePath,
                 markdownBlocks = markdownBlocks,
-                onAction = onAction
+                onAction = onAction,
+                findState = findState,
             )
         }
     }
@@ -344,7 +369,8 @@ private fun EditorContent(
     isImage: Boolean,
     activeNotePath: String?,
     markdownBlocks: List<String>,
-    onAction: (EditorAction) -> Unit
+    onAction: (EditorAction) -> Unit,
+    findState: MarkdownFindState,
 ) {
     // remember scroll position per note, so switching tabs doesn't reset it
     val scrollPositions = remember { mutableMapOf<String, Int>() }
@@ -374,6 +400,7 @@ private fun EditorContent(
                 modifier = Modifier.fillMaxSize(),
                 initialScroll = scrollPositions[notePath] ?: 0,
                 onScrollOffsetChanged = { offset -> scrollPositions[notePath] = offset },
+                findState = findState,
             )
         }
     }

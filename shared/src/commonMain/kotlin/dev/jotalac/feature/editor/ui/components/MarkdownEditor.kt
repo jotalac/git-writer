@@ -41,9 +41,9 @@ fun MarkdownEditor(
     modifier: Modifier = Modifier,
     initialScroll: Int = 0,
     onScrollOffsetChanged: (Int) -> Unit = {},
+    findState: MarkdownFindState,
 ) {
     val editorState = rememberMarkdownEditorState(markdownBlocks, onAction)
-    val findState = remember { MarkdownFindState() }
 
     var isDraggingImageOver by remember { mutableStateOf(false) }
     var selectedBlockIndex by remember { mutableStateOf<Int?>(null) }
