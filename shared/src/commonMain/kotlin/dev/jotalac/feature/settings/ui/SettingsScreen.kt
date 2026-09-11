@@ -7,16 +7,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
+import dev.jotalac.core.ui.window.TitleBar
+import dev.jotalac.core.ui.window.WindowTitle
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -29,11 +31,23 @@ fun SettingsScreen(
 ) {
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
     val settingsState by settingsViewModel.userSettingsState.collectAsStateWithLifecycle()
+    val settingsTitle = stringResource(Res.string.settings_title)
+
+    // Reflect the current screen in the OS window/taskbar title (desktop only).
+    WindowTitle(settingsTitle)
 
     CustomScaffold(
         snackbarHostState = snackbarHostState,
         topAppBar = {
-            TopAppBar(
+            TitleBar(
+                leading = {
+                    TopAppBarIcon(
+                        onClick = onNavigateBack,
+                        icon = Res.drawable.arrow_right,
+                        contentDescription = stringResource(Res.string.navigate_back),
+                        modifier = Modifier.rotate(180f),
+                    )
+                },
                 title = {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -41,21 +55,11 @@ fun SettingsScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.settings),
-                            contentDescription = "close icon",
+                            contentDescription = null,
                         )
 
-                        Text(
-                            text = stringResource(Res.string.settings_title),
-//                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text(text = settingsTitle)
                     }
-                },
-                actions = {
-                    TopAppBarIcon(
-                        onClick = onNavigateBack,
-                        icon = Res.drawable.x_icon,
-                        contentDescription = stringResource(Res.string.toggle_side_bar_desc),
-                    )
                 },
             )
         }

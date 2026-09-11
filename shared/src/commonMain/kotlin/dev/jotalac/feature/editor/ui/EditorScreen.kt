@@ -16,9 +16,10 @@ import coil3.compose.AsyncImage
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
 import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.window.TitleBar
+import dev.jotalac.core.ui.window.WindowTitle
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.isDesktopPlatform
-import dev.jotalac.feature.editor.domain.EditorTabItem
 import dev.jotalac.feature.editor.ui.components.EditorTabsRow
 import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
@@ -28,11 +29,7 @@ import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
 import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.closed_sidebar
-import git_writer.shared.generated.resources.find_button
-import git_writer.shared.generated.resources.opened_sidebar
-import git_writer.shared.generated.resources.search
+import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -45,8 +42,12 @@ fun EditorScreen(
     openSettingsOnMobile: () -> Unit,
     viewModel: EditorViewModel = koinViewModel()
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val blocks = viewModel.markdownBlocks
+    val editorUiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val state = editorUiState.value
+
+    // Keep the OS window/taskbar title in sync with the active document (desktop only).
+    WindowTitle(state.activeFilename)
 
     val rootFocusRequester = remember { FocusRequester() }
 
@@ -138,8 +139,7 @@ fun EditorScreen(
                     onAction = viewModel::onAction,
                     gitSyncStatus = state.gitSyncStatus,
                     openSettingsOnMobile = openSettingsOnMobile,
-                    openedTabs = state.openedTabs,
-                    activeTabId = state.activeTabId,
+                    uiState = editorUiState,
                     onTabClick = viewModel::openTab,
                     onTabClose = viewModel::closeTab,
                     onNewTab = viewModel::addNewTab,
@@ -154,8 +154,7 @@ fun EditorScreen(
                     onAction = viewModel::onAction,
                     gitSyncStatus = state.gitSyncStatus,
                     openSettingsOnMobile = openSettingsOnMobile,
-                    openedTabs = state.openedTabs,
-                    activeTabId = state.activeTabId,
+                    uiState = editorUiState,
                     onTabClick = viewModel::openTab,
                     onTabClose = viewModel::closeTab,
                     onNewTab = viewModel::addNewTab,
@@ -175,14 +174,14 @@ private fun CompactEditorLayout(
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
     openSettingsOnMobile: () -> Unit,
-    openedTabs: List<EditorTabItem>,
-    activeTabId: Long,
+    uiState: State<EditorScreenState>,
     onTabClick: (Long) -> Unit,
     onTabClose: (Long) -> Unit,
     onNewTab: () -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val isDrawerOpen = remember { derivedStateOf { drawerState.isOpen } }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -200,7 +199,7 @@ private fun CompactEditorLayout(
             filename = filename,
             activeNotePath = activeNotePath,
             isImage = isImage,
-            isSidebarOpen = drawerState.isOpen,
+            isSidebarOpen = isDrawerOpen,
             onToggleSidebar = {
                 scope.launch {
                     if (drawerState.isOpen) drawerState.close() else drawerState.open()
@@ -210,8 +209,7 @@ private fun CompactEditorLayout(
             markdownBlocks = markdownBlocks,
             onAction = onAction,
             gitSyncStatus = gitSyncStatus,
-            openedTabs = openedTabs,
-            activeTabId = activeTabId,
+            uiState = uiState,
             onTabClick = onTabClick,
             onTabClose = onTabClose,
             onNewTab = onNewTab,
@@ -229,17 +227,16 @@ private fun ExpandedEditorLayout(
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
     openSettingsOnMobile: () -> Unit = {},
-    openedTabs: List<EditorTabItem>,
-    activeTabId: Long,
+    uiState: State<EditorScreenState>,
     onTabClick: (Long) -> Unit,
     onTabClose: (Long) -> Unit,
     onNewTab: () -> Unit,
 ) {
-    var isSidebarVisible by remember { mutableStateOf(true) }
+    val sidebarVisibility = remember { mutableStateOf(true) }
 
     Row(modifier = Modifier.fillMaxSize()) {
         EditorSidebar(
-            isVisible = isSidebarVisible,
+            isVisible = sidebarVisibility.value,
             openSettingsOnMobile = openSettingsOnMobile,
         )
 
@@ -248,16 +245,15 @@ private fun ExpandedEditorLayout(
             filename = filename,
             activeNotePath = activeNotePath,
             isImage = isImage,
-            isSidebarOpen = isSidebarVisible,
+            isSidebarOpen = sidebarVisibility,
             onToggleSidebar = {
-                isSidebarVisible = !isSidebarVisible
+                sidebarVisibility.value = !sidebarVisibility.value
             },
             isLoading = isLoading,
             markdownBlocks = markdownBlocks,
             onAction = onAction,
             gitSyncStatus = gitSyncStatus,
-            openedTabs = openedTabs,
-            activeTabId = activeTabId,
+            uiState = uiState,
             onTabClick = onTabClick,
             onTabClose = onTabClose,
             onNewTab = onNewTab,
@@ -266,19 +262,18 @@ private fun ExpandedEditorLayout(
 }
 
 @Composable
-fun MainEditorScaffold(
+private fun MainEditorScaffold(
     modifier: Modifier = Modifier,
     filename: String?,
     activeNotePath: String?,
     isImage: Boolean,
-    isSidebarOpen: Boolean,
+    isSidebarOpen: State<Boolean>,
     onToggleSidebar: () -> Unit,
     isLoading: Boolean,
     markdownBlocks: List<String>,
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
-    openedTabs: List<EditorTabItem>,
-    activeTabId: Long,
+    uiState: State<EditorScreenState>,
     onTabClick: (Long) -> Unit,
     onTabClose: (Long) -> Unit,
     onNewTab: () -> Unit,
@@ -302,21 +297,22 @@ fun MainEditorScaffold(
         modifier = modifier,
         snackbarHostState = snackbarHostState,
         topAppBar = {
-            TopAppBar(
+            TitleBar(
+                leading = {
+                    TopAppBarIcon(
+                        onClick = onToggleSidebar,
+                        icon = if (isSidebarOpen.value) Res.drawable.opened_sidebar else Res.drawable.closed_sidebar,
+                        contentDescription = stringResource(Res.string.toggle_side_bar_desc),
+                    )
+                },
                 title = {
+                    val editorState = uiState.value
                     EditorTabsRow(
-                        tabs = openedTabs,
-                        activeTabId = activeTabId,
+                        tabs = editorState.openedTabs,
+                        activeTabId = editorState.activeTabId,
                         onItemClick = { onTabClick(it.id) },
                         onItemClose = { onTabClose(it.id) },
                         onNewTab = onNewTab,
-                    )
-                },
-                navigationIcon = {
-                    TopAppBarIcon(
-                        onClick = onToggleSidebar,
-                        icon = if (isSidebarOpen) Res.drawable.opened_sidebar else Res.drawable.closed_sidebar,
-                        contentDescription = "Toggle sidebar visibility",
                     )
                 },
             )

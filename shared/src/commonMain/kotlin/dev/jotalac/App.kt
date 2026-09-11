@@ -2,8 +2,10 @@ package dev.jotalac
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +13,10 @@ import androidx.navigation.compose.rememberNavController
 import dev.jotalac.core.domain.AppThemeMode
 import dev.jotalac.core.navigation.Route
 import dev.jotalac.core.ui.theme.AppTheme
+import dev.jotalac.core.ui.window.AppWindowLayout
+import dev.jotalac.core.ui.window.LocalTitleBarHost
+import dev.jotalac.core.ui.window.TitleBarHost
+import dev.jotalac.core.ui.window.WindowTitleBarTheme
 import dev.jotalac.core.utils.ConfigureAppImageLoader
 import dev.jotalac.core.utils.applyAppLanguage
 import dev.jotalac.feature.editor.ui.EditorScreen
@@ -40,16 +46,24 @@ fun App(
             fontFamily = settingsState.font,
             dynamicColor = settingsState.useDynamicColor,
         ) {
-            val navController = rememberNavController()
-            NavHost(navController = navController, startDestination = Route.MainApp) {
-                composable<Route.MainApp> {
-                    EditorScreen(
-                        openSettingsOnMobile = { navController.navigate(Route.Settings) }
-                    )
-                }
+            WindowTitleBarTheme(isDarkTheme)
 
-                composable<Route.Settings> {
-                    SettingsScreen(onNavigateBack = { navController.popBackStack() })
+            val titleBarHost = remember { TitleBarHost() }
+
+            CompositionLocalProvider(LocalTitleBarHost provides titleBarHost) {
+                AppWindowLayout(titleBarHost) {
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = Route.MainApp) {
+                        composable<Route.MainApp> {
+                            EditorScreen(
+                                openSettingsOnMobile = { navController.navigate(Route.Settings) }
+                            )
+                        }
+
+                        composable<Route.Settings> {
+                            SettingsScreen(onNavigateBack = { navController.popBackStack() })
+                        }
+                    }
                 }
             }
         }

@@ -30,6 +30,7 @@ compose-latex = "1.5.3"
 jgit-android-version = "5.13.3.202401111512-r"
 jgit-desktop-version = "7.7.0.202606012155-r"
 desugar-jdk-libs = "2.1.5"
+jna = "5.19.1"
 
 
 [libraries]
@@ -68,6 +69,7 @@ datastore = { module = "androidx.datastore:datastore", version.ref = "datastore"
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 jgit-v5 = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit-android-version" }
 jgit-latest = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit-desktop-version" }
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar-jdk-libs" }
 
 multiplatform-markdown-renderer = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "markdown-renderer" }

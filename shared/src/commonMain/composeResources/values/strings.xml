@@ -83,6 +83,7 @@
     <string name="settings_title">Settings</string>
     <string name="toggle_side_bar_desc">Toggle sidebar visibility</string>
     <string name="close">Close</string>
+    <string name="navigate_back">Back</string>
     <string name="settings_appearance_title">Appearance</string>
     <string name="toggle_collapse">Toggle collapse</string>
     <string name="settings_theme_title">Theme</string>
