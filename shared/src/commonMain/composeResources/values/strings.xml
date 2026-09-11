@@ -121,5 +121,7 @@
     <string name="find_previous">Previous match</string>
     <string name="find_next">Next match</string>
     <string name="find_button">Find in note</string>
+    <string name="app_version_display">App version: </string>
+
 
 </resources>

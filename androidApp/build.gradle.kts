@@ -28,8 +28,8 @@ android {
         applicationId = "dev.jotalac.gitwriter"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 2
-        versionName = "0.0.2"
+        versionCode = (project.findProperty("app.version.code") as? String)?.toInt() ?: 1
+        versionName = project.findProperty("app.version.number") as? String
     }
     packaging {
         resources {

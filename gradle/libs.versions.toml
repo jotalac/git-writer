@@ -31,6 +31,7 @@ jgit-android-version = "5.13.3.202401111512-r"
 jgit-desktop-version = "7.7.0.202606012155-r"
 desugar-jdk-libs = "2.1.5"
 jna = "5.19.1"
+build-konfig = "0.22.0"
 
 
 [libraries]
@@ -99,3 +100,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
+buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "build-konfig" }

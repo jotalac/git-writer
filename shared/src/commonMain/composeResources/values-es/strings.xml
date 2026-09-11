@@ -119,6 +119,8 @@
     <string name="find_placeholder">Encontrar</string>
     <string name="find_previous">Requisitos previos</string>
     <string name="find_next">Otro partido</string>
+    <string name="app_version_display">Versión: </string>
+
 
 
 </resources>

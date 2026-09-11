@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.data.UserSettingsState
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
@@ -22,11 +23,13 @@ import dev.jotalac.feature.settings.ui.settings_sections.AppearanceSettings
 import dev.jotalac.feature.settings.ui.settings_sections.LanguageSettings
 import dev.jotalac.feature.settings.ui.settings_sections.SyncSettings
 import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.app_version_display
 import git_writer.shared.generated.resources.arrow_right
 import git_writer.shared.generated.resources.toggle_collapse
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import git_writer.shared.BuildKonfig
 
 @Composable
 fun SettingsContent(
@@ -63,6 +66,16 @@ fun SettingsContent(
             SyncSettings(
                 selectedStrategy = userSettingsState.gitConflictStrategy,
                 onStrategyChange = { onAction(SettingsViewModel.SettingsAction.ChangeGitConflictStrategy(it)) }
+            )
+
+            // show current app version
+            Text(
+                text = stringResource(Res.string.app_version_display) + BuildKonfig.APP_VERSION,
+                modifier = Modifier
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline
             )
         }
 

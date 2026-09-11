@@ -25,17 +25,8 @@ compose.desktop {
         mainClass = "dev.jotalac.MainKt"
 
         nativeDistributions {
-//            targetFormats(
-//                TargetFormat.Dmg,
-//                TargetFormat.Pkg,
-//                TargetFormat.Msi,
-//                TargetFormat.Exe,
-//                TargetFormat.Deb,
-//                TargetFormat.Rpm,
-//                TargetFormat.AppImage
-//            )
             packageName = "git-writer"
-            packageVersion = "0.0.2"
+            packageVersion = project.findProperty("app.version.number") as? String ?: "1.0.0"
             description = "Git-backed note-taking app"
 
             modules(
@@ -65,8 +56,7 @@ compose.desktop {
             macOS {
                 targetFormats(TargetFormat.Dmg, TargetFormat.Pkg)
                 iconFile.set(project.file("launcher_icons/icon.icns"))
-                // jpackage (macOS) rejects app versions whose major component is 0, while the
-                // project version is still 0.x — so the mac bundle gets its own valid version.
+                // macos crashes when the version is bellow 1.0.0 - later in the stable release it will use the gobal versino nubmer
                 packageVersion = "1.0.2"
                 bundleID = "dev.jotalac.gitwriter"
             }
