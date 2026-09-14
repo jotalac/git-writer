@@ -41,8 +41,11 @@ import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.arrow_right
+import git_writer.shared.generated.resources.expand_folders
+import git_writer.shared.generated.resources.folder
 import git_writer.shared.generated.resources.more_vert
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FileTreeRow(
@@ -183,6 +186,15 @@ private fun RowScope.DirectoryContent(
             modifier = Modifier.weight(1f)
         )
     } else {
+        // folder icon
+        Icon(
+            painter = painterResource(Res.drawable.folder),
+            contentDescription = stringResource(Res.string.expand_folders),
+            modifier = Modifier.size(MaterialTheme.dimensions.iconLarge).padding(end = 8.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        // folder text
         Text(
             text = baseName,
             style = MaterialTheme.typography.bodyMedium.copy(

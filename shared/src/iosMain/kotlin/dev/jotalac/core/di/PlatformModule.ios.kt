@@ -3,9 +3,8 @@ package dev.jotalac.core.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.RoomDatabase
+import dev.jotalac.core.data.DATA_STORE_FILE_NAME
 import dev.jotalac.core.database.AppDatabase
-import dev.jotalac.core.database.DATA_STORE_FILE_NAME
-import dev.jotalac.core.database.createDataStore
 import dev.jotalac.core.database.getDatabaseBuilder
 import dev.jotalac.feature.notebooks_management.domain.IosNotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
@@ -16,6 +15,10 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
+import dev.jotalac.core.data.createDataStore
+import dev.jotalac.feature.git_sync.data.LibGit2SyncRepositoryImpl
+import dev.jotalac.feature.git_sync.domain.GitSyncRepository
+
 
 @OptIn(ExperimentalForeignApi::class)
 actual val platformModule: Module = module {
@@ -41,5 +44,9 @@ actual val platformModule: Module = module {
 
             "$dirPath/$DATA_STORE_FILE_NAME"
         }
+    }
+
+    single<GitSyncRepository> {
+        LibGit2SyncRepositoryImpl()
     }
 }

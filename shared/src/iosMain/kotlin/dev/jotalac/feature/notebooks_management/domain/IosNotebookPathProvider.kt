@@ -7,7 +7,6 @@ import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
 
 class IosNotebookPathProvider : NotebookPathProvider {
-    @OptIn(ExperimentalForeignApi::class)
     override fun getDefaultNotebookDirectory(): String {
         val paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, true)
         val documentDirectory = paths.first() as String

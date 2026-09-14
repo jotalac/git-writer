@@ -6,6 +6,7 @@ import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
+import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.Dispatchers
@@ -16,14 +17,39 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
+// `/…/Containers/Data/Application/<uuid>/` — the part of an iOS app path that changes every install
+private val APP_CONTAINER_PREFIX = Regex("^.*?/Application/[0-9A-Fa-f-]{36}/")
+
 class NotebookRepositoryImpl(
     private val notebookDao: NotebookDao,
     private val activeNotebookManager: ActiveNotebookManager,
-    private val gitSyncRepository: GitSyncRepository
+    private val gitSyncRepository: GitSyncRepository,
+    private val notebookPathProvider: NotebookPathProvider,
 ) : NotebookRepository {
+    private val appContainerPrefix: String?
+        get() = APP_CONTAINER_PREFIX.find(notebookPathProvider.getDefaultNotebookDirectory())?.value
+
+    /* 
+    * ios changes directory path per install, in the app we only use the part after the uuid
+    * */
+    
+    //stored in database - without the .../Application/<uuid> ios prefix
+    private fun String.toStoredPath(): String =
+        APP_CONTAINER_PREFIX.find(this)?.let { removePrefix(it.value) } ?: this
+
+    // in runtime to access the file we need the actual path
+    private fun String.toRuntimePath(): String =
+        appContainerPrefix?.let { prefix -> prefix + toStoredPath() } ?: this
+
+    private fun NotebookEntity.withStoredPath(): NotebookEntity =
+        copy(directoryPath = directoryPath.toStoredPath())
+
+    private fun NotebookEntity.withRuntimePath(): NotebookEntity =
+        copy(directoryPath = directoryPath.toRuntimePath())
+
     override fun getAllNotebooks(): Flow<List<Notebook>> {
         return notebookDao.getNotebooksAsFlow().map { entityList ->
-            entityList.map { entity -> entity.toNotebook() }
+            entityList.map { entity -> entity.withRuntimePath().toNotebook() }
         }
     }
 
@@ -58,7 +84,8 @@ class NotebookRepositoryImpl(
                 remoteUsername = null,
                 remotePassword = null,
             )
-            val generatedId = notebookDao.upsertNotebook(notebook.toNotebookEntity())
+            // save the relative path to database (dont save the .../Application/<uuid>/)
+            val generatedId = notebookDao.upsertNotebook(notebook.toNotebookEntity().withStoredPath())
 
             notebook.copy(id = generatedId)
         }
@@ -109,7 +136,7 @@ class NotebookRepositoryImpl(
                 remoteUsername = remoteUsername,
                 remotePassword = remotePasswordOrToken,
             )
-            val generatedId = notebookDao.upsertNotebook(notebook.toNotebookEntity())
+            val generatedId = notebookDao.upsertNotebook(notebook.toNotebookEntity().withStoredPath())
 
             notebook.copy(id = generatedId)
         }
@@ -117,8 +144,8 @@ class NotebookRepositoryImpl(
 
     override suspend fun deleteNotebook(id: Long): Result<Unit> = withContext(Dispatchers.IO) {
         suspendRunCatching {
-            val notebook =
-                notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook with id $id not found")
+            val notebook = (notebookDao.getNotebookById(id)
+                ?: throw NullPointerException("Notebook with id $id not found")).withRuntimePath()
 
             // delete the directory and all files inside
             val notebookDirectoryPath = Path(notebook.directoryPath)
@@ -141,8 +168,8 @@ class NotebookRepositoryImpl(
         remotePassword: String?,
     ): Result<Notebook> = withContext(Dispatchers.IO) {
         suspendRunCatching {
-            val existing = notebookDao.getNotebookById(id)
-                ?: throw NullPointerException("Notebook with id $id not found")
+            val existing = (notebookDao.getNotebookById(id)
+                ?: throw NullPointerException("Notebook with id $id not found")).withRuntimePath()
 
             //validate the name
             val newDirectoryPath = validateUpdateNotebookName(name, existing)
@@ -171,7 +198,7 @@ class NotebookRepositoryImpl(
                 remoteUsername = remoteUsername,
                 remotePassword = remotePassword,
             )
-            notebookDao.upsertNotebook(updated)
+            notebookDao.upsertNotebook(updated.withStoredPath())
 
             updated.toNotebook()
         }
@@ -227,7 +254,8 @@ class NotebookRepositoryImpl(
 
     override suspend fun activateNotebook(id: Long): Result<Notebook> = withContext(Dispatchers.IO) {
         suspendRunCatching {
-            val notebook = notebookDao.getNotebookById(id) ?: throw NullPointerException("Notebook not found")
+            val notebook = (notebookDao.getNotebookById(id)
+                ?: throw NullPointerException("Notebook not found")).withRuntimePath()
 
             // check if the directory with the notebook content still exists
             if (!directoryExists(notebook.directoryPath)) {
@@ -243,7 +271,7 @@ class NotebookRepositoryImpl(
 
     override suspend fun activateNote(notePath: String): Result<Unit> {
         return suspendRunCatching {
-            activeNotebookManager.setActiveNotePath(notePath)
+            activeNotebookManager.setActiveNotePath(notePath.toStoredPath())
         }
     }
 
@@ -255,21 +283,23 @@ class NotebookRepositoryImpl(
 
     override suspend fun syncActiveNotePathOnMoved(oldPath: String, newPath: String): Result<Unit> {
         return suspendRunCatching {
-            val currentActivePath =
+            val storedPath =
                 activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@suspendRunCatching
+            val currentActivePath = storedPath.toRuntimePath()
             if (currentActivePath == oldPath) {
-                activeNotebookManager.setActiveNotePath(newPath)
+                activeNotebookManager.setActiveNotePath(newPath.toStoredPath())
             } else if (currentActivePath.startsWith("$oldPath/")) {
                 val updatedPath = currentActivePath.replaceFirst(oldPath, newPath)
-                activeNotebookManager.setActiveNotePath(updatedPath)
+                activeNotebookManager.setActiveNotePath(updatedPath.toStoredPath())
             }
         }
     }
 
     override suspend fun syncActiveNotePathOnDeleted(deletedPath: String): Result<Unit> {
         return suspendRunCatching {
-            val currentActivePath =
+            val storedPath =
                 activeNotebookManager.activeNotebookStateFlow.firstOrNull()?.notePath ?: return@suspendRunCatching
+            val currentActivePath = storedPath.toRuntimePath()
             if (currentActivePath == deletedPath || currentActivePath.startsWith("$deletedPath/")) {
                 activeNotebookManager.clearActiveNote()
             }
@@ -278,7 +308,7 @@ class NotebookRepositoryImpl(
 
     override fun getNotebookByIdAsFlow(id: Long): Flow<Notebook?> {
         return notebookDao.getNotebookByIdAsFlow(id).map { entity ->
-            entity?.toNotebook()
+            entity?.withRuntimePath()?.toNotebook()
         }
     }
 
@@ -293,7 +323,7 @@ class NotebookRepositoryImpl(
         }
 
     override val activeNotePath: Flow<String?> = activeNotebookManager.activeNotebookStateFlow.map {
-        it?.notePath
+        it?.notePath?.toRuntimePath()
     }
 
     override suspend fun isNotebookNameUnique(name: String, excludeId: Long?): Boolean {

@@ -16,6 +16,8 @@
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - made custom top app bar - it looks horrible on Windows at least
 - add spell checks for current active block
+  
+- add tests :((((
 
 > other ideas - lower priority
 
@@ -26,4 +28,3 @@
   for new file)
 - better messages while syncing (eg. when nothing is commited or pulled - display up to date message)
 - make username and password optional for cloning when cloning public repo – then the sync would be disabled?
-- add tests :((((

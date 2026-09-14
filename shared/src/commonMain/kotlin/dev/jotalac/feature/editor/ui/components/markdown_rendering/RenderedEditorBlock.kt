@@ -66,12 +66,10 @@ fun RenderedEditorBlock(
             Text(
                 text = " ",
                 style = MaterialTheme.typography.bodyLarge,
-//                modifier = Modifier.weight(1f)
             )
         } else {
             RenderedMarkdownBlock(
                 text = text,
-//                modifier = Modifier.weight(1f),
                 onTextChange = onTextChange,
             )
         }

@@ -12,6 +12,28 @@ plugins {
     alias(libs.plugins.buildKonfig)
 }
 
+/** Writes the per-target cinterop .def, substituting the machine-specific lib path. */
+abstract class GenerateGit2Def : DefaultTask() {
+
+    @get:InputFile
+    abstract val template: RegularFileProperty
+
+    @get:Input
+    abstract val libgit2LibPath: Property<String>
+
+    @get:OutputFile
+    abstract val outputDef: RegularFileProperty
+
+    @TaskAction
+    fun generate() {
+        val text = template.get().asFile.readText()
+            .replace("\${libgit2LibPath}", libgit2LibPath.get())
+        val out = outputDef.get().asFile
+        out.parentFile.mkdirs()
+        out.writeText(text)
+    }
+}
+
 kotlin {
     listOf(
         iosArm64(),
@@ -20,6 +42,41 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+        }
+
+        // Static libgit2 + headers built by tools/build-libgit2.sh, one slice per target.
+        val sliceDir = rootProject.layout.projectDirectory
+            .dir("third_party/libgit2/slices/${iosTarget.name}")
+
+        // libgit2 must be EMBEDDED in the cinterop klib: a static framework is
+        // linked relocatably, so linkerOpts alone leaves _git_* undefined.
+        val targetName = iosTarget.name
+        val generateDef = tasks.register<GenerateGit2Def>("generateGit2Def${targetName.replaceFirstChar(Char::uppercase)}") {
+            template.set(layout.projectDirectory.file("src/nativeInterop/cinterop/git2.def.tpl"))
+            libgit2LibPath.set(sliceDir.dir("lib").asFile.absolutePath)
+            // One file per target, so each cinterop task has an unambiguous input.
+            outputDef.set(layout.buildDirectory.file("cinterop/$targetName/git2.def"))
+        }
+
+        val cinteropTask = iosTarget.compilations.getByName("main").cinterops.create("git2")
+        cinteropTask.definitionFile.set(generateDef.flatMap { it.outputDef })
+        cinteropTask.includeDirs(sliceDir.dir("include"))
+        cinteropTask.compilerOpts("-DGIT_DEPRECATE_HARD=0")
+
+        // definitionFile is only a path; make the ordering explicit so the
+        // generator always runs first.
+        tasks.matching { it.name == "cinteropGit2${targetName.replaceFirstChar(Char::uppercase)}" }
+            .configureEach { dependsOn(generateDef) }
+
+        // libgit2 is built with USE_HTTPS=SecureTransport and a bundled zlib, so
+        // Security and CoreFoundation are its only external dependencies.
+        iosTarget.binaries.all {
+            linkerOpts(
+                "-L${sliceDir.dir("lib").asFile.absolutePath}",
+                "-lgit2",
+                "-framework", "Security",
+                "-framework", "CoreFoundation"
+            )
         }
     }
 
@@ -108,6 +165,12 @@ kotlin {
         //make android and jvm depend on the shared platform
         androidMain.get().dependsOn(jvmAndAndroidMain)
         jvmMain.get().dependsOn(jvmAndAndroidMain)
+
+        iosMain.get().dependsOn(commonMain.get())
+
+        // connect hardware targets
+        getByName("iosArm64Main").dependsOn(iosMain.get())
+        getByName("iosSimulatorArm64Main").dependsOn(iosMain.get())
     }
 }
 
@@ -120,10 +183,10 @@ compose {
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
 
-    add("kspCommonMainMetadata", libs.room.compiler)
-    add("kspIosArm64", libs.room.compiler)
-    add("kspJvm", libs.room.compiler)
     add("kspAndroid", libs.room.compiler)
+    add("kspJvm", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
+    add("kspIosSimulatorArm64", libs.room.compiler)
 }
 
 room {

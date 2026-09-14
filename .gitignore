@@ -19,3 +19,5 @@ captures
 node_modules/
 .agents/
 androidApp/release
+
+third_party/libgit2/slices

@@ -42,7 +42,6 @@ fun ActiveEditorBlock(
 
     val textFieldValue = editorState.activeTextFieldValue
 
-
     // scroll the viewport to the cursor on typing
     val localBringIntoViewRequester = remember { BringIntoViewRequester() }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -159,7 +158,7 @@ fun ActiveEditorBlock(
                                 layout.getLineForOffset(offset) == 0
                             } ?: run {
                                 val firstNewline = textFieldValue.text.indexOf('\n')
-                                if (firstNewline == -1) true else cursorOffset <= firstNewline
+                                firstNewline == -1 || cursorOffset <= firstNewline
                             }
 
                             if (event.isAltPressed) {
@@ -179,7 +178,7 @@ fun ActiveEditorBlock(
                                 layout.getLineForOffset(offset) == layout.lineCount - 1
                             } ?: run {
                                 val lastNewline = textFieldValue.text.lastIndexOf('\n')
-                                if (lastNewline == -1) true else cursorOffset > lastNewline
+                                lastNewline == -1 || cursorOffset > lastNewline
                             }
 
                             if (event.isAltPressed) {

@@ -23,6 +23,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 
 // platform specific module
 expect val platformModule: Module
@@ -51,7 +52,12 @@ val coreModule = module {
 val featureModules = module {
     //notebook management
     single<NotebookRepository> {
-        NotebookRepositoryImpl(notebookDao = get(), activeNotebookManager = get(), gitSyncRepository = get())
+        NotebookRepositoryImpl(
+            notebookDao = get(),
+            activeNotebookManager = get(),
+            gitSyncRepository = get(),
+            notebookPathProvider = get(),
+        )
     }
     //files management
     single<EditorRepository> {
@@ -69,7 +75,10 @@ val featureModules = module {
 
 val appModules = listOf(coreModule, featureModules)
 
+// start koin, if not already started
 fun initKoin() {
+    if (KoinPlatform.getKoinOrNull() != null) return
+
     startKoin {
         modules(appModules)
     }
