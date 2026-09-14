@@ -324,7 +324,7 @@ private fun MainEditorScaffold(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                if (!isDesktopPlatform) {
+                if (!isDesktopPlatform && findState.isEnabled) {
                     FloatingActionButton(onClick = { findState.open() }) {
                         Icon(
                             painter = painterResource(Res.drawable.search),
@@ -372,6 +372,7 @@ private fun EditorContent(
 ) {
     // remember scroll position per note, so switching tabs doesn't reset it
     val scrollPositions = remember { mutableMapOf<String, Int>() }
+    findState.isEnabled = false
 
     if (isLoading) {
         Box(
@@ -393,6 +394,7 @@ private fun EditorContent(
     } else {
         val notePath = requireNotNull(activeNotePath)
         key(notePath) { // for undo/redo logic to reset
+            findState.isEnabled = true
             MarkdownEditor(
                 markdownBlocks = markdownBlocks,
                 onAction = onAction,

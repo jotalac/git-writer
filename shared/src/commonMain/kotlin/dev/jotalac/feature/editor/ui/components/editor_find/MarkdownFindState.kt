@@ -31,6 +31,7 @@ fun findAll(blocks: List<String>, query: String, ignoreCase: Boolean = true): Li
 /** State for the editor's find bar (Ctrl+F). */
 @Stable
 class MarkdownFindState {
+    var isEnabled by mutableStateOf(true)
     var isOpen by mutableStateOf(false)
         private set
     var query by mutableStateOf("")
