@@ -1,6 +1,5 @@
 package dev.jotalac.feature.editor.ui
 
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.data.UserSettingsManager
@@ -15,14 +14,14 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.isRegularFile
 import io.github.vinceglb.filekit.name
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(FlowPreview::class)
 class EditorViewModel(
     private val notebookRepository: NotebookRepository,
     private val editorRepository: EditorRepository,
@@ -51,6 +50,8 @@ class EditorViewModel(
 
     // the note whose content is currently held in markdownBlocks
     private var loadedNotePath: String? = null
+
+    private var autosaveJob: Job? = null
 
     init {
         // load / unload the file whenever the active note changes
@@ -98,14 +99,15 @@ class EditorViewModel(
             }
         }
 
-        // debounced autosave
-        viewModelScope.launch {
-            snapshotFlow { markdownBlocks.toList() }
-                .debounce(1.seconds)
-                .distinctUntilChanged()
-                .collectLatest { currentBlocks ->
-                    saveNotesContent(currentBlocks)
-                }
+    }
+
+
+     // Autosave is triggered by block-editing actions
+    private fun scheduleAutosave() {
+        autosaveJob?.cancel()
+        autosaveJob = viewModelScope.launch {
+            delay(1.seconds)
+            saveNotesContent(markdownBlocks.toList())
         }
     }
 
@@ -326,6 +328,8 @@ class EditorViewModel(
             is EditorAction.PreviousTab -> openPreviousTab()
             is EditorAction.NewNote -> createNewNote()
         }
+
+        if (action.isBlockEditing()) scheduleAutosave()
     }
 
     private fun savePastedImages(

@@ -39,3 +39,20 @@ sealed interface EditorAction {
     // note management
     data object NewNote : EditorAction
 }
+
+/** True for actions that change block content, which is what autosave listens to. */
+fun EditorAction.isBlockEditing(): Boolean = when (this) {
+    is EditorAction.AddBlock,
+    is EditorAction.UpdateBlock,
+    is EditorAction.RemoveBlock,
+    is EditorAction.AddBlocks,
+    is EditorAction.SetBlocks,
+    is EditorAction.SplitBlock,
+    is EditorAction.SwapBlocks,
+    is EditorAction.BlockTurnedIntoMoreBlocks,
+    is EditorAction.EvaluateBlockOnFocusLost,
+    is EditorAction.MergeWithPrevBlock,
+    is EditorAction.PasteImages -> true
+
+    else -> false
+}
