@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.data.UserSettingsManager
 import dev.jotalac.core.utils.SnackbarManager
-import dev.jotalac.core.utils.UiText
+import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.core.utils.detectImageExtension
 import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.domain.EditorRepository
@@ -278,13 +278,13 @@ class EditorViewModel(
         viewModelScope.launch {
             val notebookRootPath = notebookRepository.activeNotebookState.firstOrNull()?.directoryPath
             if (notebookRootPath == null) {
-                snackbarManager.showMessage(UiText.resource(Res.string.err_create_note_no_notebook))
+                snackbarManager.showMessage(SnackbarText.resource(Res.string.err_create_note_no_notebook))
                 return@launch
             }
 
             editorRepository.createNote(notebookRootPath)
                 .onSuccess { newPath -> notebookRepository.activateNote(newPath) }
-                .onFailure { snackbarManager.showMessage(UiText.message(Res.string.err_failed_create_note, it.message)) }
+                .onFailure { snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_create_note, it.message)) }
         }
     }
 
@@ -349,7 +349,7 @@ class EditorViewModel(
             val notebookRootPath = notebookRepository.activeNotebookState.firstOrNull()?.directoryPath
 
             if (notebookRootPath == null) {
-                snackbarManager.showMessage(UiText.resource(Res.string.err_paste_image_no_notebook))
+                snackbarManager.showMessage(SnackbarText.resource(Res.string.err_paste_image_no_notebook))
                 return@launch
             }
 
@@ -363,7 +363,7 @@ class EditorViewModel(
 
                 val result = editorRepository.savePastedImage(notebookRootPath, imageBytes, filename)
                 if (result.isFailure) {
-                    snackbarManager.showMessage(UiText.resource(Res.string.err_failed_save_images))
+                    snackbarManager.showMessage(SnackbarText.resource(Res.string.err_failed_save_images))
                 } else {
                     savedMarkdownSyntaxes.add("![pasted image](images/$filename)")
                 }

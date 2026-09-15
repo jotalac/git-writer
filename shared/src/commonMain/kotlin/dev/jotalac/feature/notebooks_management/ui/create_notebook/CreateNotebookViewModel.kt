@@ -3,7 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.create_notebook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
-import dev.jotalac.core.utils.UiText
+import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -156,7 +156,7 @@ class CreateNotebookViewModel(
                 )
             }
 
-            snackbarManager.showMessage(UiText.resource(Res.string.msg_notebook_created))
+            snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_notebook_created))
             onSuccess()
         }.onFailure { error ->
             _uiState.update {

@@ -2,12 +2,10 @@ package dev.jotalac.feature.editor.ui
 
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
@@ -39,7 +37,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import dev.jotalac.core.utils.asString
-import dev.jotalac.core.utils.UiText
+import dev.jotalac.core.utils.SnackbarText
 
 @Composable
 fun EditorScreen(
@@ -291,7 +289,7 @@ private fun MainEditorScaffold(
     val findState = key(activeNotePath) { remember { MarkdownFindState() } }
 
 
-    val snackbarMessages = remember { mutableStateListOf<UiText>() }
+    val snackbarMessages = remember { mutableStateListOf<SnackbarText>() }
     snackbarMessages.forEach { message ->
         val text = message.asString()
         LaunchedEffect(message) {

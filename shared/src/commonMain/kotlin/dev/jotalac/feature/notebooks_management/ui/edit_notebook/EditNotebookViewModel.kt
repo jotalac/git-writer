@@ -3,7 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.edit_notebook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
-import dev.jotalac.core.utils.UiText
+import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.validateRemoteUrl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -134,7 +134,7 @@ class EditNotebookViewModel(
 
             updateNotebookResult.onSuccess {
                 _uiState.update { it.copy(isLoading = false, errorMessage = null) }
-                snackbarManager.showMessage(UiText.resource(Res.string.msg_notebook_updated))
+                snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_notebook_updated))
                 onSuccess()
             }.onFailure { error ->
                 _uiState.update {

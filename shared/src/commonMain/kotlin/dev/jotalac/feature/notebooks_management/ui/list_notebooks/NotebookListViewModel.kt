@@ -3,7 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.list_notebooks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
-import dev.jotalac.core.utils.UiText
+import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -67,7 +67,7 @@ class NotebookListViewModel(
             val result = notebookRepository.deleteNotebook(id)
             result
                 .onSuccess {
-                    snackbarManager.showMessage(UiText.resource(Res.string.msg_notebook_deleted))
+                    snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_notebook_deleted))
                     _uiState.update { it.copy(errorMessage = null) }
 
                 }
