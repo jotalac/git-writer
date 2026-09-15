@@ -68,7 +68,7 @@ class CreateNotebookViewModel(
 
             is CreateNotebookEvent.RemoteUrlChanged -> _uiState.update {
                 it.copy(
-                    remoteUrl = event.url,
+                    remoteUrl = event.url.trim(),
                     errorMessage = null
                 )
             }
