@@ -3,6 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.create_notebook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.core.utils.UiText
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -14,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.msg_notebook_created
 
 data class CreateNotebookState(
     val selectedTabIndex: Int = 0,
@@ -153,7 +156,7 @@ class CreateNotebookViewModel(
                 )
             }
 
-            snackbarManager.showMessage("Notebook created successfully")
+            snackbarManager.showMessage(UiText.resource(Res.string.msg_notebook_created))
             onSuccess()
         }.onFailure { error ->
             _uiState.update {

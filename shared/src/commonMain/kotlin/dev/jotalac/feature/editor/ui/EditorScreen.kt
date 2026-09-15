@@ -38,6 +38,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import dev.jotalac.core.utils.asString
+import dev.jotalac.core.utils.UiText
 
 @Composable
 fun EditorScreen(
@@ -288,9 +290,19 @@ private fun MainEditorScaffold(
     // find bar doesn't carry over between tabs
     val findState = key(activeNotePath) { remember { MarkdownFindState() } }
 
+
+    val snackbarMessages = remember { mutableStateListOf<UiText>() }
+    snackbarMessages.forEach { message ->
+        val text = message.asString()
+        LaunchedEffect(message) {
+            snackbarHostState.showSnackbar(text)
+            snackbarMessages.remove(message)
+        }
+    }
+
     LaunchedEffect(Unit) {
         snackbarManager.messages.collect { message ->
-            snackbarHostState.showSnackbar(message = message)
+            snackbarMessages.add(message)
         }
     }
 

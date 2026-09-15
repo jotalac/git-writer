@@ -119,8 +119,33 @@
     <string name="find_placeholder">Encontrar</string>
     <string name="find_previous">Requisitos previos</string>
     <string name="find_next">Otro partido</string>
+    <string name="find_button">Buscar en la nota</string>
+    <string name="navigate_back">Atrás</string>
     <string name="app_version_display">Versión: </string>
 
+    <!-- snackbar / status messages -->
+    <string name="msg_path_copied">Ruta copiada al portapapeles</string>
+    <string name="msg_item_deleted">Elemento eliminado</string>
+    <string name="msg_notebook_deleted">Cuaderno eliminado correctamente</string>
+    <string name="msg_notebook_updated">Cuaderno actualizado correctamente</string>
+    <string name="msg_notebook_created">Cuaderno creado correctamente</string>
+    <string name="msg_notes_synced">Notas sincronizadas correctamente</string>
+    <string name="msg_sync_aborted">Sincronización cancelada</string>
+    <string name="msg_conflicts_resolved">Todos los conflictos resueltos y sincronizados</string>
 
+    <!-- snackbar / failure messages -->
+    <string name="err_failed_delete">No se pudo eliminar el elemento</string>
+    <string name="err_failed_rename">No se pudo renombrar el elemento</string>
+    <string name="err_failed_add_note">No se pudo añadir la nota</string>
+    <string name="err_failed_add_folder">No se pudo añadir la carpeta</string>
+    <string name="err_failed_move">No se pudo mover el elemento</string>
+    <string name="err_failed_sync">Error al sincronizar las notas</string>
+    <string name="err_failed_resolve_conflict">No se pudo resolver el conflicto</string>
+    <string name="err_failed_resolve_conflicts">No se pudieron resolver los conflictos</string>
+    <string name="err_failed_abort_sync">No se pudo cancelar la sincronización</string>
+    <string name="err_failed_create_note">No se pudo crear la nota</string>
+    <string name="err_create_note_no_notebook">No se pudo crear la nota: ningún cuaderno activo</string>
+    <string name="err_paste_image_no_notebook">No se pudo pegar la imagen: ningún cuaderno activo</string>
+    <string name="err_failed_save_images">No se pudieron guardar una o varias imágenes pegadas</string>
 
 </resources>

@@ -3,6 +3,7 @@ package dev.jotalac.feature.editor.ui
 import dev.jotalac.core.data.UserSettingsManager
 import dev.jotalac.core.domain.GitConflictResolutionStrategy
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.core.utils.UiText
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -10,6 +11,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.err_failed_abort_sync
+import git_writer.shared.generated.resources.err_failed_resolve_conflict
+import git_writer.shared.generated.resources.err_failed_resolve_conflicts
+import git_writer.shared.generated.resources.err_failed_sync
+import git_writer.shared.generated.resources.msg_conflicts_resolved
+import git_writer.shared.generated.resources.msg_notes_synced
+import git_writer.shared.generated.resources.msg_sync_aborted
 
 /**
  * Orchestrates git sync and merge-conflict resolution for the editor screen.
@@ -56,11 +65,11 @@ class EditorSyncController(
             } else {
                 state.value.activeNotePath?.let { reloadNote(it) }
                 state.update { it.copy(gitSyncStatus = GitSyncStatus.UpToDate) }
-                snackbarManager.showMessage("Notes synced successfully")
+                snackbarManager.showMessage(UiText.resource(Res.string.msg_notes_synced))
             }
         }.onFailure { errorResult ->
             state.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
-            snackbarManager.showMessage(errorResult.message ?: "Error syncing notes")
+            snackbarManager.showMessage(UiText.message(Res.string.err_failed_sync, errorResult.message))
         }
     }
 
@@ -91,10 +100,10 @@ class EditorSyncController(
                     )
                 }
                 state.update { it.copy(gitSyncStatus = GitSyncStatus.UpToDate) }
-                snackbarManager.showMessage("All conflicts resolved and synced")
+                snackbarManager.showMessage(UiText.resource(Res.string.msg_conflicts_resolved))
             }
         }.onFailure {
-            snackbarManager.showMessage(it.message ?: "Failed to resolve conflict")
+            snackbarManager.showMessage(UiText.message(Res.string.err_failed_resolve_conflict, it.message))
         }
     }
 
@@ -113,10 +122,10 @@ class EditorSyncController(
         val result = gitSyncRepository.abortMerge(notebook.directoryPath)
 
         result.onSuccess {
-            snackbarManager.showMessage("Sync aborted")
+            snackbarManager.showMessage(UiText.resource(Res.string.msg_sync_aborted))
             state.update { it.copy(conflictedFiles = emptyList(), gitSyncStatus = GitSyncStatus.UpToDate) }
         }.onFailure {
-            snackbarManager.showMessage(it.message ?: "Failed to abort sync")
+            snackbarManager.showMessage(UiText.message(Res.string.err_failed_abort_sync, it.message))
         }
     }
 
@@ -145,10 +154,10 @@ class EditorSyncController(
                     username = remoteUsername
                 )
             }
-            snackbarManager.showMessage("All conflicts resolved and synced")
+            snackbarManager.showMessage(UiText.resource(Res.string.msg_conflicts_resolved))
         }.onFailure {
             state.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
-            snackbarManager.showMessage(it.message ?: "Failed to resolve conflicts")
+            snackbarManager.showMessage(UiText.message(Res.string.err_failed_resolve_conflicts, it.message))
         }
     }
 }

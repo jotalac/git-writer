@@ -3,9 +3,9 @@ package dev.jotalac.core.utils
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class SnackbarManager {
-    val messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val messages = MutableSharedFlow<UiText>(extraBufferCapacity = 1)
 
-    fun showMessage(message: String) {
+    fun showMessage(message: UiText) {
         messages.tryEmit(message)
     }
 }

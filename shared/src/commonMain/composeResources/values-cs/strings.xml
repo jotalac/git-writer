@@ -83,6 +83,7 @@
     <string name="settings_title">Nastavení</string>
     <string name="toggle_side_bar_desc">Přepnout postranní panel</string>
     <string name="close">Zavřít</string>
+    <string name="navigate_back">Zpět</string>
     <string name="settings_appearance_title">Vzhled</string>
     <string name="toggle_collapse">Přepnout sbalení</string>
     <string name="settings_theme_title">Motiv</string>
@@ -119,7 +120,32 @@
     <string name="find_placeholder">Najít</string>
     <string name="find_previous">Předchozí shoda</string>
     <string name="find_next">Další shoda</string>
+    <string name="find_button">Najít v poznámce</string>
     <string name="app_version_display">Verze aplikace: </string>
 
+    <!-- snackbar / status messages -->
+    <string name="msg_path_copied">Cesta zkopírována do schránky</string>
+    <string name="msg_item_deleted">Položka smazána</string>
+    <string name="msg_notebook_deleted">Poznámkový blok byl smazán</string>
+    <string name="msg_notebook_updated">Poznámkový blok byl upraven</string>
+    <string name="msg_notebook_created">Poznámkový blok byl vytvořen</string>
+    <string name="msg_notes_synced">Poznámky byly synchronizovány</string>
+    <string name="msg_sync_aborted">Synchronizace zrušena</string>
+    <string name="msg_conflicts_resolved">Všechny konflikty vyřešeny a synchronizovány</string>
+
+    <!-- snackbar / failure messages -->
+    <string name="err_failed_delete">Nepodařilo se smazat položku</string>
+    <string name="err_failed_rename">Nepodařilo se přejmenovat položku</string>
+    <string name="err_failed_add_note">Nepodařilo se přidat poznámku</string>
+    <string name="err_failed_add_folder">Nepodařilo se přidat složku</string>
+    <string name="err_failed_move">Nepodařilo se přesunout položku</string>
+    <string name="err_failed_sync">Chyba při synchronizaci poznámek</string>
+    <string name="err_failed_resolve_conflict">Nepodařilo se vyřešit konflikt</string>
+    <string name="err_failed_resolve_conflicts">Nepodařilo se vyřešit konflikty</string>
+    <string name="err_failed_abort_sync">Nepodařilo se zrušit synchronizaci</string>
+    <string name="err_failed_create_note">Nepodařilo se vytvořit poznámku</string>
+    <string name="err_create_note_no_notebook">Nepodařilo se vytvořit poznámku: žádný aktivní poznámkový blok</string>
+    <string name="err_paste_image_no_notebook">Nepodařilo se vložit obrázek: žádný aktivní poznámkový blok</string>
+    <string name="err_failed_save_images">Nepodařilo se uložit jeden nebo více vložených obrázků</string>
 
 </resources>

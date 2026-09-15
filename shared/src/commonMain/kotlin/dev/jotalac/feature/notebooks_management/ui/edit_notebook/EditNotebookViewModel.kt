@@ -3,6 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.edit_notebook
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.core.utils.UiText
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.validateRemoteUrl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.msg_notebook_updated
 
 data class EditNotebookState(
     val notebookName: String = "",
@@ -131,7 +134,7 @@ class EditNotebookViewModel(
 
             updateNotebookResult.onSuccess {
                 _uiState.update { it.copy(isLoading = false, errorMessage = null) }
-                snackbarManager.showMessage("Notebook updated successfully")
+                snackbarManager.showMessage(UiText.resource(Res.string.msg_notebook_updated))
                 onSuccess()
             }.onFailure { error ->
                 _uiState.update {

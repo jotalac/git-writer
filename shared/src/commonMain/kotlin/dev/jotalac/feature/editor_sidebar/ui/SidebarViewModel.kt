@@ -3,6 +3,7 @@ package dev.jotalac.feature.editor_sidebar.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.core.utils.UiText
 import dev.jotalac.core.utils.buildFileTree
 import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.editor.domain.EditorRepository
@@ -16,6 +17,14 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.io.files.Path
 import kotlin.time.Duration.Companion.milliseconds
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.err_failed_add_folder
+import git_writer.shared.generated.resources.err_failed_add_note
+import git_writer.shared.generated.resources.err_failed_delete
+import git_writer.shared.generated.resources.err_failed_move
+import git_writer.shared.generated.resources.err_failed_rename
+import git_writer.shared.generated.resources.msg_item_deleted
+import git_writer.shared.generated.resources.msg_path_copied
 
 data class SidebarState(
     val activeNotebook: Notebook? = null,
@@ -106,7 +115,7 @@ class EditorSidebarViewModel(
             is SidebarAction.DuplicateNote -> duplicateNote(action.notePath)
 
             is SidebarAction.CopyItemPath -> {
-                snackbarManager.showMessage("Path copied to clipboard")
+                snackbarManager.showMessage(UiText.resource(Res.string.msg_path_copied))
             }
         }
     }
@@ -122,7 +131,7 @@ class EditorSidebarViewModel(
                     notebookRepository.syncActiveNotePathOnDeleted(path)
                     refreshFileTree()
                 }.onFailure {
-                    snackbarManager.showMessage(it.message ?: "Failed to delete item")
+                    snackbarManager.showMessage(UiText.message(Res.string.err_failed_delete, it.message))
                 }
         }
     }
@@ -158,7 +167,7 @@ class EditorSidebarViewModel(
                     notebookRepository.syncActiveNotePathOnMoved(path, newPath)
                     refreshFileTree()
                 }.onFailure {
-                    snackbarManager.showMessage(it.message ?: "Failed to rename item")
+                    snackbarManager.showMessage(UiText.message(Res.string.err_failed_rename, it.message))
                 }
         }
     }
@@ -295,7 +304,7 @@ class EditorSidebarViewModel(
                     setRenameItem(newPath)
                     suppressRenameTrigger = true
                 }.onFailure {
-                    snackbarManager.showMessage(it.message ?: "Failed to add note")
+                    snackbarManager.showMessage(UiText.message(Res.string.err_failed_add_note, it.message))
                 }
         }
     }
@@ -315,7 +324,7 @@ class EditorSidebarViewModel(
 
                 setRenameItem(newPath)
             }.onFailure {
-                snackbarManager.showMessage(it.message ?: "Failed to add folder")
+                snackbarManager.showMessage(UiText.message(Res.string.err_failed_add_folder, it.message))
             }
         }
     }
@@ -329,7 +338,7 @@ class EditorSidebarViewModel(
                     notebookRepository.syncActiveNotePathOnMoved(sourcePath, newPath)
                     refreshFileTree()
                 }.onFailure {
-                    snackbarManager.showMessage(it.message ?: "Failed to move item")
+                    snackbarManager.showMessage(UiText.message(Res.string.err_failed_move, it.message))
                 }
         }
     }

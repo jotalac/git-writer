@@ -123,5 +123,29 @@
     <string name="find_button">Find in note</string>
     <string name="app_version_display">App version: </string>
 
+    <!-- snackbar / status messages -->
+    <string name="msg_path_copied">Path copied to clipboard</string>
+    <string name="msg_item_deleted">Item deleted</string>
+    <string name="msg_notebook_deleted">Notebook deleted successfully</string>
+    <string name="msg_notebook_updated">Notebook updated successfully</string>
+    <string name="msg_notebook_created">Notebook created successfully</string>
+    <string name="msg_notes_synced">Notes synced successfully</string>
+    <string name="msg_sync_aborted">Sync aborted</string>
+    <string name="msg_conflicts_resolved">All conflicts resolved and synced</string>
+
+    <!-- snackbar / failure messages -->
+    <string name="err_failed_delete">Failed to delete item</string>
+    <string name="err_failed_rename">Failed to rename item</string>
+    <string name="err_failed_add_note">Failed to add note</string>
+    <string name="err_failed_add_folder">Failed to add folder</string>
+    <string name="err_failed_move">Failed to move item</string>
+    <string name="err_failed_sync">Error syncing notes</string>
+    <string name="err_failed_resolve_conflict">Failed to resolve conflict</string>
+    <string name="err_failed_resolve_conflicts">Failed to resolve conflicts</string>
+    <string name="err_failed_abort_sync">Failed to abort sync</string>
+    <string name="err_failed_create_note">Failed to create note</string>
+    <string name="err_create_note_no_notebook">Failed to create note: no active notebook</string>
+    <string name="err_paste_image_no_notebook">Failed to paste image: no active notebook</string>
+    <string name="err_failed_save_images">Failed to save one or more pasted images</string>
 
 </resources>
