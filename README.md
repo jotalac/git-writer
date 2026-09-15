@@ -1,4 +1,4 @@
-# Git-Writer
+# Git Writer
 
 A minimalistic, cross-platform note-taking app that uses Git repositories to keep your Markdown notes version-controlled
 and synchronized across devices. Supports all major platforms (Linux, macOS, Windows, Android, iOS).

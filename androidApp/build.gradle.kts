@@ -44,12 +44,12 @@ android {
                 "proguard-rules.pro"
             )
 
-            manifestPlaceholders["appName"] = "GitWriter"
+            manifestPlaceholders["appName"] = project.findProperty("app.name.display") as? String ?: "GitWriter"
         }
 
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appName"] = "GitWriter (debug)"
+            manifestPlaceholders["appName"] = "GitWriter (Debug)"
         }
     }
     compileOptions {

@@ -5,7 +5,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-const val APP_WINDOW_TITLE = "git-writer"
+const val APP_WINDOW_TITLE = "GitWriter"
 
 @Immutable
 interface WindowChrome {

@@ -25,7 +25,7 @@ compose.desktop {
         mainClass = "dev.jotalac.MainKt"
 
         nativeDistributions {
-            packageName = "git-writer"
+            packageName = project.findProperty("app.name.display") as? String ?: "GitWriter"
             packageVersion = project.findProperty("app.version.number") as? String ?: "1.0.0"
             description = "Git-backed note-taking app"
 
@@ -56,9 +56,8 @@ compose.desktop {
             macOS {
                 targetFormats(TargetFormat.Dmg, TargetFormat.Pkg)
                 iconFile.set(project.file("launcher_icons/icon.icns"))
-                // macos crashes when the version is bellow 1.0.0 - later in the stable release it will use the gobal versino nubmer
-                packageVersion = "1.0.2"
                 bundleID = "dev.jotalac.gitwriter"
+                // macos crashes when the version is bellow 1.0.0 - later in the stable release it will use the gobal versino nubmer
             }
         }
 
