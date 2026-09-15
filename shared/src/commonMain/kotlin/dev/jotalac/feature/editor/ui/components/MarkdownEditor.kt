@@ -237,7 +237,7 @@ fun MarkdownEditor(
             MarkdownEditorBlocksList(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = if (isKeyboardOpen) 75.dp else 0.dp) // see what is currently being edited
+                    .padding(bottom = if (isKeyboardOpen) 75.dp else 0.dp, top = if (findState.isOpen) 50.dp else 0.dp) // see what is currently being edited
                 ,
                 blocks = markdownBlocks,
                 editorState = editorState,

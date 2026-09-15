@@ -9,6 +9,7 @@
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
   markdown cheatsheet, etc.)
 - encrypt data before pushing to remote
+- add ctrl+r replace (replace all/current)
 - mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (android
   17 issue only now - probably a Android 17 bug and will be fixed later - ime freezes)
 - enable proguad and manually configure it to lower the binary size (android and desktop)
