@@ -29,6 +29,15 @@ compose.desktop {
             packageVersion = project.findProperty("app.version.number") as? String ?: "1.0.0"
             description = "Git-backed note-taking app"
 
+            targetFormats = buildSet {
+                add(TargetFormat.Deb)
+                add(TargetFormat.Rpm)
+                add(TargetFormat.Msi)
+                add(TargetFormat.Exe)
+                add(TargetFormat.Dmg)
+                add(TargetFormat.Pkg)
+            }
+
             modules(
                 "jdk.unsupported",
                 "java.sql",
@@ -44,17 +53,14 @@ compose.desktop {
             }
 
             linux {
-                targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage)
                 iconFile.set(project.file("launcher_icons/icon.png"))
             }
 
             windows {
-                targetFormats(TargetFormat.Msi, TargetFormat.Exe)
                 iconFile.set(project.file("launcher_icons/icon.ico"))
             }
 
             macOS {
-                targetFormats(TargetFormat.Dmg, TargetFormat.Pkg)
                 iconFile.set(project.file("launcher_icons/icon.icns"))
                 bundleID = "dev.jotalac.gitwriter"
                 // macos crashes when the version is bellow 1.0.0 - later in the stable release it will use the gobal versino nubmer

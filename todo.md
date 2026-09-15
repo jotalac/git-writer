@@ -3,6 +3,8 @@
 > high priority
 
 - create release for iOS and macOS
+- normalize and sign the app for macos (or add guide in the readme how to run it without the signing)
+- clone notebook - so strip() for repository url
 
 > medium priority
 
