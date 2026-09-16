@@ -21,7 +21,7 @@ import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.app_logo
 import org.jetbrains.compose.resources.painterResource
 
-private val MinWindowSize = DpSize(600.dp, 600.dp)
+private val MinWindowSize = DpSize(650.dp, 650.dp)
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
