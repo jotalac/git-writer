@@ -3,7 +3,7 @@
 > high priority
 
 - create release for iOS and macOS
-- notarize and sign the app for macos (or add guide in the readme how to run it without the signing)
+- create the releases for both x86 and arm
 
 > medium priority
 
