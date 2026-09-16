@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -51,6 +52,24 @@ fun CustomUnorderedListComponent(model: MarkdownComponentModel) {
                 2 -> Text("▪ ")
                 else -> Text("▫ ")
             }
+        }
+    )
+}
+
+// ordered list
+@Composable
+fun CustomOrderedListComponent(model: MarkdownComponentModel) {
+    MarkdownListItems(
+        content = model.content,
+        node = model.node,
+        depth = model.listDepth,
+        bullet = { index, _, _ ->
+            val color = when (model.listDepth % 3) {
+                0 -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                1 -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+            }
+            Text("${index + 1}.", color = color)
         }
     )
 }

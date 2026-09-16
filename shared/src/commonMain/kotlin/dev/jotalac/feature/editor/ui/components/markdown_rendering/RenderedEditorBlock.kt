@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+    import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -131,6 +132,7 @@ private fun RenderedMarkdownBlock(
                 currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
             },
             unorderedList = { CustomUnorderedListComponent(it) },
+            orderedList = { CustomOrderedListComponent(it) },
             image = { CustomImageComponent(it) },
         )
     }
