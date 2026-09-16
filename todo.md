@@ -4,10 +4,11 @@
 
 - create release for iOS and macOS
 - notarize and sign the app for macos (or add guide in the readme how to run it without the signing)
-- open notebook from folder (in the create notebook dialog there will be option to open notebook from folder)
 
 > medium priority
 
+- add something like .gitwriter file to each notebook folder, there will be the remote credentials etc., it wont be commited, but comes in handy when you want to open folder with remote already configured 
+- when opening notebooks, when two noteboks have same directory name but the path is different, it cannot be opened
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
   markdown cheatsheet, etc.)
 - encrypt data before pushing to remote

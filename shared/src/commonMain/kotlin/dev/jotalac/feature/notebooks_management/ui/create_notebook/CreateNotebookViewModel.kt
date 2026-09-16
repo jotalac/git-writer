@@ -2,14 +2,12 @@ package dev.jotalac.feature.notebooks_management.ui.create_notebook
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.createDirectories
-import io.github.vinceglb.filekit.exists
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +16,7 @@ import kotlinx.coroutines.launch
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.err_failed_create_base_directory
 import git_writer.shared.generated.resources.msg_notebook_created
+import git_writer.shared.generated.resources.msg_notebook_opened
 
 data class CreateNotebookState(
     val selectedTabIndex: Int = 0,
@@ -49,7 +48,7 @@ class CreateNotebookViewModel(
 
         // make sure the notebooks root directory exists
         notebookRepository.createBaseNotebooksDirectory(basePath).onFailure {
-            snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_create_base_directory, "Failed to crate base directory"))
+            snackbarManager.showMessage(SnackbarText.resource(Res.string.err_failed_create_base_directory))
         }
 
     }
@@ -100,6 +99,7 @@ class CreateNotebookViewModel(
 
             is CreateNotebookEvent.CreateLocalNotebook -> createLocalNotebook(event.path, event.onSuccess)
             is CreateNotebookEvent.CloneRemoteNotebook -> cloneRemoteNotebook(event.path, event.onSuccess)
+            is CreateNotebookEvent.OpenExistingNotebook -> openExistingNotebook(event.onSuccess)
             is CreateNotebookEvent.AddErrorMessage -> _uiState.update { it.copy(errorMessage = event.message) }
         }
     }
@@ -115,7 +115,7 @@ class CreateNotebookViewModel(
                 directoryPath = actualDirectory
             )
 
-            handleNotebookCreateResult(result, onSuccess)
+            handleNotebookAddResult(result, onSuccess)
         }
     }
 
@@ -132,19 +132,34 @@ class CreateNotebookViewModel(
                 remoteUsername = currentState.username
             )
 
-            handleNotebookCreateResult(result, onSuccess)
+            handleNotebookAddResult(result, onSuccess)
         }
     }
 
-    private suspend fun handleNotebookCreateResult(result: Result<Notebook>, onSuccess: () -> Unit) {
-        result.onSuccess { notebook ->
-            // activate the notebook in repository
-            notebookRepository.activateNotebook(notebook.id)
 
-            //reset the dialog values
+    private fun openExistingNotebook(onSuccess: () -> Unit) {
+        val selectedDirectory = _uiState.value.selectedDirectory ?: return
+
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        viewModelScope.launch {
+            val result = notebookRepository.openExistingNotebook(
+                directoryPath = selectedDirectory
+            )
+
+            handleNotebookAddResult(result, onSuccess, isCreated = false)
+        }
+    }
+
+
+
+    private suspend fun handleNotebookAddResult(result: Result<Notebook>, onSuccess: () -> Unit, isCreated: Boolean = true) {
+        result.onSuccess { notebook ->
+            // reset the dialog fields first, so activation below can still report an error
             _uiState.update {
                 it.copy(
                     notebookName = "",
+                    selectedDirectory = null,
                     remoteUrl = "",
                     username = "",
                     password = "",
@@ -153,7 +168,15 @@ class CreateNotebookViewModel(
                 )
             }
 
-            snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_notebook_created))
+            // activate the notebook in repository
+            notebookRepository.activateNotebook(notebook.id).onFailure {
+                _uiState.update { it.copy(errorMessage = "Failed to activate notebook") }
+            }
+
+            snackbarManager.showMessage(SnackbarText.resource(
+                if (isCreated)Res.string.msg_notebook_created
+                else Res.string.msg_notebook_opened
+            ))
             onSuccess()
         }.onFailure { error ->
             _uiState.update {
@@ -172,6 +195,7 @@ class CreateNotebookViewModel(
         data class UsernameChanged(val username: String) : CreateNotebookEvent
         data class PasswordChanged(val password: String) : CreateNotebookEvent
         data class DirectorySelected(val directory: String) : CreateNotebookEvent
+        data class OpenExistingNotebook(val onSuccess: () -> Unit) : CreateNotebookEvent
         data class CreateLocalNotebook(val path: String, val onSuccess: () -> Unit) : CreateNotebookEvent
         data class CloneRemoteNotebook(val path: String, val onSuccess: () -> Unit) : CreateNotebookEvent
         data class AddErrorMessage(val message: String) : CreateNotebookEvent

@@ -8,6 +8,10 @@ interface NotebookRepository {
         name: String, directoryPath: String,
     ): Result<Notebook>
 
+    suspend fun openExistingNotebook(
+        directoryPath: String,
+    ): Result<Notebook>
+
     suspend fun cloneNotebook(
         name: String, directoryPath: String,
         remoteUrl: String, remotePasswordOrToken: String, remoteUsername: String? = null,

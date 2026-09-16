@@ -21,6 +21,7 @@
     <string name="git_merge_icon">Icono de fusión git</string>
     <string name="git_repository_url_input_label">URL del repositorio</string>
     <string name="destination_directory_label">Directorio de destino</string>
+    <string name="open_notebook_directory">Carpeta del cuaderno</string>
     <string name="browse_destination_button">Examinar</string>
     <string name="no_file_loaded_msg">Ningún archivo cargado</string>
     <string name="no_file_opened_title">No hay ningún archivo abierto</string>
@@ -122,6 +123,7 @@
     <string name="find_button">Buscar en la nota</string>
     <string name="navigate_back">Atrás</string>
     <string name="app_version_display">Versión: </string>
+    <string name="open_existing_notebook">Abrir existente</string>
 
     <!-- snackbar / status messages -->
     <string name="msg_path_copied">Ruta copiada al portapapeles</string>
@@ -129,6 +131,7 @@
     <string name="msg_notebook_deleted">Cuaderno eliminado correctamente</string>
     <string name="msg_notebook_updated">Cuaderno actualizado correctamente</string>
     <string name="msg_notebook_created">Cuaderno creado correctamente</string>
+    <string name="msg_notebook_opened">Cuaderno abierto correctamente</string>
     <string name="msg_notes_synced">Notas sincronizadas correctamente</string>
     <string name="msg_sync_aborted">Sincronización cancelada</string>
     <string name="msg_conflicts_resolved">Todos los conflictos resueltos y sincronizados</string>
@@ -144,6 +147,7 @@
     <string name="err_failed_resolve_conflicts">No se pudieron resolver los conflictos</string>
     <string name="err_failed_abort_sync">No se pudo cancelar la sincronización</string>
     <string name="err_failed_create_note">No se pudo crear la nota</string>
+    <string name="err_failed_create_base_directory">No se pudo crear la carpeta base</string>
     <string name="err_create_note_no_notebook">No se pudo crear la nota: ningún cuaderno activo</string>
     <string name="err_paste_image_no_notebook">No se pudo pegar la imagen: ningún cuaderno activo</string>
     <string name="err_failed_save_images">No se pudieron guardar una o varias imágenes pegadas</string>

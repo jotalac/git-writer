@@ -63,20 +63,66 @@ class NotebookRepositoryImpl(
         name: String, directoryPath: String,
     ): Result<Notebook> = withContext(Dispatchers.IO) {
         suspendRunCatching {
-            // first create the directory
             if (directoryExists(directoryPath)) {
                 throw IllegalStateException("Directory already exists")
             }
+
+            // create the base directory
             val baseDirectory = PlatformFile(directoryPath)
             baseDirectory.createDirectories()
-
-            //create base images directory
             (baseDirectory / "images").createDirectories()
 
-            //initialize git repo
-            gitSyncRepository.initRepository(directoryPath)
+            val gitInit = gitSyncRepository.initRepository(directoryPath)
+            if (gitInit.isFailure) {
+                baseDirectory.delete()
+                throw IllegalStateException(
+                    "Failed to initialize git repository: ${gitInit.exceptionOrNull()?.message}"
+                )
+            }
 
-            //save notebook to database
+            return@suspendRunCatching saveNotebookToDb(name, directoryPath).getOrElse { cause ->
+                // delete folder when it fails
+                baseDirectory.delete()
+                throw IllegalStateException("Failed to save notebook to database", cause)
+            }
+        }
+    }
+
+    override suspend fun openExistingNotebook(directoryPath: String): Result<Notebook> =
+        withContext(Dispatchers.IO) {
+            suspendRunCatching {
+                if (!directoryExists(directoryPath)) {
+                    throw IllegalStateException("Directory does not exist")
+                }
+
+                val rootNotebookDirectory = PlatformFile(directoryPath)
+
+                // a folder that is already a notebook is opened, not registered twice
+                notebookDao.getNotebookByName(rootNotebookDirectory.name)
+                    ?.let { return@suspendRunCatching it.withRuntimePath().toNotebook() }
+
+                // init git repo if the folder is not a git repository
+                val gitInit = if ((rootNotebookDirectory / ".git").exists()) {
+                    Result.success(Unit)
+                } else {
+                    gitSyncRepository.initRepository(directoryPath)
+                }
+                if (gitInit.isFailure) {
+                    throw IllegalStateException(
+                        "Failed to initialize git repository: ${gitInit.exceptionOrNull()?.message}"
+                    )
+                }
+
+                saveNotebookToDb(rootNotebookDirectory.name, directoryPath).getOrElse { cause ->
+                    // delete the .git directory if saving fails
+                    (rootNotebookDirectory / ".git").delete()
+                    throw IllegalStateException("Failed to save notebook to database", cause)
+                }
+            }
+        }
+
+    private suspend fun saveNotebookToDb(name: String, directoryPath: String): Result<Notebook> =
+        suspendRunCatching {
             val notebook = Notebook(
                 name = name.trim(),
                 directoryPath = directoryPath,
@@ -89,7 +135,6 @@ class NotebookRepositoryImpl(
 
             notebook.copy(id = generatedId)
         }
-    }
 
     override suspend fun cloneNotebook(
         name: String,

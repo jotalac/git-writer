@@ -21,6 +21,7 @@
     <string name="git_merge_icon">Ikona sloučení gitu</string>
     <string name="git_repository_url_input_label">URL repozitáře</string>
     <string name="destination_directory_label">Cílová složka</string>
+    <string name="open_notebook_directory">Složka poznámkového bloku</string>
     <string name="browse_destination_button">Procházet</string>
     <string name="no_file_loaded_msg">Žádný načtený soubor</string>
     <string name="no_file_opened_title">Není otevřen žádný soubor</string>
@@ -122,6 +123,7 @@
     <string name="find_next">Další shoda</string>
     <string name="find_button">Najít v poznámce</string>
     <string name="app_version_display">Verze aplikace: </string>
+    <string name="open_existing_notebook">Otevřít existující</string>
 
     <!-- snackbar / status messages -->
     <string name="msg_path_copied">Cesta zkopírována do schránky</string>
@@ -129,6 +131,7 @@
     <string name="msg_notebook_deleted">Poznámkový blok byl smazán</string>
     <string name="msg_notebook_updated">Poznámkový blok byl upraven</string>
     <string name="msg_notebook_created">Poznámkový blok byl vytvořen</string>
+    <string name="msg_notebook_opened">Poznámkový blok byl otevřen</string>
     <string name="msg_notes_synced">Poznámky byly synchronizovány</string>
     <string name="msg_sync_aborted">Synchronizace zrušena</string>
     <string name="msg_conflicts_resolved">Všechny konflikty vyřešeny a synchronizovány</string>
@@ -144,6 +147,7 @@
     <string name="err_failed_resolve_conflicts">Nepodařilo se vyřešit konflikty</string>
     <string name="err_failed_abort_sync">Nepodařilo se zrušit synchronizaci</string>
     <string name="err_failed_create_note">Nepodařilo se vytvořit poznámku</string>
+    <string name="err_failed_create_base_directory">Nepodařilo se vytvořit základní složku</string>
     <string name="err_create_note_no_notebook">Nepodařilo se vytvořit poznámku: žádný aktivní poznámkový blok</string>
     <string name="err_paste_image_no_notebook">Nepodařilo se vložit obrázek: žádný aktivní poznámkový blok</string>
     <string name="err_failed_save_images">Nepodařilo se uložit jeden nebo více vložených obrázků</string>

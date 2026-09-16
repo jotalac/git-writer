@@ -27,6 +27,12 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
+private enum class Tab { Init, Clone, Open }
+
+private val visibleTabs: List<Tab> =
+    if (isDesktopPlatform) listOf(Tab.Init, Tab.Clone, Tab.Open)
+    else listOf(Tab.Init, Tab.Clone)
+
 @Composable
 fun CreateNotebookDialog(
     onDismiss: () -> Unit,
@@ -68,30 +74,24 @@ fun CreateNotebookDialog(
         }
     }
 
+    // index of a tab in the row currently rendered
+    fun tabIndex(tab: Tab): Int = visibleTabs.indexOf(tab)
+
     fun submitForm() {
-        if (state.selectedTabIndex == 0) {
-            viewModel.onEvent(
-                CreateNotebookViewModel.CreateNotebookEvent.CreateLocalNotebook(
-                    actualDirectory
-                ) {
-                    onDismiss()
-                })
-        } else {
-            val validationResult = validateCloneForm()
-            if (validationResult != null) {
-                viewModel.onEvent(
-                    CreateNotebookViewModel.CreateNotebookEvent.AddErrorMessage(
-                        validationResult
-                    )
-                )
-            } else {
-                viewModel.onEvent(
-                    CreateNotebookViewModel.CreateNotebookEvent.CloneRemoteNotebook(
-                        actualDirectory
-                    ) {
-                        onDismiss()
-                    })
-            }
+        when (state.selectedTabIndex) {
+            tabIndex(Tab.Init) -> viewModel.onEvent(
+                CreateNotebookViewModel.CreateNotebookEvent.CreateLocalNotebook(actualDirectory) { onDismiss() }
+            )
+
+            tabIndex(Tab.Clone) -> validateCloneForm()?.let { message ->
+                viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.AddErrorMessage(message))
+            } ?: viewModel.onEvent(
+                CreateNotebookViewModel.CreateNotebookEvent.CloneRemoteNotebook(actualDirectory) { onDismiss() }
+            )
+
+            else -> viewModel.onEvent(
+                CreateNotebookViewModel.CreateNotebookEvent.OpenExistingNotebook(onDismiss)
+            )
         }
     }
 
@@ -117,8 +117,12 @@ fun CreateNotebookDialog(
                     divider = @Composable { HorizontalDivider() }
                 ) {
                     Tab(
-                        selected = state.selectedTabIndex == 0,
-                        onClick = { viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.TabSelected(0)) },
+                        selected = state.selectedTabIndex == tabIndex(Tab.Init),
+                        onClick = {
+                            viewModel.onEvent(
+                                CreateNotebookViewModel.CreateNotebookEvent.TabSelected(tabIndex(Tab.Init))
+                            )
+                        },
                         text = {
                             TabText(
                                 text = Res.string.init_notebook,
@@ -128,8 +132,12 @@ fun CreateNotebookDialog(
                         },
                     )
                     Tab(
-                        selected = state.selectedTabIndex == 1,
-                        onClick = { viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.TabSelected(1)) },
+                        selected = state.selectedTabIndex == tabIndex(Tab.Clone),
+                        onClick = {
+                            viewModel.onEvent(
+                                CreateNotebookViewModel.CreateNotebookEvent.TabSelected(tabIndex(Tab.Clone))
+                            )
+                        },
                         text = {
                             TabText(
                                 text = Res.string.clone_notebook,
@@ -138,13 +146,30 @@ fun CreateNotebookDialog(
                             )
                         }
                     )
+                    if (isDesktopPlatform) {
+                        Tab(
+                            selected = state.selectedTabIndex == tabIndex(Tab.Open),
+                            onClick = {
+                                viewModel.onEvent(
+                                    CreateNotebookViewModel.CreateNotebookEvent.TabSelected(tabIndex(Tab.Open))
+                                )
+                            },
+                            text = {
+                                TabText(
+                                    text = Res.string.open_existing_notebook,
+                                    icon = Res.drawable.folder,
+                                    contentDescription = Res.string.open_existing_notebook
+                                )
+                            },
+                        )
+                    }
                 }
 
                 Box(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     when (state.selectedTabIndex) {
-                        0 -> LocalNotebookForm(
+                        tabIndex(Tab.Init) -> LocalNotebookForm(
                             name = state.notebookName,
                             onNameChange = {
                                 viewModel.onEvent(
@@ -157,8 +182,12 @@ fun CreateNotebookDialog(
                             onBrowseClick = { browseForDirectory() },
                             onSubmit = { submitForm() }
                         )
+                        tabIndex(Tab.Open) -> OpenNotebookForm(
+                            directory = state.selectedDirectory,
+                            onBrowseClick = { browseForDirectory() }
+                        )
 
-                        1 -> CloneNotebookForm(
+                        tabIndex(Tab.Clone) -> CloneNotebookForm(
                             name = state.notebookName,
                             onNameChange = {
                                 viewModel.onEvent(
@@ -209,8 +238,10 @@ fun CreateNotebookDialog(
         confirmButton = {
             Button(
                 onClick = { submitForm() },
-                enabled = if (state.selectedTabIndex == 0) {
+                enabled = if (state.selectedTabIndex == tabIndex(Tab.Init)) {
                     state.notebookName.isNotBlank() && actualDirectory.isNotBlank() && !state.isLoading
+                } else if (state.selectedTabIndex == tabIndex(Tab.Open)) {
+                    !state.selectedDirectory.isNullOrEmpty()
                 } else {
                     state.notebookName.isNotBlank() && state.remoteUrl.isNotBlank() &&
                             actualDirectory.isNotBlank() && state.username.isNotBlank() &&
@@ -228,9 +259,10 @@ fun CreateNotebookDialog(
                         )
                     }
                     Text(
-                        if (state.selectedTabIndex == 0) stringResource(Res.string.create_notebook_title) else stringResource(
-                            Res.string.clone_notebook
-                        )
+                        if (state.selectedTabIndex == tabIndex(Tab.Init)) stringResource(Res.string.create_notebook_title)
+                        else if (state.selectedTabIndex == tabIndex(Tab.Open)) stringResource(
+                            Res.string.open_notebook
+                        ) else stringResource(Res.string.clone_notebook)
                     )
                 }
             }
@@ -286,6 +318,19 @@ private fun LocalNotebookForm(
                 onBrowseClick = onBrowseClick
             )
         }
+    }
+}
+
+@Composable
+private fun OpenNotebookForm(
+    directory: String?,
+    onBrowseClick: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            DirectoryPickerRow(
+                directory = directory,
+                onBrowseClick = onBrowseClick
+            )
     }
 }
 
@@ -349,11 +394,12 @@ private fun CloneNotebookForm(
 @Composable
 fun DirectoryPickerRow(
     directory: String?,
-    onBrowseClick: () -> Unit
+    onBrowseClick: () -> Unit,
+    isCreating: Boolean = true,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = stringResource(Res.string.destination_directory_label),
+            text = if (isCreating) stringResource(Res.string.destination_directory_label) else stringResource(Res.string.open_notebook_directory),
             style = MaterialTheme.typography.labelMedium
         )
 

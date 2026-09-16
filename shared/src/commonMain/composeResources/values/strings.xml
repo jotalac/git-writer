@@ -21,6 +21,7 @@
     <string name="git_merge_icon">Git merge icon</string>
     <string name="git_repository_url_input_label">Repository URL</string>
     <string name="destination_directory_label">Destination directory</string>
+    <string name="open_notebook_directory">Notebook directory</string>
     <string name="browse_destination_button">Browse</string>
     <string name="no_file_loaded_msg">No file loaded</string>
     <string name="no_file_opened_title">No file is opened</string>
@@ -122,6 +123,8 @@
     <string name="find_next">Next match</string>
     <string name="find_button">Find in note</string>
     <string name="app_version_display">App version: </string>
+    <string name="open_existing_notebook">Open existing</string>
+
 
     <!-- snackbar / status messages -->
     <string name="msg_path_copied">Path copied to clipboard</string>
@@ -129,6 +132,7 @@
     <string name="msg_notebook_deleted">Notebook deleted successfully</string>
     <string name="msg_notebook_updated">Notebook updated successfully</string>
     <string name="msg_notebook_created">Notebook created successfully</string>
+    <string name="msg_notebook_opened">Notebook opened successfully</string>
     <string name="msg_notes_synced">Notes synced successfully</string>
     <string name="msg_sync_aborted">Sync aborted</string>
     <string name="msg_conflicts_resolved">All conflicts resolved and synced</string>

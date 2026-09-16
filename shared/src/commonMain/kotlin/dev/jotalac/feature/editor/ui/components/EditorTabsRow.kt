@@ -103,7 +103,7 @@ private fun EditorTab(
 ) {
     Row(
         modifier = modifier
-            .width(150.dp)
+            .widthIn(max = 250.dp)
             .border(
                 width = 1.dp,
                 color = if (isActive) {
@@ -121,7 +121,7 @@ private fun EditorTab(
     ) {
         Text(
             text = tab.filename ?: stringResource(Res.string.new_tab),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.widthIn(max = 200.dp).padding(end = 8.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = if (tab.notePath != null) {
