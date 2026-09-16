@@ -89,15 +89,13 @@ class EditorSidebarViewModel(
                 _uiState.update { it.copy(activeNotePath = notePath) }
 
                 // a note created outside the sidebar (Ctrl+N) isn't in the tree yet - refresh and
-                // start renaming it. Skip when we just created/renamed the note ourselves
-                if (notePath != null && _uiState.value.fileTree != null &&
-                    findNode(notePath) == null && !suppressRenameTrigger
-                ) {
+                // start renaming it. Skip when we just created/moved/renamed the note ourselves.
+                if (suppressRenameTrigger) {
+                    suppressRenameTrigger = false
+                } else if (notePath != null && _uiState.value.fileTree != null && findNode(notePath) == null) {
                     refreshFileTree()
                     setRenameItem(notePath)
                 }
-
-                suppressRenameTrigger = false
             }
         }
     }
@@ -309,9 +307,9 @@ class EditorSidebarViewModel(
                 .onSuccess { newPath ->
                     expandFolder(targetPath)
                     refreshFileTree()
+                    suppressRenameTrigger = true
                     setActiveNote(newPath)
                     setRenameItem(newPath)
-                    suppressRenameTrigger = true
                 }.onFailure {
                     snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_add_note, it.message))
                 }
@@ -340,6 +338,7 @@ class EditorSidebarViewModel(
 
     private fun moveItem(sourcePath: String, destinationDirectoryPath: String) {
         viewModelScope.launch {
+            suppressRenameTrigger = true
             editorRepository.moveItem(sourcePath, destinationDirectoryPath)
                 .onSuccess {
                     val itemName = Path(sourcePath).name
@@ -347,6 +346,7 @@ class EditorSidebarViewModel(
                     notebookRepository.syncActiveNotePathOnMoved(sourcePath, newPath)
                     refreshFileTree()
                 }.onFailure {
+                    suppressRenameTrigger = false
                     snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_move, it.message))
                 }
         }

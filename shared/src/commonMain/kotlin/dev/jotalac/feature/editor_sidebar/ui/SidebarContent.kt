@@ -6,6 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -94,6 +96,13 @@ fun SidebarContent(
                     Key.Delete -> {
                         viewModel.onAction(SidebarAction.DeleteItem(state.activeNotePath!!))
                         true
+                    }
+
+                    Key.D -> {
+                        if (event.isCtrlPressed || event.isMetaPressed) {
+                            viewModel.onAction(SidebarAction.DuplicateNote(state.activeNotePath!!))
+                            true
+                        } else false
                     }
 
                     else -> false
