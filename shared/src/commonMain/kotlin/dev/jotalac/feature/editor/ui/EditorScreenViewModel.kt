@@ -11,10 +11,6 @@ import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor.domain.EditorTabItem
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.exists
-import io.github.vinceglb.filekit.isRegularFile
-import io.github.vinceglb.filekit.name
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -120,24 +116,22 @@ class EditorViewModel(
     suspend fun loadFileContent(filePath: String) {
         _uiState.update { it.copy(isLoading = true) }
 
-        val file = PlatformFile(filePath)
-
-        // check if the file is valid before loading it
-        if (!file.exists() || !file.isRegularFile()) {
+        // check if the file is valid before loading
+        if (!editorRepository.fileExists(filePath)) {
             _uiState.update {
                 it.copy(error = "Error loading file - $filePath", isLoading = false)
             }
             return
         }
 
-        val isImage = isImageFile(file.name)
+        val isImage = isImageFile(filePath.substringAfterLast("/"))
 
         loadedNotePath = filePath
 
         if (isImage) {
             markdownBlocks.clear()
         } else {
-            val loadResult = editorRepository.loadMarkdownFileBlocks(file)
+            val loadResult = editorRepository.loadMarkdownFileBlocks(filePath)
             markdownBlocks.clear()
             loadResult.onSuccess { blocks -> markdownBlocks.addAll(blocks) }
         }

@@ -334,4 +334,13 @@ class NotebookRepositoryImpl(
         }
     }
 
+    override fun createBaseNotebooksDirectory(basePath: String): Result<Unit> {
+        val directory = PlatformFile(basePath)
+        if (!directory.exists()) {
+            directory.createDirectories()
+        }
+
+        return Result.success(Unit)
+    }
+
 }

@@ -4,6 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
@@ -76,6 +81,24 @@ fun SidebarContent(
         modifier = modifier
             .fillMaxHeight()
             .padding(horizontal = 8.dp, vertical = 16.dp)
+            .onPreviewKeyEvent { event ->
+                // rename active note with f2
+                if (state.activeNotePath == null || event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+
+                when (event.key) {
+                    Key.F2 -> {
+                        viewModel.onAction(SidebarAction.SetRenameItem(state.activeNotePath))
+                        true
+                    }
+
+                    Key.Delete -> {
+                        viewModel.onAction(SidebarAction.DeleteItem(state.activeNotePath!!))
+                        true
+                    }
+
+                    else -> false
+                }
+            }
     ) {
         SidebarGlobalActions(
             onNotebookOpen = { showListDialog = true },

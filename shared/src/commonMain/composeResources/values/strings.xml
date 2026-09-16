@@ -147,5 +147,6 @@
     <string name="err_create_note_no_notebook">Failed to create note: no active notebook</string>
     <string name="err_paste_image_no_notebook">Failed to paste image: no active notebook</string>
     <string name="err_failed_save_images">Failed to save one or more pasted images</string>
+    <string name="err_failed_create_base_directory">Failed to create base directory</string>
 
 </resources>

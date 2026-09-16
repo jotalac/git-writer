@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.err_failed_create_base_directory
 import git_writer.shared.generated.resources.msg_notebook_created
 
 data class CreateNotebookState(
@@ -46,7 +47,10 @@ class CreateNotebookViewModel(
             )
         }
 
-        ensureDirectoryExists(basePath)
+        // make sure the notebooks root directory exists
+        notebookRepository.createBaseNotebooksDirectory(basePath).onFailure {
+            snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_create_base_directory, "Failed to crate base directory"))
+        }
 
     }
 
@@ -97,13 +101,6 @@ class CreateNotebookViewModel(
             is CreateNotebookEvent.CreateLocalNotebook -> createLocalNotebook(event.path, event.onSuccess)
             is CreateNotebookEvent.CloneRemoteNotebook -> cloneRemoteNotebook(event.path, event.onSuccess)
             is CreateNotebookEvent.AddErrorMessage -> _uiState.update { it.copy(errorMessage = event.message) }
-        }
-    }
-
-    private fun ensureDirectoryExists(directoryPath: String) {
-        val directory = PlatformFile(directoryPath)
-        if (!directory.exists()) {
-            directory.createDirectories()
         }
     }
 

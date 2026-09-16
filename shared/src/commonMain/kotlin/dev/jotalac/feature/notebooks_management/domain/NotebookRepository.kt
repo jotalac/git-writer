@@ -32,6 +32,6 @@ interface NotebookRepository {
     suspend fun closeActiveNote(): Result<Unit>
     suspend fun syncActiveNotePathOnMoved(oldPath: String, newPath: String): Result<Unit>
     suspend fun syncActiveNotePathOnDeleted(deletedPath: String): Result<Unit>
-
     suspend fun isNotebookNameUnique(name: String, excludeId: Long? = null): Boolean
+    fun createBaseNotebooksDirectory(basePath: String): Result<Unit>
 }

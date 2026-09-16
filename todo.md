@@ -3,7 +3,10 @@
 > high priority
 
 - create release for iOS and macOS
-- normalize and sign the app for macos (or add guide in the readme how to run it without the signing)
+- notarize and sign the app for macos (or add guide in the readme how to run it without the signing)
+- open notebook from folder (in the create notebook dialog there will be option to open notebook from folder)
+- when moving notes to another folder in the file tree, it starts to edit the name automatically (bad logic in the viewmodel for starting editing)
+- change the appereance of the ordered list - make the numbers gray and subnumbers differently counted
 
 > medium priority
 

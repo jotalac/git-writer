@@ -216,9 +216,19 @@ class EditorSidebarViewModel(
     }
 
     private fun duplicateNote(notePath: String) {
-        val fileName = notePath.substringAfterLast("/")
-
-        addNote(notePath.substringBeforeLast("/"), fileName.substringBeforeLast("."))
+        viewModelScope.launch {
+            editorRepository.readNoteContent(notePath)
+                .onSuccess { content ->
+                    addNote(
+                        parentPath = notePath.substringBeforeLast("/"),
+                        defaultName = notePath.substringAfterLast("/").substringBeforeLast("."),
+                        noteContent = content
+                    )
+                }
+                .onFailure {
+                    snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_add_note, it.message))
+                }
+        }
     }
 
     private fun refreshFileTree() {
@@ -290,12 +300,12 @@ class EditorSidebarViewModel(
         }
     }
 
-    private fun addNote(parentPath: String?, defaultName: String = "untitled") {
+    private fun addNote(parentPath: String?, defaultName: String = "untitled", noteContent: String = "") {
         val rootPath = _uiState.value.fileTree?.path ?: return
         val targetPath = parentPath ?: rootPath
 
         viewModelScope.launch {
-            editorRepository.createNote(targetPath, defaultName)
+            editorRepository.createNote(targetPath, defaultName, noteContent)
                 .onSuccess { newPath ->
                     expandFolder(targetPath)
                     refreshFileTree()

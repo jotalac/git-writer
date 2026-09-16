@@ -16,11 +16,23 @@ import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.writeString
 
 class EditorRepositoryImpl : EditorRepository {
-    override suspend fun loadMarkdownFileBlocks(file: PlatformFile): Result<List<String>> {
+    override suspend fun fileExists(filePath: String): Boolean = withContext(Dispatchers.IO) {
+        val file = PlatformFile(filePath)
+        file.exists() && file.isRegularFile()
+    }
+
+    override suspend fun loadMarkdownFileBlocks(filePath: String): Result<List<String>> {
         return suspendRunCatching {
             withContext(Dispatchers.IO) {
-                val fileContent = file.readString()
-                chunkMarkdownIntoBlocks(fileContent)
+                chunkMarkdownIntoBlocks(PlatformFile(filePath).readString())
+            }
+        }
+    }
+
+    override suspend fun readNoteContent(filePath: String): Result<String> {
+        return suspendRunCatching {
+            withContext(Dispatchers.IO) {
+                PlatformFile(filePath).readString()
             }
         }
     }
@@ -39,7 +51,7 @@ class EditorRepositoryImpl : EditorRepository {
         }
     }
 
-    override suspend fun createNote(directoryPath: String, baseName: String): Result<String> {
+    override suspend fun createNote(directoryPath: String, baseName: String, noteContent: String): Result<String> {
         return suspendRunCatching {
             withContext(Dispatchers.IO) {
                 val directory = Path(directoryPath)
@@ -55,7 +67,7 @@ class EditorRepositoryImpl : EditorRepository {
 
                 val newFile = Path(directory, filename)
                 SystemFileSystem.sink(newFile).buffered().use { buffer ->
-                    buffer.writeString("")
+                    buffer.writeString(noteContent)
                 }
                 newFile.toString()
             }
