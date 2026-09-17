@@ -44,7 +44,8 @@ compose.desktop {
                 "java.naming",
                 "java.desktop",
                 "java.management",
-                "java.security.jgss"
+                "java.security.jgss",
+                "jdk.security.auth"
             )
 
             buildTypes.release.proguard {
