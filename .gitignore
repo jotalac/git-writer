@@ -1,0 +1,5 @@
+.gradle
+build/
+.vitepress/dist
+.vitepress/cache
+node_modules/
