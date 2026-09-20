@@ -2,8 +2,9 @@
 
 > high priority
 
-- create release for iOS and macOS
-- create the releases for both x86 and arm
+- changing notebooks often doesnt change the sidebar content - need to click out and back in
+- add tests :((((
+- add encryption possibility
 
 > medium priority
 
@@ -11,7 +12,6 @@
 - when opening notebooks, when two noteboks have same directory name but the path is different, it cannot be opened
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
   markdown cheatsheet, etc.)
-- encrypt data before pushing to remote
 - add ctrl+r replace (replace all/current)
 - mobile keyboard keeps the editor shifted even after keyboard hide when new block is created via 'enter' press (android
   17 issue only now - probably a Android 17 bug and will be fixed later - ime freezes)
@@ -20,8 +20,7 @@
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - made custom top app bar - it looks horrible on Windows at least
 - add spell checks for current active block
-  
-- add tests :((((
+- in the settings as possiblity to change the commit message
 
 > other ideas - lower priority
 
