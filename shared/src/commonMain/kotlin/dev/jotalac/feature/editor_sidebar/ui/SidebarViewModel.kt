@@ -53,7 +53,6 @@ class EditorSidebarViewModel(
                 .distinctUntilChanged()
                 .collectLatest { notebook ->
                     if (notebook != null) {
-
                         _uiState.update { it.copy(activeNotebook = notebook, expandedFolders = emptySet()) }
 
                         refreshFileTree()
@@ -232,7 +231,8 @@ class EditorSidebarViewModel(
     private fun refreshFileTree() {
         val activeNotebook = _uiState.value.activeNotebook ?: return
 
-        viewModelScope.launch {
+        filesRefreshJob?.cancel()
+        filesRefreshJob = viewModelScope.launch {
             val notebookPath = Path(activeNotebook.directoryPath)
             val filesTree = withContext(Dispatchers.IO) {
                 notebookPath.buildFileTree()

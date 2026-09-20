@@ -2,7 +2,6 @@
 
 > high priority
 
-- changing notebooks often doesnt change the sidebar content - need to click out and back in
 - add tests :((((
 - add encryption possibility
 
