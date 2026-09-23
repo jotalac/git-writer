@@ -152,6 +152,8 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.koin.test)
         }
 
         //shared platform for android and jvm (both running on JVM)
