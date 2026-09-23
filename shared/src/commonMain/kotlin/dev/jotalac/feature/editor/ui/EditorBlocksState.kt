@@ -10,7 +10,9 @@ class EditorBlocksState {
     val blocks: SnapshotStateList<String> = mutableStateListOf()
 
     fun addBlock(index: Int?) {
-        if (index == null) blocks.add("") else blocks.add(index, "")
+        if (index == null) blocks.add("")
+        else if (index <= blocks.size)
+            blocks.add(index, "")
     }
 
     fun updateBlock(index: Int, newText: String) {
@@ -24,6 +26,7 @@ class EditorBlocksState {
     }
 
     fun addBlocks(index: Int, newBlocks: List<String>) {
+        if (index > blocks.size) return
         blocks.addAll(index, newBlocks)
     }
 
@@ -45,7 +48,7 @@ class EditorBlocksState {
     }
 
     fun mergeWithPrevious(index: Int) {
-        if (index !in blocks.indices || index <= 0) return
+        if (index !in blocks.indices || index == 0) return
         blocks[index - 1] = blocks[index - 1] + blocks[index]
         blocks.removeAt(index)
     }
@@ -75,6 +78,7 @@ class EditorBlocksState {
     }
 
     fun swapBlocks(fromIndex: Int, toIndex: Int) {
+        if (fromIndex !in blocks.indices || toIndex !in blocks.indices || fromIndex == toIndex) return
         val temp = blocks[toIndex]
         blocks[toIndex] = blocks[fromIndex]
         blocks[fromIndex] = temp
