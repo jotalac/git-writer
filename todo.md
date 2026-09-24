@@ -7,6 +7,8 @@
 
 > medium priority
 
+- make file header like in obsidian - the file heading will show the file name changing the header will change the filename
+- lists are splitted into multiple blocks, but when reloaded it is only one list block (no other components are in the middle of it)
 - add something like .gitwriter file to each notebook folder, there will be the remote credentials etc., it wont be commited, but comes in handy when you want to open folder with remote already configured 
 - when opening notebooks, when two noteboks have same directory name but the path is different, it cannot be opened
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
