@@ -7,6 +7,8 @@
 
 > medium priority
 
+- on the clone dialog make all inputs on enter press submit the form
+- when there is already one empty line on the bottom, dont add new empty line on background click (firu issue)
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename
 - lists are splitted into multiple blocks, but when reloaded it is only one list block (no other components are in the middle of it)
 - add something like .gitwriter file to each notebook folder, there will be the remote credentials etc., it wont be commited, but comes in handy when you want to open folder with remote already configured 

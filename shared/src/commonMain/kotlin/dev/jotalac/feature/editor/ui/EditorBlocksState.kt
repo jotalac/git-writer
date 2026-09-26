@@ -11,7 +11,7 @@ class EditorBlocksState {
 
     fun addBlock(index: Int?) {
         if (index == null) blocks.add("")
-        else if (index <= blocks.size)
+        else if (index <= blocks.size && index >= 0)
             blocks.add(index, "")
     }
 
@@ -26,7 +26,7 @@ class EditorBlocksState {
     }
 
     fun addBlocks(index: Int, newBlocks: List<String>) {
-        if (index > blocks.size) return
+        if (index > blocks.size || index < 0) return
         blocks.addAll(index, newBlocks)
     }
 
@@ -54,27 +54,17 @@ class EditorBlocksState {
     }
 
 
-    fun evaluateBlockOnFocusLost(index: Int, currentFocusedIndex: Int?): Int? {
-        if (index >= blocks.size) return null
+    fun evaluateBlockOnFocusLost(losingFocusIndex: Int, gettingFocusIndex: Int?): Int? {
+        if (losingFocusIndex >= blocks.size || losingFocusIndex < 0) return null
 
-        val newChunks = createChunksFromText(blocks[index])
-        return when {
-            newChunks.isEmpty() -> {
-                blocks.removeAt(index)
-                if (currentFocusedIndex != null && currentFocusedIndex > index) currentFocusedIndex - 1 else null
-            }
+        val newChunks = createChunksFromText(blocks[losingFocusIndex])
 
-            newChunks.size > 1 -> {
-                replaceBlockWithBlocks(index, newChunks)
-                if (currentFocusedIndex != null && currentFocusedIndex > index) {
-                    currentFocusedIndex + (newChunks.size - 1)
-                } else {
-                    null
-                }
-            }
-
-            else -> null
-        }
+        return if (newChunks.size > 1) {
+            replaceBlockWithBlocks(losingFocusIndex, newChunks)
+            if (gettingFocusIndex != null && gettingFocusIndex > losingFocusIndex) {
+                gettingFocusIndex + (newChunks.size - 1)
+            } else null
+        } else null
     }
 
     fun swapBlocks(fromIndex: Int, toIndex: Int) {
@@ -90,6 +80,8 @@ class EditorBlocksState {
     }
 
     fun insertImageBlocks(imageMarkdown: List<String>, focusedIndex: Int): Int {
+        if (imageMarkdown.isEmpty()) return focusedIndex
+
         var insertIndex = if (focusedIndex in blocks.indices) focusedIndex else blocks.size
 
         if (insertIndex in blocks.indices && blocks[insertIndex].isBlank()) {
