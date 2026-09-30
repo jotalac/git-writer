@@ -6,6 +6,7 @@ import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import io.github.vinceglb.filekit.*
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -15,15 +16,17 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.writeString
 
-class EditorRepositoryImpl : EditorRepository {
-    override suspend fun fileExists(filePath: String): Boolean = withContext(Dispatchers.IO) {
+class EditorRepositoryImpl(
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : EditorRepository {
+    override suspend fun fileExists(filePath: String): Boolean = withContext(ioDispatcher) {
         val file = PlatformFile(filePath)
         file.exists() && file.isRegularFile()
     }
 
     override suspend fun loadMarkdownFileBlocks(filePath: String): Result<List<String>> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 chunkMarkdownIntoBlocks(PlatformFile(filePath).readString())
             }
         }
@@ -31,7 +34,7 @@ class EditorRepositoryImpl : EditorRepository {
 
     override suspend fun readNoteContent(filePath: String): Result<String> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 PlatformFile(filePath).readString()
             }
         }
@@ -39,7 +42,7 @@ class EditorRepositoryImpl : EditorRepository {
 
     override suspend fun saveFile(fileContent: String, filePath: String): Result<Unit> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 val filePath = Path(filePath)
 
                 if (!SystemFileSystem.exists(filePath)) throw IOException("File doesn't exist")
@@ -53,7 +56,7 @@ class EditorRepositoryImpl : EditorRepository {
 
     override suspend fun createNote(directoryPath: String, baseName: String, noteContent: String): Result<String> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 val directory = Path(directoryPath)
                 val safeBaseName = baseName.toSafeFileName()
                 val existingNames = SystemFileSystem.list(directory).map { it.name }.toSet()
@@ -76,7 +79,7 @@ class EditorRepositoryImpl : EditorRepository {
 
     override suspend fun addFolder(folderName: String, filePath: String): Result<Unit> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 val newFolder = PlatformFile(PlatformFile(filePath), folderName)
 
                 if (newFolder.exists()) {
@@ -97,7 +100,7 @@ class EditorRepositoryImpl : EditorRepository {
         }
 
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 val source = Path(sourcePath)
                 val destDir = Path(destinationDirectoryPath)
                 val destFile = Path(destDir, source.name)
@@ -113,7 +116,7 @@ class EditorRepositoryImpl : EditorRepository {
 
     override suspend fun renameItem(sourcePath: String, newName: String): Result<Unit> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 val source = Path(sourcePath)
                 val destDir = source.parent ?: throw IllegalStateException("Invalid path")
                 val destFile = Path(destDir, newName)
@@ -129,7 +132,7 @@ class EditorRepositoryImpl : EditorRepository {
 
     override suspend fun deleteItem(path: String): Result<Unit> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 Path(path).deleteRecursively()
             }
         }
@@ -141,7 +144,7 @@ class EditorRepositoryImpl : EditorRepository {
         filename: String
     ): Result<Unit> {
         return suspendRunCatching {
-            withContext(Dispatchers.IO) {
+            withContext(ioDispatcher) {
                 val imageDir = PlatformFile(PlatformFile(notebookRootPath), "images")
                 if (!imageDir.exists()) {
                     imageDir.createDirectories()

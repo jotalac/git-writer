@@ -19,5 +19,6 @@ captures
 node_modules/
 .agents/
 androidApp/release
+kls_database.db
 
 third_party/libgit2/slices

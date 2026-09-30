@@ -2,11 +2,17 @@
 
 > high priority
 
+
 - add tests :((((
-- add encryption possibility
+- override the global .gitconfig when somebody have something like insteadof the overrides the url
+- when there is already one empty line on the bottom, dont add new empty line on background click 
+- on the clone dialog make all inputs on enter press submit the form
 
 > medium priority
 
+- add encryption possibility
+- make file header like in obsidian - the file heading will show the file name changing the header will change the filename
+- lists are splitted into multiple blocks, but when reloaded it is only one list block (no other components are in the middle of it)
 - add something like .gitwriter file to each notebook folder, there will be the remote credentials etc., it wont be commited, but comes in handy when you want to open folder with remote already configured 
 - when opening notebooks, when two noteboks have same directory name but the path is different, it cannot be opened
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
@@ -23,6 +29,7 @@
 
 > other ideas - lower priority
 
+- look at the CRDT Automerge possibility to automerge notes  
 - share notes on mobile? like normal share button to quickshare, email ...
 - in the file tree show which files are modified (based on the git status)
 - when renaming image resource – refactor the notes to use the new image name?
