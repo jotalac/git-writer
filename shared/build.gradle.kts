@@ -158,7 +158,7 @@ kotlin {
         val jvmAndAndroidMain = create("jvmAndAndroidMain") {
             dependsOn(commonMain.get())
             dependencies {
-
+                compileOnly(libs.jgit.v5)
             }
         }
 

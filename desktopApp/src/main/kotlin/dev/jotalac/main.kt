@@ -14,6 +14,7 @@ import dev.jotalac.core.di.initKoin
 import dev.jotalac.core.ui.window.APP_WINDOW_TITLE
 import dev.jotalac.core.ui.window.LocalDesktopAwtWindow
 import dev.jotalac.core.ui.window.LocalWindowChrome
+import dev.jotalac.feature.git_sync.data.jgitBypassUrlRewrite
 import dev.jotalac.window.DesktopWindowChrome
 import dev.jotalac.window.applyMacOsUnifiedTitleBar
 import dev.jotalac.window.isMacOs
@@ -26,6 +27,7 @@ private val MinWindowSize = DpSize(650.dp, 650.dp)
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     initKoin()
+    jgitBypassUrlRewrite()
 
     application {
         Window(
