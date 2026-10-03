@@ -236,11 +236,17 @@ class MarkdownEditorState(
         return true
     }
 
-    fun addBlockAtEnd() {
+    fun addBlockAtEndIfNotEmpty() {
         historyManager.record(createCurrentSnapshot(), true)
 
-        val newIndex = blocksState.value.lastIndex + 1
-        dispatchAction(EditorAction.AddBlock())
+        var newIndex = blocksState.value.lastIndex
+
+        // dont add new empty block when the last is already empty
+        if (blocksState.value.last().isNotEmpty()) {
+            dispatchAction(EditorAction.AddBlock())
+            newIndex++
+        }
+
         focusBlock(newIndex, TextRange(0))
     }
 

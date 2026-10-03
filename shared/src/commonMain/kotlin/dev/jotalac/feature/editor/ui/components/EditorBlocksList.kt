@@ -77,7 +77,7 @@ fun AddNewBlockButton(
             .fillMaxWidth()
             .padding(vertical = 16.dp)
             .clickable {
-                editorState.addBlockAtEnd()
+                editorState.addBlockAtEndIfNotEmpty()
             }
     ) {
         Text(

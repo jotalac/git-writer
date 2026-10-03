@@ -103,7 +103,7 @@ fun MarkdownEditor(
                         focusManager.clearFocus()
                         editorState.clearFocus()
                     } else {
-                        editorState.addBlockAtEnd()
+                        editorState.addBlockAtEndIfNotEmpty()
                     }
                     try {
                         surfaceFocusRequester.requestFocus()
@@ -224,7 +224,7 @@ fun MarkdownEditor(
                         }
 
                         Key.Enter -> {
-                            editorState.addBlockAtEnd()
+                            editorState.addBlockAtEndIfNotEmpty()
                             return@onPreviewKeyEvent true
                         }
                     }
