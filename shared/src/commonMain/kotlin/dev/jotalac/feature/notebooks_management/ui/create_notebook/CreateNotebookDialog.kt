@@ -221,7 +221,8 @@ fun CreateNotebookDialog(
                                 )
                             },
                             directory = actualDirectory,
-                            onBrowseClick = { browseForDirectory() }
+                            onBrowseClick = { browseForDirectory() },
+                            submitForm = { submitForm() }
                         )
                     }
                 }
@@ -345,41 +346,42 @@ private fun CloneNotebookForm(
     password: String,
     onPasswordChange: (String) -> Unit,
     directory: String?,
-    onBrowseClick: () -> Unit
+    onBrowseClick: () -> Unit,
+    submitForm: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        OutlinedTextField(
+        SubmittableTextField(
             value = name,
             onValueChange = onNameChange,
-            label = { Text(stringResource(Res.string.notebook_name_placeholder)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = Res.string.notebook_name_placeholder,
+            modifier = Modifier.fillMaxWidth(),
+            submit = submitForm
         )
 
-        OutlinedTextField(
+        SubmittableTextField(
             value = url,
             onValueChange = onUrlChange,
-            label = { Text(stringResource(Res.string.git_repository_url_input_label)) },
-            placeholder = { Text(stringResource(Res.string.git_remote_example)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = Res.string.git_repository_url_input_label,
+            placeholder = Res.string.git_remote_example,
+            modifier = Modifier.fillMaxWidth(),
+            submit = submitForm
         )
 
         ResponsiveRow(modifier = Modifier.fillMaxWidth()) { childModifier ->
-            OutlinedTextField(
+            SubmittableTextField(
                 value = username,
                 onValueChange = onUsernameChange,
-                label = { Text(stringResource(Res.string.username_placeholder)) },
-                singleLine = true,
-                modifier = childModifier
+                label = Res.string.username_placeholder,
+                modifier = childModifier,
+                submit = submitForm
             )
-            OutlinedTextField(
+            SubmittableTextField(
                 value = password,
                 onValueChange = onPasswordChange,
-                label = { Text(stringResource(Res.string.git_auth_placeholder)) },
-                singleLine = true,
+                label = Res.string.git_auth_placeholder,
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = childModifier
+                modifier = childModifier,
+                submit = submitForm
             )
         }
         if (isDesktopPlatform) {

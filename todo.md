@@ -3,8 +3,6 @@
 > high priority
 
 - add tests :((((
-- when there is already one empty line on the bottom, dont add new empty line on background click
-- on the add notebook - clone dialog, make all inputs on enter press submit the form
 - there is this error message when trying to highlight text multiple times, idk just playing with the highligting ![error image](readme_images/error_message_todo.png)
 
 > medium priority

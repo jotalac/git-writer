@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -19,6 +20,7 @@ fun SubmittableTextField(
     submit: () -> Unit,
     modifier: Modifier = Modifier,
     placeholder: StringResource? = null,
+    visualTransformation: VisualTransformation? = null
 ) {
     OutlinedTextField(
         value = value,
@@ -26,6 +28,7 @@ fun SubmittableTextField(
         label = { Text(stringResource(label)) },
         placeholder = { placeholder?.let { Text(stringResource(placeholder)) } },
         singleLine = true,
+        visualTransformation = visualTransformation ?: VisualTransformation.None,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { submit() }),
         modifier = modifier
