@@ -153,4 +153,6 @@
     <string name="err_failed_save_images">Failed to save one or more pasted images</string>
     <string name="err_failed_create_base_directory">Failed to create base directory</string>
 
+    <!-- spell check suggestions group label -->
+    <string name="spellcheck_suggestions">Suggestions</string>
 </resources>

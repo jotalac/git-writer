@@ -8,8 +8,7 @@
 > medium priority
 
 - save the expanded folder to database (so that the file tree looks the same on app open)+ save all tabs that were opened
-- make folder opening animated
-- add autocorrect for active block (at least on desktop and android)
+- add spell checks for current active block (at least on desktop and android)
 - empty lines at the end are removed on file reload
 - add encryption possibility, this looks nice but probably wont work with iOS devices (<https://github.com/cryptomator/cryptofs>)
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename
@@ -23,8 +22,8 @@
 - follow clean architecture and introduce UseCases instead of injecting repositories into *r*epositories
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - made custom top app bar - it looks horrible on Windows at least
-- add spell checks for current active block
-- in the settings as possiblity to change the commit message
+- in the settings as possibility to change the commit message
+- add nucleus fs-watcher (or other fs watcher)
 
 > other ideas - lower priority
 
