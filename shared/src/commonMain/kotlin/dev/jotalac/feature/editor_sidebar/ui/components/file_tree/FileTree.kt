@@ -1,5 +1,8 @@
 package dev.jotalac.feature.editor_sidebar.ui.components.file_tree
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -19,6 +22,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -36,7 +40,9 @@ import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
 import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.empty_notebook_label
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun FileTree(
@@ -77,6 +83,17 @@ fun FileTree(
 
     var showContextMenu by remember { mutableStateOf(false) }
     var menuOffset by remember { mutableStateOf(DpOffset.Zero) }
+
+    // folder that is currently being expanded or collapsed (used for animating)
+    var revealingFolder by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(revealingFolder) {
+        if (revealingFolder != null) {
+            // clear just after the animation ends, not exactly on it
+            delay((FOLDER_REVEAL_MILLIS + 50).milliseconds)
+            revealingFolder = null
+        }
+    }
 
     CompositionLocalProvider(LocalDragDropState provides dragDropState) {
         Box(
@@ -152,24 +169,35 @@ fun FileTree(
                         key = { flatNode -> flatNode.node.path },
                         contentType = { flatNode -> if (flatNode.node is FileNode.Directory) 1 else 0 }
                     ) { flatNode ->
-                        FileTreeRow(
-                            flatNode = flatNode,
-                            modifier = Modifier.animateItem(),
-                            isRenaming = flatNode.node.path == itemToRename,
-                            isActive = flatNode.node.path == activeNotePath,
-                            onAction = onAction,
-                            onClick = {
-                                when (val node = flatNode.node) {
-                                    is FileNode.Directory -> {
-                                        onFolderToggle(node.path)
-                                    }
+                        val separator = if (flatNode.node.path.contains("\\")) "\\" else "/"
+                        val isUnfolding = revealingFolder?.let { folder ->
+                            flatNode.node.path.startsWith("$folder$separator")
+                        } == true
 
-                                    is FileNode.File -> {
-                                        onAction(SidebarAction.OpenNote(node.path))
+                        FolderRevealItem(
+                            isUnfolding = isUnfolding,
+                            modifier = Modifier.animateItem()
+                        ) {
+                            FileTreeRow(
+                                flatNode = flatNode,
+                                isRenaming = flatNode.node.path == itemToRename,
+                                isActive = flatNode.node.path == activeNotePath,
+                                onAction = onAction,
+                                onClick = {
+                                    when (val node = flatNode.node) {
+                                        is FileNode.Directory -> {
+                                            // mark the folder as expanding when it is clicked to trigger the animation
+                                            revealingFolder = if (flatNode.isExpanded) null else node.path
+                                            onFolderToggle(node.path)
+                                        }
+
+                                        is FileNode.File -> {
+                                            onAction(SidebarAction.OpenNote(node.path))
+                                        }
                                     }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
                 AppVerticalScrollbar(
@@ -273,4 +301,39 @@ private fun DragShadow(
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp)),
         onClick = {}
     )
+}
+
+// duration of the folder expand animation
+private const val FOLDER_REVEAL_MILLIS = 220
+
+// visual traver of the folder
+private const val FOLDER_REVEAL_TRAVEL = 0.6f
+
+@Composable
+private fun FolderRevealItem(
+    isUnfolding: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val progress = remember { Animatable(if (isUnfolding) 0f else 1f) }
+
+    LaunchedEffect(isUnfolding) {
+        if (isUnfolding) {
+            progress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(FOLDER_REVEAL_MILLIS, easing = LinearOutSlowInEasing)
+            )
+        } else {
+            progress.snapTo(1f)
+        }
+    }
+
+    Box(
+        modifier = modifier.graphicsLayer {
+            alpha = progress.value
+            translationY = -(1f - progress.value) * size.height * FOLDER_REVEAL_TRAVEL
+        }
+    ) {
+        content()
+    }
 }
