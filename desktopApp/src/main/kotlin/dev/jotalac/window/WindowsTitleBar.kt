@@ -5,12 +5,13 @@ import com.sun.jna.Library
 import com.sun.jna.Memory
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import dev.jotalac.core.utils.isWindowsPlatform
 
 /**
  * set themes on windows - ai generated
  */
 internal fun ComposeWindow.applyWindowsTitleBarTheme(isDark: Boolean) {
-    if (!isWindows) return
+    if (!isWindowsPlatform) return
 
     runCatching {
         val windowHandle = Native.getWindowPointer(this) ?: return

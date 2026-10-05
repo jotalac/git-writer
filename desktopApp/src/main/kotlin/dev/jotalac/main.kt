@@ -14,10 +14,10 @@ import dev.jotalac.core.di.initKoin
 import dev.jotalac.core.ui.window.APP_WINDOW_TITLE
 import dev.jotalac.core.ui.window.LocalDesktopAwtWindow
 import dev.jotalac.core.ui.window.LocalWindowChrome
+import dev.jotalac.core.utils.isMacOsPlatform
 import dev.jotalac.feature.git_sync.data.jgitBypassUrlRewrite
 import dev.jotalac.window.DesktopWindowChrome
 import dev.jotalac.window.applyMacOsUnifiedTitleBar
-import dev.jotalac.window.isMacOs
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.app_logo
 import org.jetbrains.compose.resources.painterResource
@@ -41,7 +41,7 @@ fun main() {
                 DesktopWindowChrome(window = window)
             }
 
-            if (isMacOs) {
+            if (isMacOsPlatform) {
                 SideEffect { window.applyMacOsUnifiedTitleBar() }
             }
 
