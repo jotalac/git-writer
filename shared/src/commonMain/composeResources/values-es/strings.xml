@@ -152,4 +152,6 @@
     <string name="err_paste_image_no_notebook">No se pudo pegar la imagen: ningún cuaderno activo</string>
     <string name="err_failed_save_images">No se pudieron guardar una o varias imágenes pegadas</string>
 
+    <!-- spell check suggestions group label -->
+    <string name="spellcheck_suggestions">Sugerencias</string>
 </resources>

@@ -2,6 +2,7 @@ package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,10 +38,13 @@ fun MarkdownEditorBlocksList(
         ) {
             blocks.forEachIndexed { index, block ->
                 if (editorState.focusedIndex == index) {
-                    ActiveEditorBlock(
-                        editorState = editorState,
-                        index = index
-                    )
+                    // dont apply the selectable container to the active block that has it own selection by default
+                    DisableSelection {
+                        ActiveEditorBlock(
+                            editorState = editorState,
+                            index = index
+                        )
+                    }
                 } else {
                     RenderedEditorBlock(
                         text = block,

@@ -152,4 +152,6 @@
     <string name="err_paste_image_no_notebook">Nepodařilo se vložit obrázek: žádný aktivní poznámkový blok</string>
     <string name="err_failed_save_images">Nepodařilo se uložit jeden nebo více vložených obrázků</string>
 
+    <!-- spell check suggestions group label -->
+    <string name="spellcheck_suggestions">Návrhy</string>
 </resources>

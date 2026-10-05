@@ -108,6 +108,7 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.jgit.latest)
+            implementation(libs.nucleus.spell.check)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
