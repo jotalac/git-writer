@@ -242,7 +242,7 @@ class MarkdownEditorState(
         var newIndex = blocksState.value.lastIndex
 
         // dont add new empty block when the last is already empty
-        if (blocksState.value.last().isNotEmpty()) {
+        if (blocksState.value.isEmpty() || blocksState.value.last().isNotEmpty()) {
             dispatchAction(EditorAction.AddBlock())
             newIndex++
         }
