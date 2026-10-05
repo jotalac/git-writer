@@ -154,4 +154,10 @@
 
     <!-- spell check suggestions group label -->
     <string name="spellcheck_suggestions">Sugerencias</string>
+
+    <!-- text field context menu; supplies what Compose only resolves once per process -->
+    <string name="menu_cut">Cortar</string>
+    <string name="menu_copy">Copiar</string>
+    <string name="menu_paste">Pegar</string>
+    <string name="menu_select_all">Seleccionar todo</string>
 </resources>

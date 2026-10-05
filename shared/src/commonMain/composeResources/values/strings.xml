@@ -155,4 +155,10 @@
 
     <!-- spell check suggestions group label -->
     <string name="spellcheck_suggestions">Suggestions</string>
+
+    <!-- text field context menu; supplies what Compose only resolves once per process -->
+    <string name="menu_cut">Cut</string>
+    <string name="menu_copy">Copy</string>
+    <string name="menu_paste">Paste</string>
+    <string name="menu_select_all">Select all</string>
 </resources>

@@ -154,4 +154,10 @@
 
     <!-- spell check suggestions group label -->
     <string name="spellcheck_suggestions">Návrhy</string>
+
+    <!-- text field context menu; supplies what Compose only resolves once per process -->
+    <string name="menu_cut">Vyjmout</string>
+    <string name="menu_copy">Kopírovat</string>
+    <string name="menu_paste">Vložit</string>
+    <string name="menu_select_all">Vybrat vše</string>
 </resources>

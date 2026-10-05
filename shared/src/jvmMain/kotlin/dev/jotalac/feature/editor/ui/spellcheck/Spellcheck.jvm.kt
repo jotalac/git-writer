@@ -15,11 +15,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalLocalization
+import androidx.compose.ui.platform.PlatformLocalization
 import dev.nucleusframework.spellcheck.SpellChecker
 import dev.nucleusframework.spellcheck.buildSpellcheckMenuModel
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.menu_copy
+import git_writer.shared.generated.resources.menu_cut
+import git_writer.shared.generated.resources.menu_paste
+import git_writer.shared.generated.resources.menu_select_all
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.stringResource
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -98,9 +106,23 @@ actual fun SpellcheckMenuHost(
     }
     val representation = remember { AppContextMenuRepresentation() }
 
+    val cut = stringResource(Res.string.menu_cut)
+    val copy = stringResource(Res.string.menu_copy)
+    val paste = stringResource(Res.string.menu_paste)
+    val selectAll = stringResource(Res.string.menu_select_all)
+    val fieldMenuLabels = remember(cut, copy, paste, selectAll) {
+        object : PlatformLocalization {
+            override val cut = cut
+            override val copy = copy
+            override val paste = paste
+            override val selectAll = selectAll
+        }
+    }
+
     CompositionLocalProvider(
         LocalTextContextMenu provides textContextMenu,
         LocalContextMenuRepresentation provides representation,
+        LocalLocalization provides fieldMenuLabels,
     ) {
         ContextMenuDataProvider(
             items = { items().map(::toContextMenuItem) },
