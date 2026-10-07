@@ -6,7 +6,7 @@ import dev.jotalac.core.domain.AppLanguage
 import java.util.*
 
 actual fun applyAppLanguage(language: AppLanguage) {
-    val locale = Locale(language.code)
+    val locale = Locale.forLanguageTag(language.code)
     Locale.setDefault(locale)
 
     val localeList = LocaleListCompat.forLanguageTags(language.code)

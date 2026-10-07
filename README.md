@@ -26,7 +26,7 @@ Support this project with a coffee:
 
 ---
 
-### Using:
+### Used technologies:
 
 - [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) & [Compose Multiplatform](https://github.com/jetbrains/compose-multiplatform)
 - **Git Integration**: [JGit](https://www.eclipse.org/jgit/) (Desktop and Android), [libgit2](https://github.com/libgit2/libgit2)
@@ -34,6 +34,26 @@ Support this project with a coffee:
 - **Markdown parsing & rendering**:
   [multiplatform-markdown-renderer](https://github.com/mikepenz/multiplatform-markdown-renderer)
   & [jetbrains-markdown](https://github.com/JetBrains/markdown)
+
+---
+
+### Spell Checking
+
+Misspellings are checked against the language selected in the app settings.
+
+| Platform | Setup |
+| --- | --- |
+| **Windows** | Install the language under *Settings -> Time & Language -> Language & region -> Add a language*, including **Basic typing**. The keyboard layout is not needed. |
+| **macOS** | Nothing to do, the dictionaries ship with the system. If your language is not underlined, enable it under *System Settings -> Keyboard -> Text Input -> Edit... -> Spelling*. |
+| **Linux** | Install your language's **hunspell** package. Names are distro and region specific. |
+
+```bash
+sudo apt/dnf search hunspell-<language> 
+sudo apt/dnf install hunspell-es
+```
+
+> Package names include the region: `hunspell-es` and `hunspell-cs`, but `hunspell-de-de` on
+> Debian and Ubuntu. Chinese is not spell checked, hunspell has no dictionary with word segmentation.
 
 ---
 
