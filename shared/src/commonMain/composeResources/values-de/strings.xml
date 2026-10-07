@@ -104,6 +104,7 @@
     <string name="settings_language_title">Sprache</string>
     <string name="settings_language_section_title">Spracheinstellungen</string>
     <string name="settings_language_subtitle">Anzeigesprache der App</string>
+    <string name="settings_language_subtitle_desktop">Sprache der App und der Rechtschreibprüfung</string>
     <string name="settings_language_label">Sprache auswählen</string>
     <string name="settings_sync_title">Git-Synchronisierung</string>
     <string name="settings_sync_section_title">Konfliktlösung</string>

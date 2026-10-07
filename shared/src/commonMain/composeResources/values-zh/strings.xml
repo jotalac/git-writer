@@ -104,6 +104,7 @@
     <string name="settings_language_title">语言</string>
     <string name="settings_language_section_title">语言设置</string>
     <string name="settings_language_subtitle">应用显示语言</string>
+    <string name="settings_language_subtitle_desktop">应用显示与拼写检查语言</string>
     <string name="settings_language_label">选择语言</string>
     <string name="settings_sync_title">Git 同步</string>
     <string name="settings_sync_section_title">冲突解决</string>

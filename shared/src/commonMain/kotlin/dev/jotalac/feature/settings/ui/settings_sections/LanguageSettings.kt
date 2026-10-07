@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.domain.AppLanguage
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.settings.ui.SectionTitle
 import dev.jotalac.feature.settings.ui.SettingsCollapsableSection
 import git_writer.shared.generated.resources.*
@@ -36,7 +37,8 @@ fun LanguageSettings(
 
         SettingsCollapsableSection(
             title = stringResource(Res.string.settings_language_section_title),
-            subtitle = stringResource(Res.string.settings_language_subtitle),
+            subtitle = if (isDesktopPlatform) stringResource(Res.string.settings_language_subtitle_desktop)
+                else stringResource(Res.string.settings_language_subtitle),
             initiallyExpanded = true
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

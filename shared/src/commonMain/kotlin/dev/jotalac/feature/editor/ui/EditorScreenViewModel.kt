@@ -2,7 +2,7 @@ package dev.jotalac.feature.editor.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.jotalac.core.data.UserSettingsManager
+import dev.jotalac.core.data.UserSettings
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.core.utils.detectImageExtension
@@ -28,7 +28,7 @@ class EditorViewModel(
     private val notebookRepository: NotebookRepository,
     private val editorRepository: EditorRepository,
     private val snackbarManager: SnackbarManager,
-    private val userSettingsManager: UserSettingsManager,
+    private val userSettingsManager: UserSettings,
     gitSyncRepository: GitSyncRepository,
 ) : ViewModel() {
 

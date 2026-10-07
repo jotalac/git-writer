@@ -104,6 +104,7 @@
     <string name="settings_language_title">Jazyk</string>
     <string name="settings_language_section_title">Nastavení jazyka</string>
     <string name="settings_language_subtitle">Jazyk zobrazení aplikace</string>
+    <string name="settings_language_subtitle_desktop">Jazyk zobrazení aplikace a kontroly pravopisu</string>
     <string name="settings_language_label">Vyberte jazyk</string>
     <string name="settings_sync_title">Synchronizace Git</string>
     <string name="settings_sync_section_title">Řešení konfliktů</string>

@@ -1,6 +1,6 @@
 package dev.jotalac.feature.editor.ui
 
-import dev.jotalac.core.data.UserSettingsManager
+import dev.jotalac.core.data.UserSettings
 import dev.jotalac.core.domain.GitConflictResolutionStrategy
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
@@ -28,7 +28,7 @@ class EditorSyncController(
     private val gitSyncRepository: GitSyncRepository,
     private val notebookRepository: NotebookRepository,
     private val snackbarManager: SnackbarManager,
-    private val userSettingsManager: UserSettingsManager,
+    private val userSettingsManager: UserSettings,
     private val state: MutableStateFlow<EditorScreenState>,
     private val saveCurrentNote: suspend () -> Unit,
     private val reloadNote: suspend (String) -> Unit,

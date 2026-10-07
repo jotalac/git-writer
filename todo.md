@@ -3,7 +3,7 @@
 > high priority
 
 - add tests :((((
-- there is this error message when trying to highlight text multiple times, idk just playing with the highligting ![error image](readme_images/error_message_todo.png)
+- enable proguad and manually configure it to lower the binary size (android and desktop)
 
 > medium priority
 
@@ -18,7 +18,6 @@
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
   markdown cheatsheet, etc.)
 - add ctrl+r replace (replace all/current)
-- enable proguad and manually configure it to lower the binary size (android and desktop)
 - follow clean architecture and introduce UseCases instead of injecting repositories into *r*epositories
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - made custom top app bar - it looks horrible on Windows at least

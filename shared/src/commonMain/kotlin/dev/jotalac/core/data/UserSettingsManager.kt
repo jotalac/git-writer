@@ -20,7 +20,7 @@ data class UserSettingsState(
 
 class UserSettingsManager(
     private val dataStore: DataStore<Preferences>
-) {
+) : UserSettings {
     companion object {
         private val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
         private val THEME_ACCENT_COLOR_KEY = stringPreferencesKey("theme_accent_color")
@@ -30,7 +30,7 @@ class UserSettingsManager(
         private val USE_DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color")
     }
 
-    val userSettingsStateFlow: Flow<UserSettingsState> = dataStore.data
+    override val userSettingsStateFlow: Flow<UserSettingsState> = dataStore.data
         .map { preferences ->
             UserSettingsState(
                 themeMode = preferences[THEME_MODE_KEY]?.let { name ->
@@ -52,37 +52,37 @@ class UserSettingsManager(
             )
         }
 
-    suspend fun setThemeMode(themeMode: AppThemeMode) {
+    override suspend fun setThemeMode(themeMode: AppThemeMode) {
         dataStore.edit { preferences ->
             preferences[THEME_MODE_KEY] = themeMode.name
         }
     }
 
-    suspend fun setThemeAccentColor(accentColor: AppThemeAccentColor) {
+    override suspend fun setThemeAccentColor(accentColor: AppThemeAccentColor) {
         dataStore.edit { preferences ->
             preferences[THEME_ACCENT_COLOR_KEY] = accentColor.name
         }
     }
 
-    suspend fun setFont(font: AppFontFamily) {
+    override suspend fun setFont(font: AppFontFamily) {
         dataStore.edit { preferences ->
             preferences[FONT_FAMILY_KEY] = font.name
         }
     }
 
-    suspend fun setLanguage(language: AppLanguage) {
+    override suspend fun setLanguage(language: AppLanguage) {
         dataStore.edit { preferences ->
             preferences[LANGUAGE_KEY] = language.name
         }
     }
 
-    suspend fun setGitConflictStrategy(strategy: GitConflictResolutionStrategy) {
+    override suspend fun setGitConflictStrategy(strategy: GitConflictResolutionStrategy) {
         dataStore.edit { preferences ->
             preferences[CONFLICT_STRATEGY_KEY] = strategy.name
         }
     }
 
-    suspend fun setUseDynamicColor(useDynamicColor: Boolean) {
+    override suspend fun setUseDynamicColor(useDynamicColor: Boolean) {
         dataStore.edit { preferences ->
             preferences[USE_DYNAMIC_COLOR_KEY] = useDynamicColor
         }

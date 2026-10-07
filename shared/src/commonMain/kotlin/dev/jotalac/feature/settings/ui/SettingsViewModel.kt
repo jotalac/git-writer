@@ -2,7 +2,7 @@ package dev.jotalac.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.jotalac.core.data.UserSettingsManager
+import dev.jotalac.core.data.UserSettings
 import dev.jotalac.core.data.UserSettingsState
 import dev.jotalac.core.domain.*
 import kotlinx.coroutines.flow.SharingStarted
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val userSettingsManager: UserSettingsManager
+    private val userSettingsManager: UserSettings
 ) : ViewModel() {
 
     val userSettingsState = userSettingsManager.userSettingsStateFlow

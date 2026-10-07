@@ -4,6 +4,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import dev.jotalac.AppViewModel
 import dev.jotalac.core.data.ActiveNotebookManager
+import dev.jotalac.core.data.UserSettings
 import dev.jotalac.core.data.UserSettingsManager
 import dev.jotalac.core.database.AppDatabase
 import dev.jotalac.core.utils.SnackbarManager
@@ -45,7 +46,7 @@ val coreModule = module {
 
     single { ActiveNotebookManager(get()) }
 
-    single { UserSettingsManager(get()) }
+    single<UserSettings> { UserSettingsManager(get()) }
 
 }
 

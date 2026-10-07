@@ -103,6 +103,7 @@
     <string name="settings_language_title">Idioma</string>
     <string name="settings_language_section_title">Ajustes de idioma</string>
     <string name="settings_language_subtitle">Idioma de la aplicación</string>
+    <string name="settings_language_subtitle_desktop">Idioma de la aplicación y del corrector ortográfico</string>
     <string name="settings_language_label">Seleccionar idioma</string>
     <string name="settings_sync_title">Sincronización Git</string>
     <string name="settings_sync_section_title">Resolución de conflictos</string>

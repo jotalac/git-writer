@@ -104,6 +104,7 @@
     <string name="settings_language_title">Language</string>
     <string name="settings_language_section_title">Language settings</string>
     <string name="settings_language_subtitle">Application display language</string>
+    <string name="settings_language_subtitle_desktop">Application language &amp; spell check language</string>
     <string name="settings_language_label">Select language</string>
     <string name="settings_sync_title">Git Sync</string>
     <string name="settings_sync_section_title">Conflict resolution</string>

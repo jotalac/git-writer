@@ -30,6 +30,8 @@ class MarkdownEditorState(
     }
 
     fun focusBlock(index: Int, cursor: TextRange? = null) {
+        if (index !in blocksState.value.indices) return
+
         focusedIndex = index
         val text = blocksState.value.getOrNull(index) ?: ""
         val safeCursor = if (cursor != null) {
@@ -57,10 +59,11 @@ class MarkdownEditorState(
 
         historyManager.record(createCurrentSnapshot())
 
-        activeTextFieldValue = newValue
+        // only update when some block is focused
         focusedIndex?.let { index ->
             if (blocksState.value.getOrNull(index) != newValue.text) {
                 dispatchAction(EditorAction.UpdateBlock(index, newValue.text))
+                activeTextFieldValue = newValue
             }
         }
 
@@ -76,6 +79,7 @@ class MarkdownEditorState(
         onActionState.value(action)
     }
 
+    // make sure the activeTextFieldValue is in sync with the focused block and blocksState
     fun syncExternalBlocks() {
         val index = focusedIndex ?: return
         val currentText = blocksState.value.getOrNull(index) ?: return
