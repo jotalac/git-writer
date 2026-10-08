@@ -39,7 +39,8 @@ Support this project with a coffee:
 
 ### Spell Checking
 
-Misspellings are checked against the language selected in the app settings.
+- misspellings are checked against the **spell check language** in the app settings, which
+  defaults to the app language
 
 | Platform | Setup |
 | --- | --- |

@@ -60,7 +60,11 @@ fun SettingsContent(
 
             LanguageSettings(
                 selectedLanguage = userSettingsState.language,
-                onLanguageChange = { onAction(SettingsViewModel.SettingsAction.ChangeLanguage(it)) }
+                onLanguageChange = { onAction(SettingsViewModel.SettingsAction.ChangeLanguage(it)) },
+                selectedSpellcheckLanguage = userSettingsState.spellcheckLanguage,
+                onSpellcheckLanguageChange = {
+                    onAction(SettingsViewModel.SettingsAction.ChangeSpellcheckLanguage(it))
+                }
             )
 
             SyncSettings(

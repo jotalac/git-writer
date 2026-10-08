@@ -154,7 +154,7 @@ fun SidebarContent(
                             clipboardManager.setClipEntry(buildClipEntry(action.path))
                         }
                     }
-                    // close the sidebar
+                    // close the sidebar on note open on mobile
                     if (action is SidebarAction.OpenNote) onSidebarClose()
                     viewModel.onAction(action)
                 }

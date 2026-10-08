@@ -16,6 +16,7 @@ data class UserSettingsState(
     val language: AppLanguage = AppLanguage.ENGLISH,
     val gitConflictStrategy: GitConflictResolutionStrategy = GitConflictResolutionStrategy.MANUAL,
     val useDynamicColor: Boolean = false,
+    val spellcheckLanguage: AppLanguage? = null,
 )
 
 class UserSettingsManager(
@@ -28,6 +29,7 @@ class UserSettingsManager(
         private val LANGUAGE_KEY = stringPreferencesKey("language")
         private val CONFLICT_STRATEGY_KEY = stringPreferencesKey("conflict_strategy")
         private val USE_DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color")
+        private val SPELLCHECK_LANGUAGE_KEY = stringPreferencesKey("spellcheck_language")
     }
 
     override val userSettingsStateFlow: Flow<UserSettingsState> = dataStore.data
@@ -49,6 +51,9 @@ class UserSettingsManager(
                     GitConflictResolutionStrategy.entries.find { it.name == name }
                 } ?: GitConflictResolutionStrategy.MANUAL,
                 useDynamicColor = preferences[USE_DYNAMIC_COLOR_KEY] ?: false,
+                spellcheckLanguage = preferences[SPELLCHECK_LANGUAGE_KEY]?.let { name ->
+                    AppLanguage.entries.find { it.name == name }
+                },
             )
         }
 
@@ -88,6 +93,16 @@ class UserSettingsManager(
         }
     }
 
+    override suspend fun setSpellcheckLanguage(language: AppLanguage?) {
+        dataStore.edit { preferences ->
+            if (language == null) {
+                preferences.remove(SPELLCHECK_LANGUAGE_KEY)
+            } else {
+                preferences[SPELLCHECK_LANGUAGE_KEY] = language.name
+            }
+        }
+    }
+
     suspend fun clearSettings() {
         dataStore.edit { preferences ->
             preferences.remove(THEME_MODE_KEY)
@@ -95,6 +110,7 @@ class UserSettingsManager(
             preferences.remove(FONT_FAMILY_KEY)
             preferences.remove(LANGUAGE_KEY)
             preferences.remove(CONFLICT_STRATEGY_KEY)
+            preferences.remove(SPELLCHECK_LANGUAGE_KEY)
         }
     }
 }

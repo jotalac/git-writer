@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
  * misspellings, so the editor does not add its own squiggles here.
  */
 @Composable
-actual fun rememberMisspelledSpans(text: String): List<MisspelledSpan> = emptyList()
+actual fun rememberMisspelledSpans(text: String, language: String?): List<MisspelledSpan> = emptyList()
 
 actual fun spellcheckMenuFor(text: String, anchor: Int?): SpellcheckMenu? = null
 

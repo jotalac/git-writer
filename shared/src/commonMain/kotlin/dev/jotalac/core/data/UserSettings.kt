@@ -18,4 +18,5 @@ interface UserSettings {
     suspend fun setLanguage(language: AppLanguage)
     suspend fun setGitConflictStrategy(strategy: GitConflictResolutionStrategy)
     suspend fun setUseDynamicColor(useDynamicColor: Boolean)
+    suspend fun setSpellcheckLanguage(language: AppLanguage?)
 }

@@ -26,6 +26,7 @@ import dev.jotalac.core.utils.getImageBytesFromClipboard
 import dev.jotalac.core.utils.hasClipboardImage
 import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import dev.jotalac.core.utils.isMacOsPlatform
+import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckLanguage
 import dev.jotalac.feature.editor.ui.spellcheck.SpellcheckMenuController
 import dev.jotalac.feature.editor.ui.spellcheck.SpellcheckMenuHost
 import dev.jotalac.feature.editor.ui.spellcheck.SpellcheckMenuItem
@@ -69,7 +70,9 @@ fun ActiveEditorBlock(
     val textFieldValue = editorState.activeTextFieldValue
 
     // Desktop spell check. Empty on mobile, where the system keyboard already does this.
-    val misspelledSpans = rememberMisspelledSpans(textFieldValue.text)
+    // null when the spell check language follows the app language
+    val spellcheckLanguage = LocalSpellcheckLanguage.current
+    val misspelledSpans = rememberMisspelledSpans(textFieldValue.text, spellcheckLanguage)
     val squiggleColor = MaterialTheme.colorScheme.error
 
     // scroll the viewport to the cursor on typing

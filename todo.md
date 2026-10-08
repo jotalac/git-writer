@@ -4,11 +4,16 @@
 
 - add tests :((((
 - enable proguad and manually configure it to lower the binary size (android and desktop)
+- make spell check and app language separate fields 
 
 > medium priority
 
+- make latex blocks work also in the middle of the block, not only on empty block
+- add possibility for full width text area - add it to settings
+- make images resizable in the editor
+- when note is opened and image is clicked from the sidebar, make the image appear on new tab
+- when there is a merge conflict, add preview on the conflicted files and content
 - save the expanded folder to database (so that the file tree looks the same on app open)+ save all tabs that were opened
-- add spell checks for current active block (at least on desktop and android)
 - empty lines at the end are removed on file reload
 - add encryption possibility, this looks nice but probably wont work with iOS devices (<https://github.com/cryptomator/cryptofs>)
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename

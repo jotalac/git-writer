@@ -72,6 +72,27 @@ class MarkdownEditorStateTest {
     }
 
     @Test
+    fun `moving the caret without changing the text still reaches the field`() {
+        markdownEditorState.focusBlock(0)
+
+        // same text, new caret: what a click in the middle of the block produces
+        markdownEditorState.updateActiveText(TextFieldValue("first block", TextRange(3)))
+
+        assertEquals(TextRange(3), markdownEditorState.activeTextFieldValue.selection)
+    }
+
+    @Test
+    fun `a caret move does not use up an undo step`() {
+        markdownEditorState.focusBlock(0)
+        markdownEditorState.updateActiveText(TextFieldValue("new text"))
+        markdownEditorState.updateActiveText(TextFieldValue("new text", TextRange(2)))
+
+        markdownEditorState.undo()
+
+        assertEquals("first block", markdownEditorState.activeTextFieldValue.text)
+    }
+
+    @Test
     fun `updateActiveText updates the activeTextFieldValue correctly`() {
         val newTextValue = "new text"
         markdownEditorState.focusBlock(0)

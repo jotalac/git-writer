@@ -105,7 +105,7 @@
     <string name="settings_language_section_title">Nastavení jazyka</string>
     <string name="settings_language_subtitle">Jazyk zobrazení aplikace</string>
     <string name="settings_language_subtitle_desktop">Jazyk zobrazení aplikace a kontroly pravopisu</string>
-    <string name="settings_language_label">Vyberte jazyk</string>
+    <string name="settings_language_label">Jazyk aplikace</string>
     <string name="settings_sync_title">Synchronizace Git</string>
     <string name="settings_sync_section_title">Řešení konfliktů</string>
     <string name="settings_sync_section_subtitle">Nastavte způsob řešení konfliktů při sloučení</string>
@@ -161,4 +161,8 @@
     <string name="menu_copy">Kopírovat</string>
     <string name="menu_paste">Vložit</string>
     <string name="menu_select_all">Vybrat vše</string>
+
+    <!-- its own choice: the UI language and the language you write in often differ -->
+    <string name="settings_spellcheck_language_label">Jazyk kontroly pravopisu</string>
+    <string name="settings_spellcheck_language_same_as_app">Stejné jako jazyk aplikace</string>
 </resources>

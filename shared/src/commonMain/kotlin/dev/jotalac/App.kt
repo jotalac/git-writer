@@ -19,6 +19,7 @@ import dev.jotalac.core.ui.window.TitleBarHost
 import dev.jotalac.core.ui.window.WindowTitleBarTheme
 import dev.jotalac.core.utils.ConfigureAppImageLoader
 import dev.jotalac.core.utils.applyAppLanguage
+import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckLanguage
 import dev.jotalac.feature.editor.ui.EditorScreen
 import dev.jotalac.feature.settings.ui.SettingsScreen
 import org.koin.compose.koinInject
@@ -50,7 +51,10 @@ fun App(
 
             val titleBarHost = remember { TitleBarHost() }
 
-            CompositionLocalProvider(LocalTitleBarHost provides titleBarHost) {
+            CompositionLocalProvider(
+                LocalTitleBarHost provides titleBarHost,
+                LocalSpellcheckLanguage provides settingsState.spellcheckLanguage?.code,
+            ) {
                 AppWindowLayout(titleBarHost) {
                     val navController = rememberNavController()
                     NavHost(navController = navController, startDestination = Route.MainApp) {

@@ -105,7 +105,7 @@
     <string name="settings_language_section_title">Spracheinstellungen</string>
     <string name="settings_language_subtitle">Anzeigesprache der App</string>
     <string name="settings_language_subtitle_desktop">Sprache der App und der Rechtschreibprüfung</string>
-    <string name="settings_language_label">Sprache auswählen</string>
+    <string name="settings_language_label">Sprache der App</string>
     <string name="settings_sync_title">Git-Synchronisierung</string>
     <string name="settings_sync_section_title">Konfliktlösung</string>
     <string name="settings_sync_section_subtitle">Legen Sie fest, wie Merge-Konflikte behandelt werden</string>
@@ -162,4 +162,8 @@
     <string name="menu_copy">Kopieren</string>
     <string name="menu_paste">Einfügen</string>
     <string name="menu_select_all">Alles auswählen</string>
+
+    <!-- its own choice: the UI language and the language you write in often differ -->
+    <string name="settings_spellcheck_language_label">Sprache der Rechtschreibprüfung</string>
+    <string name="settings_spellcheck_language_same_as_app">Wie die Sprache der App</string>
 </resources>

@@ -35,6 +35,9 @@ class SettingsViewModel(
                 is SettingsAction.ChangeLanguage ->
                     userSettingsManager.setLanguage(action.language)
 
+                is SettingsAction.ChangeSpellcheckLanguage ->
+                    userSettingsManager.setSpellcheckLanguage(action.language)
+
                 is SettingsAction.ChangeGitConflictStrategy ->
                     userSettingsManager.setGitConflictStrategy(action.strategy)
 
@@ -50,6 +53,7 @@ class SettingsViewModel(
         data class ChangeThemeAccentColor(val accentColor: AppThemeAccentColor) : SettingsAction
         data class ChangeFont(val font: AppFontFamily) : SettingsAction
         data class ChangeLanguage(val language: AppLanguage) : SettingsAction
+        data class ChangeSpellcheckLanguage(val language: AppLanguage?) : SettingsAction
         data class ChangeGitConflictStrategy(val strategy: GitConflictResolutionStrategy) : SettingsAction
         data class ChangeUseDynamicColor(val useDynamicColor: Boolean) : SettingsAction
     }

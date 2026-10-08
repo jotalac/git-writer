@@ -104,7 +104,7 @@
     <string name="settings_language_section_title">Ajustes de idioma</string>
     <string name="settings_language_subtitle">Idioma de la aplicación</string>
     <string name="settings_language_subtitle_desktop">Idioma de la aplicación y del corrector ortográfico</string>
-    <string name="settings_language_label">Seleccionar idioma</string>
+    <string name="settings_language_label">Idioma de la aplicación</string>
     <string name="settings_sync_title">Sincronización Git</string>
     <string name="settings_sync_section_title">Resolución de conflictos</string>
     <string name="settings_sync_section_subtitle">Configura cómo se manejan los conflictos de fusión</string>
@@ -161,4 +161,8 @@
     <string name="menu_copy">Copiar</string>
     <string name="menu_paste">Pegar</string>
     <string name="menu_select_all">Seleccionar todo</string>
+
+    <!-- its own choice: the UI language and the language you write in often differ -->
+    <string name="settings_spellcheck_language_label">Idioma del corrector ortográfico</string>
+    <string name="settings_spellcheck_language_same_as_app">Igual que el idioma de la aplicación</string>
 </resources>

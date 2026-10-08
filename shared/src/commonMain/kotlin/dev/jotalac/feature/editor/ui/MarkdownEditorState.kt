@@ -57,16 +57,15 @@ class MarkdownEditorState(
         //only update the block when it came from the actual block - handles synchronization errors
         if (fromIndex != null && fromIndex != focusedIndex) return
 
-        historyManager.record(createCurrentSnapshot())
-
         // only update when some block is focused
-        focusedIndex?.let { index ->
-            if (blocksState.value.getOrNull(index) != newValue.text) {
-                dispatchAction(EditorAction.UpdateBlock(index, newValue.text))
-                activeTextFieldValue = newValue
-            }
+        val index = focusedIndex ?: return
+
+        if (blocksState.value.getOrNull(index) != newValue.text) {
+            historyManager.record(createCurrentSnapshot())
+            dispatchAction(EditorAction.UpdateBlock(index, newValue.text))
         }
 
+        activeTextFieldValue = newValue
     }
 
     fun updateBlockText(index: Int, newText: String) {

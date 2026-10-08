@@ -2,6 +2,7 @@ package dev.jotalac.feature.editor.ui.spellcheck
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -17,10 +18,18 @@ import androidx.compose.ui.input.pointer.pointerInput
 data class MisspelledSpan(val start: Int, val end: Int)
 
 /**
+ * Language the editor checks spelling in, as a language tag, or null to follow the app
+ * language. Provided at the app root from the settings.
+ */
+val LocalSpellcheckLanguage = staticCompositionLocalOf<String?> { null }
+
+/**
  * Misspelled spans of [text], or an empty list when the platform has no spell checker.
+ *
+ * @param language the spell check language, or null to follow the app language.
  */
 @Composable
-expect fun rememberMisspelledSpans(text: String): List<MisspelledSpan>
+expect fun rememberMisspelledSpans(text: String, language: String?): List<MisspelledSpan>
 
 /**
  * Suggestions for the misspelled word that contains [anchor] in [text], or `null` when the

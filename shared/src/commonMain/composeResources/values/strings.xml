@@ -105,7 +105,7 @@
     <string name="settings_language_section_title">Language settings</string>
     <string name="settings_language_subtitle">Application display language</string>
     <string name="settings_language_subtitle_desktop">Application language &amp; spell check language</string>
-    <string name="settings_language_label">Select language</string>
+    <string name="settings_language_label">App language</string>
     <string name="settings_sync_title">Git Sync</string>
     <string name="settings_sync_section_title">Conflict resolution</string>
     <string name="settings_sync_section_subtitle">Configure how merge conflicts are handled</string>
@@ -162,4 +162,8 @@
     <string name="menu_copy">Copy</string>
     <string name="menu_paste">Paste</string>
     <string name="menu_select_all">Select all</string>
+
+    <!-- its own choice: the UI language and the language you write in often differ -->
+    <string name="settings_spellcheck_language_label">Spell check language</string>
+    <string name="settings_spellcheck_language_same_as_app">Same as app language</string>
 </resources>

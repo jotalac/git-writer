@@ -39,8 +39,8 @@ private data class CheckedText(val text: String, val spans: List<MisspelledSpan>
 /**
  * init the spellchecker and load the current language
  */
-private fun loadSessionForCurrentLanguage(): Boolean = runCatching {
-    SpellChecker.locale = Locale.getDefault()
+private fun loadSession(language: String?): Boolean = runCatching {
+    SpellChecker.locale = language?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault()
     SpellChecker.ensureSession().isAvailable
 }.getOrDefault(false)
 
@@ -48,13 +48,13 @@ private fun loadSessionForCurrentLanguage(): Boolean = runCatching {
  * On every text change (with debounce) check the misspelled spans with the OS native spell checker
  */
 @Composable
-actual fun rememberMisspelledSpans(text: String): List<MisspelledSpan> {
+actual fun rememberMisspelledSpans(text: String, language: String?): List<MisspelledSpan> {
     var checked by remember { mutableStateOf<CheckedText?>(null) }
 
-    LaunchedEffect(text) {
+    LaunchedEffect(text, language) {
         delay(SPELLCHECK_DEBOUNCE)
         val spans = withContext(Dispatchers.Default) {
-            if (!loadSessionForCurrentLanguage()) {
+            if (!loadSession(language)) {
                 emptyList()
             } else {
                 SpellChecker.misspellings(text).map {  MisspelledSpan(it.start, it.end) }
