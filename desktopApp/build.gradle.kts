@@ -62,13 +62,15 @@ compose.desktop {
             }
 
             windows {
+                shortcut = true
+                menu = true
+
                 iconFile.set(project.file("launcher_icons/icon.ico"))
             }
 
             macOS {
                 iconFile.set(project.file("launcher_icons/icon.icns"))
                 bundleID = "dev.jotalac.gitwriter"
-                // macos crashes when the version is bellow 1.0.0 - later in the stable release it will use the gobal versino nubmer
             }
         }
 

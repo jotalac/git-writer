@@ -161,7 +161,8 @@ fun MarkdownEditor(
                 }
 
                 // open the find bar (Ctrl+F), or refocus its query field when already open
-                if (isShortcutModifier && event.key == Key.F || event.key == Key.Slash) {
+                val isBlockFocused = editorState.focusedIndex != null
+                if (isShortcutModifier && event.key == Key.F || event.key == Key.Slash && !isBlockFocused) {
                     if (findState.isOpen) {
                         try {
                             findQueryFocusRequester.requestFocus()

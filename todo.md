@@ -2,9 +2,9 @@
 
 > high priority
 
-- enable proguad and manually configure it to lower the binary size (android and desktop)
 - when switching tabs the content of the note is not saved - some very strange behaviour - IMPORTANT
 - forward slash `/` should work only when no block is active (then typing slash in the text will trigger the search)
+- add some reasonable release pipeline so that it can be done easily
 
 > medium priority
 
