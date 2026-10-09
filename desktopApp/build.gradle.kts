@@ -49,8 +49,12 @@ compose.desktop {
             )
 
             buildTypes.release.proguard {
-                // disable ProGuard to prevent it from stripping background libraries - later configure it properly
-                isEnabled.set(false)
+                isEnabled.set(true)
+                version.set("7.10.0")
+                configurationFiles.from(
+                    rootProject.file("proguard/shared-rules.pro"),
+                    project.file("proguard-rules.pro")
+                )
             }
 
             linux {

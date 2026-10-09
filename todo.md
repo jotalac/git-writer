@@ -2,9 +2,9 @@
 
 > high priority
 
-- add tests :((((
 - enable proguad and manually configure it to lower the binary size (android and desktop)
-- make spell check and app language separate fields 
+- when switching tabs the content of the note is not saved - some very strange behaviour - IMPORTANT
+- forward slash `/` should work only when no block is active (then typing slash in the text will trigger the search)
 
 > medium priority
 
@@ -28,6 +28,7 @@
 - made custom top app bar - it looks horrible on Windows at least
 - in the settings as possibility to change the commit message
 - add nucleus fs-watcher (or other fs watcher)
+- schedule sync, turn on in settings that the sync will happend eg. every 10 minutes
 
 > other ideas - lower priority
 

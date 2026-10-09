@@ -28,7 +28,7 @@ android {
         applicationId = "dev.jotalac.gitwriter"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = (project.findProperty("app.version.code") as? String)?.toInt() ?: 1
+        versionCode = (project.findProperty("app.version.code") as? String)?.replace(".", "")?.toInt() ?: 1
         versionName = project.findProperty("app.version.number") as? String
     }
     packaging {
@@ -42,7 +42,8 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
+                rootProject.file("proguard/shared-rules.pro")
             )
 
             manifestPlaceholders["appName"] = project.findProperty("app.name.display") as? String ?: "GitWriter"
