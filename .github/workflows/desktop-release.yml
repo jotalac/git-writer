@@ -1,6 +1,10 @@
 # Builds every desktop installer and drops them into a DRAFT release, ready for you to edit, attach
 # the APK and .ipa to, and publish. Android and iOS are deliberately not built here.
 #
+# The version comes from app.version.number in gradle.properties instead of a workflow input, so the
+# tag, the file names and the version the build reports cannot disagree, and checking out a tag builds
+# the version that tag claims.
+#
 # Why a matrix: jpackage only produces installers for the OS it runs on - there is no cross compiling -
 # and macOS builds for its own architecture, so arm64 and x86_64 each need their own runner.
 name: Desktop release
@@ -8,16 +12,22 @@ name: Desktop release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Version to build, e.g. 1.2.3 (a v1.2.3 tag is used for the draft)"
-        required: true
+      platform:
+        description: "Which installers to build"
+        type: choice
+        default: all
+        options:
+          - all
+          - linux
+          - windows
+          - macos
 
 concurrency:
   group: desktop-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  # run the tests first before building binaries
+  # Fail before spending five runners on installers if the code does not even build and pass tests.
   verify:
     runs-on: ubuntu-latest
     steps:
@@ -30,18 +40,54 @@ jobs:
       - name: Tests
         run: ./gradlew :shared:jvmTest
 
+  # The runner list and the version are worked out here rather than in the jobs that use them.
+  #
+  # The matrix cannot be filtered with an `if:` on the job: the matrix context is not available in a
+  # job-level condition, and a job skipped that way still holds a runner, so filtering there would
+  # cost the same as building.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      runners: ${{ steps.filter.outputs.runners }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      # get the current app version from the gradle.properties file
+      - id: version
+        run: |
+          version=$(grep -m1 '^app.version.number=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          test -n "$version" || { echo "::error::app.version.number is missing from gradle.properties"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - id: filter
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          # Linux is built on the oldest image still offered, not the newest: the native launcher
+          # jpackage generates is linked against the runner's glibc, so a package built on a new
+          # Ubuntu refuses to install on older ones. The arm64 runner is free in public repos and
+          # billed normally in private ones.
+          #
+          # macOS needs one runner per architecture, pinned rather than macos-latest so a release is
+          # reproducible; see https://github.com/actions/runner-images for current labels.
+          ALL: |
+            [
+              {"os": "ubuntu-22.04",     "label": "linux-x86_64"},
+              {"os": "ubuntu-22.04-arm", "label": "linux-arm64"},
+              {"os": "windows-latest",   "label": "windows-x86_64"},
+              {"os": "macos-26-intel",   "label": "macos-x86_64"},
+              {"os": "macos-26",         "label": "macos-arm64"}
+            ]
+        run: |
+          runners=$(jq -c --arg p "$PLATFORM" \
+            '[.[] | select($p == "all" or (.label | startswith($p)))]' <<< "$ALL")
+          echo "runners=$runners" >> "$GITHUB_OUTPUT"
+
   desktop:
-    needs: verify
+    needs: [verify, plan]
     name: ${{ matrix.label }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { os: ubuntu-22.04,     label: linux-x86_64 }
-          - { os: ubuntu-22.04-arm, label: linux-arm64 }
-          - { os: windows-latest,   label: windows-x86_64 }
-          - { os: macos-26-intel,   label: macos-x86_64 }
-          - { os: macos-26,         label: macos-arm64 }
+        include: ${{ fromJSON(needs.plan.outputs.runners) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -61,9 +107,11 @@ jobs:
         shell: bash
         run: >
           ./gradlew :desktopApp:packageReleaseDistributionForCurrentOS
-          -Papp.version.number=${{ inputs.version }}
+          -Papp.version.number=${{ needs.plan.outputs.version }}
 
-      # rename the files so that they are named correctly
+      # jpackage names the macOS images without the architecture, so the two Apple runners would
+      # produce the same GitWriter-<version>.dmg and overwrite each other in the release. Naming every
+      # file after its platform and architecture keeps them apart and makes the download obvious.
       - name: Name the files after their platform
         shell: bash
         run: |
@@ -72,7 +120,7 @@ jobs:
           find desktopApp/build/compose/binaries/main-release -type f \
             \( -name '*.dmg' -o -name '*.pkg' -o -name '*.msi' -o -name '*.deb' -o -name '*.rpm' \) -print0 |
           while IFS= read -r -d '' file; do
-            target="dist/GitWriter-${{ inputs.version }}-${{ matrix.label }}.${file##*.}"
+            target="dist/GitWriter-${{ needs.plan.outputs.version }}-${{ matrix.label }}.${file##*.}"
             cp "$file" "$target"
             echo "$(basename "$file") -> $(basename "$target")"
           done
@@ -85,7 +133,7 @@ jobs:
           if-no-files-found: error
 
   draft-release:
-    needs: desktop
+    needs: [desktop, plan]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -95,24 +143,27 @@ jobs:
         with:
           path: dist
 
-      # Idempotent, so re-running the workflow after a failure adds to the same draft instead of
-      # failing with "release already exists".
       - name: Create or update the draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ needs.plan.outputs.version }}
         run: |
           set -euo pipefail
-          files=$(find dist -type f | sort)
-          printf '%s\n' "$files"
+          # an array, so each file stays one argument even if a name ever contains a space
+          mapfile -t files < <(find dist -type f | sort)
+          printf '%s\n' "${files[@]}"
 
-          if gh release view "v${VERSION}" >/dev/null 2>&1; then
-            gh release upload "v${VERSION}" $files --clobber
+          if [ "$(gh release view "v${VERSION}" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
+            # a re-run of a failed workflow adds to the same draft
+            gh release upload "v${VERSION}" "${files[@]}" --clobber
+          elif gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "::error::v${VERSION} is already published. Bump app.version.number in gradle.properties."
+            exit 1
           else
             gh release create "v${VERSION}" \
               --draft \
               --title "GitWriter ${VERSION}" \
               --target "$GITHUB_SHA" \
-              --notes "Desktop installers built from ${GITHUB_SHA:0:7}. Attach the APK and the .ipa, write the notes, then publish." \
-              $files
+              --notes "Desktop installers for ${VERSION}, built from ${GITHUB_SHA:0:7}. Attach the APK and the .ipa, write the notes, then publish." \
+              "${files[@]}"
           fi
