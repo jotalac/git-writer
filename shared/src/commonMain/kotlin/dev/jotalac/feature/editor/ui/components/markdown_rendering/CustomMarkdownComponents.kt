@@ -16,12 +16,16 @@ import androidx.compose.ui.unit.dp
 import com.hrm.latex.renderer.LatexAutoWrap
 import com.hrm.latex.renderer.model.LatexConfig
 import com.hrm.latex.renderer.model.LatexTheme
+import com.mikepenz.markdown.annotator.AnnotatorSettings
+import com.mikepenz.markdown.annotator.annotatorSettings
+import com.mikepenz.markdown.model.DefaultMarkdownAnnotator
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.MarkdownComponentModel
 import com.mikepenz.markdown.compose.elements.MarkdownImage
 import com.mikepenz.markdown.compose.elements.MarkdownListItems
 import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.compose.elements.listDepth
+import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 
 // checkbox
@@ -77,32 +81,71 @@ fun CustomOrderedListComponent(model: MarkdownComponentModel) {
 // paragraph with latex block
 @Composable
 fun CustomParagraphComponent(model: MarkdownComponentModel) {
-    if (!renderedLatexInParagraph(model)) {
-        MarkdownParagraph(
-            content = model.content,
-            node = model.node
-        )
+    val mathNodes = model.node.children.filter { it.type.name in MATH_NODE_TYPES }
+
+    // a paragraph that is one expression and nothing else is a maths block: draw it as latex
+    if (mathNodes.isLoneExpression(model)) {
+        LatexExpression(model.content, mathNodes.single())
+        return
     }
+
+    if (mathNodes.isEmpty()) {
+        MarkdownParagraph(content = model.content, node = model.node)
+        return
+    }
+
+    // pragraph with maths in it: the library would drop the expression, so put its source back
+    // later version will be able to render the math expression inside the paragraph
+    MarkdownParagraph(
+        content = model.content,
+        node = model.node,
+        annotatorSettings = keepMathSourceSettings()
+    )
+}
+
+// keep the math source inside the paragraph
+@Composable
+private fun keepMathSourceSettings(): AnnotatorSettings {
+    val librarySettings = annotatorSettings()
+
+    return annotatorSettings(
+        annotator = DefaultMarkdownAnnotator(
+            // the receiver is the AnnotatedString.Builder being filled
+            annotate = { content, node ->
+                if (node.type.name in MATH_NODE_TYPES) {
+                    append(node.getTextInNode(content))
+                    true
+                } else {
+                    librarySettings.annotator.annotate?.invoke(this, content, node) ?: false
+                }
+            },
+            config = librarySettings.annotator.config
+        )
+    )
 }
 
 @Composable
-private fun renderedLatexInParagraph(model: MarkdownComponentModel): Boolean {
-    val mathChild = model.node.children.find { it.type.name in listOf("BLOCK_MATH", "INLINE_MATH") }
-    return if (mathChild != null) {
-        val mathText = mathChild.getTextInNode(model.content).toString()
-            .removeSurrounding("$$")
-            .removeSurrounding("$").trim()
-        LatexAutoWrap(
-            mathText,
-            config = LatexConfig(
-                theme = LatexTheme.material3()
-            )
-        )
-        true
-    } else {
-        false
-    }
+private fun LatexExpression(content: String, mathNode: ASTNode) {
+    LatexAutoWrap(mathNode.latexSource(content), config = latexConfig())
 }
+
+// --- maths ---------------------------------------------------------------------------------------
+
+private val MATH_NODE_TYPES = setOf("BLOCK_MATH", "INLINE_MATH")
+
+// True when the paragraph is one expression and nothing else - no words to sit beside.
+private fun List<ASTNode>.isLoneExpression(model: MarkdownComponentModel): Boolean =
+    size == 1 && model.node.children.none { it !== single() && it.hasText(model) }
+
+// The latex source of an expression, without the `$` delimiters markdown wraps it in.
+private fun ASTNode.latexSource(content: String): String =
+    getTextInNode(content).toString().removeSurrounding("$$").removeSurrounding("$").trim()
+
+private fun ASTNode.hasText(model: MarkdownComponentModel): Boolean =
+    getTextInNode(model.content).isNotBlank()
+
+@Composable
+private fun latexConfig(): LatexConfig = LatexConfig(theme = LatexTheme.material3())
 
 // custom image component
 @Composable

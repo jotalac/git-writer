@@ -49,12 +49,12 @@ compose.desktop {
             )
 
             buildTypes.release.proguard {
-                isEnabled.set(true)
-                version.set("7.10.0")
-                configurationFiles.from(
-                    rootProject.file("proguard/shared-rules.pro"),
-                    project.file("proguard-rules.pro")
-                )
+                isEnabled.set(false)
+//                version.set("7.10.0")
+//                configurationFiles.from(
+//                    rootProject.file("proguard/shared-rules.pro"),
+//                    project.file("proguard-rules.pro")
+//                )
             }
 
             linux {
