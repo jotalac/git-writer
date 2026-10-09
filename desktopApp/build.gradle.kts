@@ -35,7 +35,6 @@ compose.desktop {
                 add(TargetFormat.Msi)
                 add(TargetFormat.Exe)
                 add(TargetFormat.Dmg)
-                add(TargetFormat.Pkg)
             }
 
             modules(

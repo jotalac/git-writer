@@ -1,0 +1,118 @@
+# Builds every desktop installer and drops them into a DRAFT release, ready for you to edit, attach
+# the APK and .ipa to, and publish. Android and iOS are deliberately not built here.
+#
+# Why a matrix: jpackage only produces installers for the OS it runs on - there is no cross compiling -
+# and macOS builds for its own architecture, so arm64 and x86_64 each need their own runner.
+name: Desktop release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build, e.g. 1.2.3 (a v1.2.3 tag is used for the draft)"
+        required: true
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # run the tests first before building binaries
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Tests
+        run: ./gradlew :shared:jvmTest
+
+  desktop:
+    needs: verify
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04,     label: linux-x86_64 }
+          - { os: ubuntu-22.04-arm, label: linux-arm64 }
+          - { os: windows-latest,   label: windows-x86_64 }
+          - { os: macos-26-intel,   label: macos-x86_64 }
+          - { os: macos-26,         label: macos-arm64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      # jpackage needs tools the Linux images do not ship: rpmbuild for .rpm, fakeroot for .deb.
+      # The Windows images already include the WiX toolset that .msi needs.
+      - name: Install packaging tools
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get update && sudo apt-get install -y rpm fakeroot
+
+      - name: Build installers for this OS
+        shell: bash
+        run: >
+          ./gradlew :desktopApp:packageReleaseDistributionForCurrentOS
+          -Papp.version.number=${{ inputs.version }}
+
+      # rename the files so that they are named correctly
+      - name: Name the files after their platform
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          find desktopApp/build/compose/binaries/main-release -type f \
+            \( -name '*.dmg' -o -name '*.pkg' -o -name '*.msi' -o -name '*.deb' -o -name '*.rpm' \) -print0 |
+          while IFS= read -r -d '' file; do
+            target="dist/GitWriter-${{ inputs.version }}-${{ matrix.label }}.${file##*.}"
+            cp "$file" "$target"
+            echo "$(basename "$file") -> $(basename "$target")"
+          done
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.label }}
+          path: dist/*
+          if-no-files-found: error
+
+  draft-release:
+    needs: desktop
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      # Idempotent, so re-running the workflow after a failure adds to the same draft instead of
+      # failing with "release already exists".
+      - name: Create or update the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          files=$(find dist -type f | sort)
+          printf '%s\n' "$files"
+
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release upload "v${VERSION}" $files --clobber
+          else
+            gh release create "v${VERSION}" \
+              --draft \
+              --title "GitWriter ${VERSION}" \
+              --target "$GITHUB_SHA" \
+              --notes "Desktop installers built from ${GITHUB_SHA:0:7}. Attach the APK and the .ipa, write the notes, then publish." \
+              $files
+          fi
