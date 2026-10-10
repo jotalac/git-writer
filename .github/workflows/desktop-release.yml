@@ -51,6 +51,9 @@ jobs:
       runners: ${{ steps.filter.outputs.runners }}
       version: ${{ steps.version.outputs.version }}
     steps:
+      # the repository has to be here: the version is read out of gradle.properties
+      - uses: actions/checkout@v4
+
       # get the current app version from the gradle.properties file
       - id: version
         run: |

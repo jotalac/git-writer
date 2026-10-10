@@ -2,11 +2,9 @@
 
 > high priority
 
-- add some reasonable release pipeline so that it can be done easily
 
 > medium priority
 
-- make latex blocks work also in the middle of the block, not only on empty block
 - add possibility for full width text area - add it to settings
 - make images resizable in the editor
 - when note is opened and image is clicked from the sidebar, make the image appear on new tab
@@ -30,6 +28,7 @@
 
 > other ideas - lower priority
 
+- make latex blocks work also in the middle of the block, not only on empty block
 - add possibility to export notes to pdf
 - look at the CRDT Automerge possibility to automerge notes  
 - share notes on mobile? like normal share button to quickshare, email ...
