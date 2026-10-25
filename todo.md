@@ -2,6 +2,10 @@
 
 > high priority
 
+- when adding list and then one empty block and then again list, after reopening the file, the lists collapse to one list (very annoying) - spaces are only preserved in the active text block
+- when there are only signs like ## with no text, it hides it and show nothing, it should then just show these hashtags
+- add button for creating new note from the widget (i guess from the root)
+- add support for mermaid diagrams
 
 > medium priority
 
@@ -19,6 +23,7 @@
 - add encryption possibility, this looks nice but probably wont work with iOS devices (<https://github.com/cryptomator/cryptofs>)
 - add nucleus fs-watcher (or other fs watcher)
 - fix pdf export -> dont export the compose page -> convert to html for proper text selection and reduced size
+- make section collapsible, like in obsidian, eg. everything under h1 can be collased
 
 > other ideas - lower priority
 
