@@ -8,14 +8,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.annotator.annotatorSettings
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.MarkdownComponentModel
+import com.mikepenz.markdown.compose.elements.MarkdownHeader
 import com.mikepenz.markdown.compose.elements.MarkdownListItems
 import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.compose.elements.listDepth
+import com.mikepenz.markdown.model.MarkdownTypography
+import org.intellij.markdown.MarkdownTokenTypes
+import org.intellij.markdown.ast.ASTNode
+import org.intellij.markdown.ast.findChildOfType
 import org.intellij.markdown.ast.getTextInNode
 
 /*
@@ -69,6 +75,24 @@ fun CustomOrderedListComponent(model: MarkdownComponentModel) {
         }
     )
 }
+
+// heading - without any text after the hashes the library draws an empty line, so the hashes stay visible instead
+fun customHeadingComponent(style: (MarkdownTypography) -> TextStyle): MarkdownComponent = { model ->
+    val headingStyle = style(model.typography)
+
+    if (model.node.hasHeadingText(model.content)) {
+        MarkdownHeader(model.content, model.node, style = headingStyle)
+    } else {
+        Text(
+            text = model.node.getTextInNode(model.content).toString().trim(),
+            style = headingStyle,
+            color = MaterialTheme.colorScheme.outline,
+        )
+    }
+}
+
+internal fun ASTNode.hasHeadingText(content: String): Boolean =
+    findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.getTextInNode(content)?.isNotBlank() == true
 
 // paragraph - plain text, or a block of its own when it holds nothing but an image or a maths expression.
 // [onImageResize] changes the block's text when its image is resized, see CustomImageComponent

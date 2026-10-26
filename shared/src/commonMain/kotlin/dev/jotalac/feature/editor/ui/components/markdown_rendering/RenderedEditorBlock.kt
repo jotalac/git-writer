@@ -30,6 +30,7 @@ import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.ReferenceLinkHandlerImpl
+import com.mikepenz.markdown.model.State
 import com.mikepenz.markdown.model.markdownPadding
 import com.mikepenz.markdown.model.parseMarkdown
 import dev.jotalac.core.ui.theme.dimensions
@@ -132,6 +133,12 @@ internal fun RenderedMarkdownBlock(
                 val newCheckbox = if (isChecked) "[x]" else "[ ]"
                 currentOnTextChange(currentText.replaceRange(offset, offset + 3, newCheckbox))
             },
+            heading1 = customHeadingComponent { it.h1 },
+            heading2 = customHeadingComponent { it.h2 },
+            heading3 = customHeadingComponent { it.h3 },
+            heading4 = customHeadingComponent { it.h4 },
+            heading5 = customHeadingComponent { it.h5 },
+            heading6 = customHeadingComponent { it.h6 },
             unorderedList = { CustomUnorderedListComponent(it) },
             orderedList = { CustomOrderedListComponent(it) },
             image = { CustomImageComponent(it, onTextChange = { newText -> currentOnTextChange(newText) }) },
@@ -151,6 +158,20 @@ internal fun RenderedMarkdownBlock(
             parser = markdownParser,
             referenceLinkHandler = markdownReferenceLinkHandler,
         )
+    }
+
+    // markdown that would draw nothing shows its raw text, instead of an empty block
+    val drawsAnything = remember(markdownState) {
+        (markdownState as? State.Success)?.let { it.node.drawsAnything(it.content) } ?: true
+    }
+    if (!drawsAnything) {
+        Text(
+            text = currentText,
+            modifier = modifier,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.outline,
+        )
+        return
     }
 
     Markdown(
