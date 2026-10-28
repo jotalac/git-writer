@@ -30,8 +30,13 @@ android {
         applicationId = "dev.jotalac.gitwriter"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = (project.findProperty("app.version.number") as? String)?.replace(".", "")?.toInt() ?: 1
-        versionName = project.findProperty("app.version.number") as? String
+        val appVersionNumber = project.findProperty("app.version.number") as? String ?: "1.0.0"
+        // 1.2.3 -> 10203: every part gets two digits, so the code grows with each release (1.0.12 comes after 1.0.9)
+        val (major, minor, patch) = appVersionNumber.split(".").map { it.toInt() }
+        require(minor < 100 && patch < 100) { "minor and patch must be below 100 for the version code: $appVersionNumber" }
+
+        versionCode = major * 10_000 + minor * 100 + patch
+        versionName = appVersionNumber
     }
     packaging {
         resources {
