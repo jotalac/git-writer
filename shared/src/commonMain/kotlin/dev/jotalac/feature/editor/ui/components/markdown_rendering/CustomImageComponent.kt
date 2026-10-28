@@ -62,7 +62,6 @@ fun CustomImageComponent(
             modifier = imageData.modifier
                 .imageSize(alt, pictureSize)
                 .clip(RoundedCornerShape(8.dp))
-                .border(2.dp, MaterialTheme.colorScheme.onSurface.copy(0.1f), shape = RoundedCornerShape(8.dp))
                 .then(if (canResize) Modifier.onContextMenuOpen { menuPosition = it } else Modifier),
             alignment = imageData.alignment,
             contentScale = if (alt.isStretched) ContentScale.FillBounds else imageData.contentScale,
