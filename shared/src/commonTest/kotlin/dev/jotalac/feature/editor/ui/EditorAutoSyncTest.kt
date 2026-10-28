@@ -6,7 +6,10 @@ import dev.jotalac.core.utils.RemoteStatusMonitor
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.Notebook
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
 import dev.jotalac.testing.fakes.FakeEditorRepository
+import dev.jotalac.testing.fakes.FakeMailboxRepository
+import dev.jotalac.testing.fakes.FakeMirrorRepository
 import dev.jotalac.testing.fakes.FakeGitSyncRepository
 import dev.jotalac.testing.fakes.FakeNotebookRepository
 import dev.jotalac.testing.fakes.FakeUserSettings
@@ -45,6 +48,7 @@ class EditorAutoSyncTest {
         val viewModel = EditorViewModel(
             notebooks, editor, SnackbarManager(), settings, gitSync,
             RemoteStatusMonitor({ true }, { network }),
+            EncryptedGitSync(gitSync, FakeMirrorRepository(), FakeMailboxRepository()),
         )
         try {
             block(viewModel)

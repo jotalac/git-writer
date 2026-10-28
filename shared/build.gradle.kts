@@ -111,11 +111,20 @@ kotlin {
             implementation(libs.latex.parser) // Parsing logic
 
             implementation(libs.connectivity.core)
+
+            // encrypted notebooks: AES-GCM and PBKDF2 from the platform (JDK, Apple CommonCrypto + CryptoKit)
+            implementation(libs.cryptography.core)
+            implementation(libs.cryptography.provider.optimal)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.koin.test)
+        }
+        jvmTest.dependencies {
+            // Skia's native library, for tests that render Compose offscreen (the PDF export)
+            implementation(compose.desktop.currentOs)
         }
 
         //shared platform for android and jvm (both running on JVM)

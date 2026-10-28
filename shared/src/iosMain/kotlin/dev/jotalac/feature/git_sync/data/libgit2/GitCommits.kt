@@ -90,8 +90,11 @@ internal fun GitRepository.commit(message: String): Unit = memScoped {
     if (merging) checkGit(git_repository_state_cleanup(handle))
 }
 
-/** Throws away the changes in the working tree and the index, also a merge in progress (`git reset --hard`). */
-internal fun GitRepository.resetHard(): Unit = memScoped {
-    val head = create(::git_object_free) { git_revparse_single(it, handle, "HEAD") }
-    checkGit(git_reset(handle, head, GIT_RESET_HARD, null))
+/**
+ * Throws away the changes in the working tree and the index, also a merge in progress, and points the branch at
+ * [target] - HEAD keeps it where it is (`git reset --hard <target>`).
+ */
+internal fun GitRepository.resetHard(target: String = "HEAD"): Unit = memScoped {
+    val commit = create(::git_object_free) { git_revparse_single(it, handle, target) }
+    checkGit(git_reset(handle, commit, GIT_RESET_HARD, null))
 }

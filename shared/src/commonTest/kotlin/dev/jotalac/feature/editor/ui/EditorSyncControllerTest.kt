@@ -7,6 +7,10 @@ import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.editor.domain.EditorTabItem
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.Notebook
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
+import dev.jotalac.feature.git_sync.encryption.NotebookKey
+import dev.jotalac.testing.fakes.FakeMailboxRepository
+import dev.jotalac.testing.fakes.FakeMirrorRepository
 import dev.jotalac.testing.fakes.FakeGitSyncRepository
 import dev.jotalac.testing.fakes.FakeNotebookRepository
 import dev.jotalac.testing.fakes.FakeUserSettings
@@ -32,6 +36,7 @@ import kotlin.test.assertTrue
 class EditorSyncControllerTest {
 
     private val gitSync = FakeGitSyncRepository()
+    private val mailbox = FakeMailboxRepository()
     private val notebooks = FakeNotebookRepository()
     private val snackbar = SnackbarManager()
     private val settings = FakeUserSettings()
@@ -47,6 +52,7 @@ class EditorSyncControllerTest {
 
     private val controller = EditorSyncController(
         gitSyncRepository = gitSync,
+        encryptedGitSync = EncryptedGitSync(gitSync, FakeMirrorRepository(), mailbox),
         notebookRepository = notebooks,
         snackbarManager = snackbar,
         userSettingsManager = settings,
@@ -58,7 +64,11 @@ class EditorSyncControllerTest {
         reloadNote = { reloadedNotes += it },
     )
 
-    private fun activateNotebook(remoteUrl: String? = "https://example.com/notes.git", password: String? = "token") {
+    private fun activateNotebook(
+        remoteUrl: String? = "https://example.com/notes.git",
+        password: String? = "token",
+        encryptionKey: String? = null,
+    ) {
         notebooks.activeNotebook.value = Notebook(
             id = 1,
             name = "notebook",
@@ -66,6 +76,8 @@ class EditorSyncControllerTest {
             remoteUrl = remoteUrl,
             remoteUsername = "user",
             remotePassword = password,
+            isEncrypted = encryptionKey != null,
+            encryptionKey = encryptionKey,
         )
     }
 
@@ -99,6 +111,48 @@ class EditorSyncControllerTest {
 
         assertTrue(gitSync.syncedPaths.isEmpty())
         assertEquals(0, saveCount)
+        assertEquals(GitSyncStatus.UpToDate, state.value.gitSyncStatus)
+    }
+
+    @Test
+    fun `an encrypted notebook is synced through its encrypted remote`() = runTest {
+        activateNotebook(encryptionKey = NotebookKey(ByteArray(32)).encoded)
+        gitSync.syncResult = Result.success(GitSyncStatus.UpToDate)
+
+        controller.sync()
+
+        // the mailbox is downloaded first, then the plain sync runs against the mirror
+        assertEquals(listOf("/notebook/.git/gitwriter/mailbox"), mailbox.updatedPaths.map { it.replace('\\', '/') })
+        assertEquals(listOf("/notebook"), gitSync.syncedPaths)
+        assertEquals(GitSyncStatus.UpToDate, state.value.gitSyncStatus)
+    }
+
+    @Test
+    fun `an encrypted notebook without its key on this device is not synced`() = runTest {
+        notebooks.activeNotebook.value = Notebook(
+            1, "notebook", "/notebook", "https://example.com/notes.git", "user", "token", isEncrypted = true,
+        )
+        val messages = collectSnackbars()
+
+        controller.sync()
+
+        assertTrue(gitSync.syncedPaths.isEmpty())
+        assertEquals(GitSyncStatus.GitSyncFailed, state.value.gitSyncStatus)
+        assertEquals(1, messages.size)
+    }
+
+    @Test
+    fun `a resolved conflict of an encrypted notebook is published through its encrypted remote`() = runTest {
+        // a plain push would go to the mirror only - publishing it is the encrypted sync's job
+        activateNotebook(encryptionKey = NotebookKey(ByteArray(32)).encoded)
+        gitSync.syncResult = Result.success(GitSyncStatus.Conflict(setOf("diary.md")))
+        controller.sync()
+        gitSync.syncResult = Result.success(GitSyncStatus.UpToDate)
+
+        controller.resolveAllConflicts(keepLocal = true)
+
+        assertTrue(gitSync.pushedPaths.isEmpty())
+        assertEquals(2, mailbox.updatedPaths.size)
         assertEquals(GitSyncStatus.UpToDate, state.value.gitSyncStatus)
     }
 

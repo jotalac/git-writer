@@ -220,6 +220,10 @@ fun CreateNotebookDialog(
                                     )
                                 )
                             },
+                            encryptionPassword = state.encryptionPassword,
+                            onEncryptionPasswordChange = {
+                                viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.EncryptionPasswordChanged(it))
+                            },
                             directory = actualDirectory,
                             onBrowseClick = { browseForDirectory() },
                             submitForm = { submitForm() }
@@ -345,6 +349,8 @@ private fun CloneNotebookForm(
     onUsernameChange: (String) -> Unit,
     password: String,
     onPasswordChange: (String) -> Unit,
+    encryptionPassword: String,
+    onEncryptionPasswordChange: (String) -> Unit,
     directory: String?,
     onBrowseClick: () -> Unit,
     submitForm: () -> Unit
@@ -384,6 +390,15 @@ private fun CloneNotebookForm(
                 submit = submitForm
             )
         }
+        // only a remote that is an encrypted notebook needs it
+        SubmittableTextField(
+            value = encryptionPassword,
+            onValueChange = onEncryptionPasswordChange,
+            label = Res.string.encrypted_notebook_password_label,
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+            submit = submitForm
+        )
         if (isDesktopPlatform) {
             DirectoryPickerRow(
                 directory = directory,

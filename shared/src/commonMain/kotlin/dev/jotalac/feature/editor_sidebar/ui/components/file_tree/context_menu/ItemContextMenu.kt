@@ -72,6 +72,13 @@ fun FileContextMenuContent(
         onDismissRequest = onDismissRequest,
     )
 
+    ContextMenuItem(
+        text = stringResource(Res.string.export_pdf_context_menu_item),
+        iconPainter = Res.drawable.picture_as_pdf,
+        onClick = { onAction(SidebarAction.ExportPdf(itemPath)) },
+        onDismissRequest = onDismissRequest,
+    )
+
     if (isDesktopPlatform) {
         ContextMenuItem(
             text = stringResource(Res.string.copy_contect_menu_item),

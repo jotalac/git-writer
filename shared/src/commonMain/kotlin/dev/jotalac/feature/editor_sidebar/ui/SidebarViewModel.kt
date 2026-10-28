@@ -13,6 +13,7 @@ import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
+import dev.jotalac.feature.pdf_export.PdfExportRequest
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.io.files.Path
@@ -22,16 +23,19 @@ import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.err_failed_add_folder
 import git_writer.shared.generated.resources.err_failed_add_note
 import git_writer.shared.generated.resources.err_failed_delete
+import git_writer.shared.generated.resources.err_failed_export_pdf
 import git_writer.shared.generated.resources.err_failed_move
 import git_writer.shared.generated.resources.err_failed_rename
 import git_writer.shared.generated.resources.msg_path_copied
+import git_writer.shared.generated.resources.msg_pdf_exported
 
 data class SidebarState(
     val activeNotebook: Notebook? = null,
     val activeNotePath: String? = null,
     val fileTree: FileNode.Directory? = null,
     val expandedFolders: Set<String> = emptySet(),
-    val itemToRename: String? = null
+    val itemToRename: String? = null,
+    val pdfExport: PdfExportRequest? = null,
 )
 
 class EditorSidebarViewModel(
@@ -110,6 +114,8 @@ class EditorSidebarViewModel(
             is SidebarAction.OpenNote -> setActiveNote(action.notePath)
             is SidebarAction.SetRenameItem -> setRenameItem(action.path)
             is SidebarAction.DuplicateNote -> duplicateNote(action.notePath)
+            is SidebarAction.ExportPdf -> exportPdf(action.notePath)
+            is SidebarAction.PdfExportFinished -> finishPdfExport(action.result)
 
             is SidebarAction.CopyItemPath -> {
                 snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_path_copied))
@@ -233,6 +239,35 @@ class EditorSidebarViewModel(
                     snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_add_note, it.message))
                 }
         }
+    }
+
+    private fun exportPdf(notePath: String) {
+        // one export at a time - another request would replace the running one halfway
+        if (_uiState.value.pdfExport != null) return
+
+        viewModelScope.launch {
+            editorRepository.readNoteContent(notePath)
+                .onSuccess { content ->
+                    val noteName = Path(notePath).name.substringBeforeLast(".")
+                    _uiState.update { it.copy(pdfExport = PdfExportRequest(noteName, content)) }
+                }
+                .onFailure {
+                    snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_export_pdf, it.message))
+                }
+        }
+    }
+
+    private fun finishPdfExport(result: Result<String?>) {
+        _uiState.update { it.copy(pdfExport = null) }
+        result
+            .onSuccess { fileName ->
+                // null - the save dialog was cancelled, nothing to say
+                fileName ?: return@onSuccess
+                snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_pdf_exported, fileName))
+            }
+            .onFailure {
+                snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_export_pdf, it.message))
+            }
     }
 
     private fun refreshFileTree() {

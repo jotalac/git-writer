@@ -10,6 +10,8 @@ fun NotebookEntity.toNotebook(): Notebook {
         remoteUrl = this.remoteUrl,
         remoteUsername = this.remoteUsername,
         remotePassword = this.remotePassword,
+        isEncrypted = this.isEncrypted,
+        encryptionKey = this.encryptionKey,
     )
 }
 
@@ -21,5 +23,7 @@ fun Notebook.toNotebookEntity(): NotebookEntity {
         remoteUrl = this.remoteUrl,
         remoteUsername = this.remoteUsername,
         remotePassword = this.remotePassword,
+        isEncrypted = this.isEncrypted,
+        encryptionKey = this.encryptionKey,
     )
 }

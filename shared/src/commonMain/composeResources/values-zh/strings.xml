@@ -178,4 +178,15 @@
     <string name="image_size_header">图片大小</string>
     <string name="image_size_original">原始大小</string>
     <string name="image_size_reset">重置大小</string>
+    <string name="export_pdf_context_menu_item">导出为 PDF</string>
+    <string name="exporting_pdf">正在导出 %1$s…</string>
+    <string name="msg_pdf_exported">已保存为 %1$s</string>
+    <string name="err_failed_export_pdf">导出 PDF 失败</string>
+    <string name="encrypt_notebook_label">加密笔记本</string>
+    <string name="encrypt_notebook_subtitle">远程仓库只会收到加密数据。需要一个新的空仓库。</string>
+    <string name="notebook_encrypted_info">此笔记本已加密，其远程仓库只保存加密数据。</string>
+    <string name="encryption_password_label">笔记本密码</string>
+    <string name="encryption_password_confirm_label">再次输入密码</string>
+    <string name="encryption_password_warning">没有此密码，任何人都无法读取远程仓库中的笔记，且密码无法找回。</string>
+    <string name="encrypted_notebook_password_label">笔记本密码（仅用于加密笔记本）</string>
 </resources>

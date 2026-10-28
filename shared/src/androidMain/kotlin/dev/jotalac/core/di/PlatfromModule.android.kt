@@ -8,6 +8,10 @@ import dev.jotalac.core.data.createDataStore
 import dev.jotalac.core.database.AppDatabase
 import dev.jotalac.core.database.getDatabaseBuilder
 import dev.jotalac.feature.git_sync.data.JGitSyncRepositoryImpl
+import dev.jotalac.feature.git_sync.data.JGitMailboxRepositoryImpl
+import dev.jotalac.feature.git_sync.data.JGitMirrorRepositoryImpl
+import dev.jotalac.feature.git_sync.domain.MailboxRepository
+import dev.jotalac.feature.git_sync.domain.MirrorRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.AndroidNotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
@@ -34,6 +38,9 @@ actual val platformModule: Module = module {
             File(context.filesDir, DATA_STORE_FILE_NAME).absolutePath
         }
     }
+
+    single<MirrorRepository> { JGitMirrorRepositoryImpl() }
+    single<MailboxRepository> { JGitMailboxRepositoryImpl() }
 
     single<GitSyncRepository> {
         JGitSyncRepositoryImpl()

@@ -5,6 +5,8 @@ import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
+import dev.jotalac.feature.git_sync.encryption.PasswordRequiredException
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
@@ -25,6 +27,7 @@ class NotebookRepositoryImpl(
     private val activeNotebookManager: ActiveNotebookManager,
     private val gitSyncRepository: GitSyncRepository,
     private val notebookPathProvider: NotebookPathProvider,
+    private val encryptedGitSync: EncryptedGitSync,
 ) : NotebookRepository {
     private val appContainerPrefix: String?
         get() = APP_CONTAINER_PREFIX.find(notebookPathProvider.getDefaultNotebookDirectory())?.value
@@ -71,7 +74,12 @@ class NotebookRepositoryImpl(
             // create the base directory
             val baseDirectory = PlatformFile(directoryPath)
             baseDirectory.createDirectories()
-            (baseDirectory / "images").createDirectories()
+            val imagesDirectory = (baseDirectory / "images")
+            imagesDirectory.createDirectories()
+
+            // make sure the image directory is not dropped on git sync
+            (imagesDirectory / ".gitkeep").write(ByteArray(0))
+
 
             val gitInit = gitSyncRepository.initRepository(directoryPath)
             if (gitInit.isFailure) {
@@ -163,6 +171,7 @@ class NotebookRepositoryImpl(
         remoteUrl: String,
         remotePasswordOrToken: String,
         remoteUsername: String?,
+        encryptionPassword: String?,
     ): Result<Notebook> = withContext(Dispatchers.IO) {
         suspendRunCatching {
             requireUniqueName(name)
@@ -195,6 +204,21 @@ class NotebookRepositoryImpl(
                 Path(directoryPath).deleteRecursively()
                 throw IllegalStateException("Failed to clone repository")
             }
+
+            // an encrypted notebook's remote only holds encrypted bundles - it is set up anew with its password
+            val encryptionKey = if (EncryptedGitSync.isEncryptedRemote(directoryPath)) {
+                Path(directoryPath).deleteRecursively()
+                if (encryptionPassword.isNullOrEmpty()) throw PasswordRequiredException()
+                baseDirectory.createDirectories()
+                encryptedGitSync.open(directoryPath, remoteUrl, remotePasswordOrToken, remoteUsername, encryptionPassword)
+                    .getOrElse {
+                        Path(directoryPath).deleteRecursively()
+                        throw it
+                    }
+            } else {
+                null
+            }
+
             // save notebook to database
             val notebook = Notebook(
                 name = name.trim(),
@@ -202,6 +226,8 @@ class NotebookRepositoryImpl(
                 remoteUrl = remoteUrl,
                 remoteUsername = remoteUsername,
                 remotePassword = remotePasswordOrToken,
+                isEncrypted = encryptionKey != null,
+                encryptionKey = encryptionKey?.encoded,
             )
             val generatedId = notebookDao.upsertNotebook(notebook.toNotebookEntity().withStoredPath())
 
@@ -233,6 +259,7 @@ class NotebookRepositoryImpl(
         remoteUrl: String?,
         remoteUsername: String?,
         remotePassword: String?,
+        encryptionPassword: String?,
     ): Result<Notebook> = withContext(Dispatchers.IO) {
         suspendRunCatching {
             val existing = (notebookDao.getNotebookById(id)
@@ -241,17 +268,44 @@ class NotebookRepositoryImpl(
             //validate the name
             val newDirectoryPath = validateUpdateNotebookName(name, existing)
 
-            //validate the remote credentials - if changed
-            if (!remoteUrl.isNullOrBlank() && !remotePassword.isNullOrBlank()
-                && (remoteUrl != existing.remoteUrl || remoteUsername != existing.remoteUsername || remotePassword != existing.remotePassword)
-            ) {
-                validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
-                //update the git remote, when valid
-                gitSyncRepository.updateRemoteUrl(existing.directoryPath, remoteUrl)
-            }
+            val credentialsChanged = remoteUrl != existing.remoteUrl || remoteUsername != existing.remoteUsername ||
+                remotePassword != existing.remotePassword
+            var encryptionKey = existing.encryptionKey
 
-            // remove the remote if it was deleted
-            if (remoteUrl.isNullOrBlank() && remoteUrl != existing.remoteUrl) gitSyncRepository.removeRemote(existing.directoryPath)
+            when {
+                // its git remote is the local mirror - the remote repository holds its bundles and stays
+                existing.isEncrypted -> {
+                    if (remoteUrl != existing.remoteUrl) {
+                        throw IllegalStateException("The remote of an encrypted notebook cannot be changed")
+                    }
+                    if (credentialsChanged && remoteUrl != null && !remotePassword.isNullOrBlank()) {
+                        validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+                    }
+                }
+
+                encryptionPassword != null -> {
+                    if (remoteUrl.isNullOrBlank() || remotePassword.isNullOrBlank()) {
+                        throw IllegalStateException("Encryption needs a remote repository")
+                    }
+                    validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+                    encryptionKey = encryptedGitSync
+                        .enable(existing.directoryPath, remoteUrl, remotePassword, remoteUsername, encryptionPassword)
+                        .getOrThrow()
+                        .encoded
+                }
+
+                else -> {
+                    //validate the remote credentials - if changed
+                    if (!remoteUrl.isNullOrBlank() && !remotePassword.isNullOrBlank() && credentialsChanged) {
+                        validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+                        //update the git remote, when valid
+                        gitSyncRepository.updateRemoteUrl(existing.directoryPath, remoteUrl)
+                    }
+
+                    // remove the remote if it was deleted
+                    if (remoteUrl.isNullOrBlank() && remoteUrl != existing.remoteUrl) gitSyncRepository.removeRemote(existing.directoryPath)
+                }
+            }
 
             gitSyncRepository.updateSyncStatus(remoteUrl)
 
@@ -266,6 +320,8 @@ class NotebookRepositoryImpl(
                 remoteUrl = remoteUrl,
                 remoteUsername = remoteUsername,
                 remotePassword = remotePassword,
+                isEncrypted = encryptionKey != null,
+                encryptionKey = encryptionKey,
             )
             notebookDao.upsertNotebook(updated.withStoredPath())
 

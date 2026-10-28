@@ -9,6 +9,7 @@ import git2.git_remote_delete
 import git2.git_remote_free
 import git2.git_remote_list
 import git2.git_remote_set_url
+import git2.git_reference_list
 import git2.git_strarray
 import git2.git_strarray_dispose
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -29,6 +30,18 @@ internal fun GitRepository.remoteNames(): List<String> = memScoped {
     checkGit(git_remote_list(names.ptr, handle))
     try {
         List(names.count.toInt()) { names.strings?.get(it)?.toKString() }.filterNotNull()
+    } finally {
+        git_strarray_dispose(names.ptr)
+    }
+}
+
+/** Whether a fetch from [remote] brought in any branch - each one has a remote-tracking ref, whatever its name. */
+internal fun GitRepository.hasRemoteBranches(remote: String): Boolean = memScoped {
+    val names = alloc<git_strarray>()
+    checkGit(git_reference_list(names.ptr, handle))
+    try {
+        val prefix = "refs/remotes/$remote/"
+        List(names.count.toInt()) { names.strings?.get(it)?.toKString() }.any { it?.startsWith(prefix) == true }
     } finally {
         git_strarray_dispose(names.ptr)
     }

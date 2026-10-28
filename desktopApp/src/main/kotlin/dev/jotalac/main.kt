@@ -34,6 +34,9 @@ private val MinWindowSize = DpSize(650.dp, 650.dp)
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+    // make the macos dialog the correct color theme
+    System.setProperty("apple.awt.application.appearance", "system")
+
     initKoin()
     jgitBypassUrlRewrite()
 

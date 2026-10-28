@@ -19,9 +19,18 @@ data class EditNotebookState(
     val remoteUrl: String = "",
     val remoteUsername: String = "",
     val remotePassword: String = "",
+    // already encrypted - its remote cannot change anymore
+    val isEncrypted: Boolean = false,
+    // turn encryption on with the password below
+    val encrypt: Boolean = false,
+    val encryptionPassword: String = "",
+    val encryptionPasswordConfirm: String = "",
     val errorMessage: String? = null,
     val isLoading: Boolean = false,
 )
+
+// short passwords make guessing the key from the encrypted remote feasible
+private const val MIN_ENCRYPTION_PASSWORD_LENGTH = 8
 
 class EditNotebookViewModel(
     private val notebookRepository: NotebookRepository,
@@ -32,18 +41,22 @@ class EditNotebookViewModel(
 
     private var notebookId: Long = 0
 
-    fun initWithNotebook(id: Long, name: String, remoteUrl: String?, remoteUsername: String?, remotePassword: String?) {
+    fun initWithNotebook(
+        id: Long,
+        name: String,
+        remoteUrl: String?,
+        remoteUsername: String?,
+        remotePassword: String?,
+        isEncrypted: Boolean = false,
+    ) {
         notebookId = id
-        _uiState.update {
-            it.copy(
-                notebookName = name,
-                remoteUrl = remoteUrl ?: "",
-                remoteUsername = remoteUsername ?: "",
-                remotePassword = remotePassword ?: "",
-                errorMessage = null,
-                isLoading = false,
-            )
-        }
+        _uiState.value = EditNotebookState(
+            notebookName = name,
+            remoteUrl = remoteUrl ?: "",
+            remoteUsername = remoteUsername ?: "",
+            remotePassword = remotePassword ?: "",
+            isEncrypted = isEncrypted,
+        )
     }
 
     fun onEvent(event: EditNotebookEvent) {
@@ -74,6 +87,14 @@ class EditNotebookViewModel(
                     remotePassword = event.password,
                     errorMessage = null
                 )
+            }
+
+            is EditNotebookEvent.EncryptChanged -> _uiState.update { it.copy(encrypt = event.encrypt, errorMessage = null) }
+            is EditNotebookEvent.EncryptionPasswordChanged -> _uiState.update {
+                it.copy(encryptionPassword = event.password, errorMessage = null)
+            }
+            is EditNotebookEvent.EncryptionPasswordConfirmChanged -> _uiState.update {
+                it.copy(encryptionPasswordConfirm = event.password, errorMessage = null)
             }
 
             is EditNotebookEvent.SaveNotebook -> saveNotebookEdit(event.onSuccess)
@@ -109,8 +130,22 @@ class EditNotebookViewModel(
             }
         }
 
+        if (state.turnsOnEncryption) {
+            if (!hasRemoteUrl) {
+                return "Encryption needs a remote repository"
+            }
+            if (state.encryptionPassword.length < MIN_ENCRYPTION_PASSWORD_LENGTH) {
+                return "The notebook password needs at least $MIN_ENCRYPTION_PASSWORD_LENGTH characters"
+            }
+            if (state.encryptionPassword != state.encryptionPasswordConfirm) {
+                return "The passwords do not match"
+            }
+        }
+
         return null
     }
+
+    private val EditNotebookState.turnsOnEncryption get() = encrypt && !isEncrypted
 
     private fun saveNotebookEdit(onSuccess: () -> Unit) {
         viewModelScope.launch {
@@ -130,6 +165,7 @@ class EditNotebookViewModel(
                 remoteUrl = currentState.remoteUrl.trim().ifBlank { null },
                 remoteUsername = currentState.remoteUsername.trim().ifBlank { null },
                 remotePassword = currentState.remotePassword.ifBlank { null },
+                encryptionPassword = currentState.encryptionPassword.takeIf { currentState.turnsOnEncryption },
             )
 
             updateNotebookResult.onSuccess {
@@ -152,6 +188,9 @@ class EditNotebookViewModel(
         data class RemoteUrlChanged(val url: String) : EditNotebookEvent
         data class UsernameChanged(val username: String) : EditNotebookEvent
         data class PasswordChanged(val password: String) : EditNotebookEvent
+        data class EncryptChanged(val encrypt: Boolean) : EditNotebookEvent
+        data class EncryptionPasswordChanged(val password: String) : EditNotebookEvent
+        data class EncryptionPasswordConfirmChanged(val password: String) : EditNotebookEvent
         data class SaveNotebook(val onSuccess: () -> Unit) : EditNotebookEvent
         data object ClearRemoteCredentials : EditNotebookEvent
     }

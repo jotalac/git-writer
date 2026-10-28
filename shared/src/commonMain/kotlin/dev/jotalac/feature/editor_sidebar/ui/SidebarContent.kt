@@ -23,6 +23,7 @@ import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.FileTree
 import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListDialog
+import dev.jotalac.feature.pdf_export.PdfExportDialog
 import dev.jotalac.feature.settings.ui.SettingsDialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
@@ -72,6 +73,10 @@ fun SidebarContent(
             notebook = state.activeNotebook!!,
             onDismiss = { showEditNotebookDialog = false }
         )
+    }
+
+    state.pdfExport?.let { request ->
+        PdfExportDialog(request, onFinished = { viewModel.onAction(SidebarAction.PdfExportFinished(it)) })
     }
 
     if (showDesktopSettingsDialog) {

@@ -24,6 +24,8 @@ data class CreateNotebookState(
     val remoteUrl: String = "",
     val username: String = "",
     val password: String = "",
+    // only for a remote that is an encrypted notebook
+    val encryptionPassword: String = "",
     val defaultBasePath: String = "",
     val selectedDirectory: String? = null,
     val errorMessage: String? = null,
@@ -90,6 +92,10 @@ class CreateNotebookViewModel(
                 )
             }
 
+            is CreateNotebookEvent.EncryptionPasswordChanged -> _uiState.update {
+                it.copy(encryptionPassword = event.password, errorMessage = null)
+            }
+
             is CreateNotebookEvent.DirectorySelected -> _uiState.update {
                 it.copy(
                     selectedDirectory = event.directory,
@@ -129,7 +135,8 @@ class CreateNotebookViewModel(
                 directoryPath = actualDirectory,
                 remoteUrl = currentState.remoteUrl,
                 remotePasswordOrToken = currentState.password,
-                remoteUsername = currentState.username
+                remoteUsername = currentState.username,
+                encryptionPassword = currentState.encryptionPassword.ifEmpty { null },
             )
 
             handleNotebookAddResult(result, onSuccess)
@@ -196,6 +203,7 @@ class CreateNotebookViewModel(
         data class RemoteUrlChanged(val url: String) : CreateNotebookEvent
         data class UsernameChanged(val username: String) : CreateNotebookEvent
         data class PasswordChanged(val password: String) : CreateNotebookEvent
+        data class EncryptionPasswordChanged(val password: String) : CreateNotebookEvent
         data class DirectorySelected(val directory: String) : CreateNotebookEvent
         data class OpenExistingNotebook(val onSuccess: () -> Unit) : CreateNotebookEvent
         data class CreateLocalNotebook(val path: String, val onSuccess: () -> Unit) : CreateNotebookEvent

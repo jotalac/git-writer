@@ -1,17 +1,11 @@
 package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
@@ -21,6 +15,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.compose.LocalImageTransformer
+import com.mikepenz.markdown.compose.LocalReferenceLinkHandler
+import com.mikepenz.markdown.compose.components.MarkdownComponentModel
+import com.mikepenz.markdown.model.ReferenceLinkHandler
+import com.mikepenz.markdown.utils.getUnescapedTextInNode
 import dev.jotalac.core.ui.components.ContextMenuHeader
 import dev.jotalac.core.ui.components.ContextMenuItem
 import dev.jotalac.core.ui.components.DesktopContextMenu
@@ -29,14 +27,10 @@ import dev.jotalac.core.utils.isDesktopPlatform
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.image_size_header
 import git_writer.shared.generated.resources.image_size_original
-import org.jetbrains.compose.resources.stringResource
-import kotlin.math.roundToInt
-import com.mikepenz.markdown.compose.LocalReferenceLinkHandler
-import com.mikepenz.markdown.compose.components.MarkdownComponentModel
-import com.mikepenz.markdown.model.ReferenceLinkHandler
-import com.mikepenz.markdown.utils.getUnescapedTextInNode
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.ast.ASTNode
+import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
 /**
  * A markdown image - like the library's MarkdownImage, which has no way to set a size, plus the

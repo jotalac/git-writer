@@ -2,17 +2,15 @@
 
 > high priority
 
-- check if the widget is fixed
-- when opening an app and we know there is no network connection (dont even try to do the sync, mainly on mobile)
+- add button for creating new note from the widget (i guess from the root)
 
 > medium priority
 
+- when highlighting text in the codeblock, it crashed with (all code blocks scrolling and non-scrolling) not only code blocks, it does it even on normal text ![error image](readme_images/error_highligh_codeblock.png)
 - add something like quick note, which it be deleted after the application exit (for some quick test notes)
 - add note linking
-- add possibility to export notes to pdf
 - save the expanded folder to database (so that the file tree looks the same on app open)+ save all tabs that were opened
 - make latex blocks work also in the middle of the block, not only on empty block
-- make file header like in obsidian - the file heading will show the file name changing the header will change the filename
 - lists are splitted into multiple blocks, but when reloaded it is only one list block (no other components are in the middle of it)
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
   markdown cheatsheet, etc.)
@@ -21,10 +19,13 @@
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - in the settings as possibility to change the commit message
 - add nucleus fs-watcher (or other fs watcher)
-- add encryption possibility, this looks nice but probably wont work with iOS devices (<https://github.com/cryptomator/cryptofs>)
+- fix pdf export -> dont export the compose page -> convert to html for proper text selection and reduced size
+- make section collapsible, like in obsidian, eg. everything under h1 can be collased
 
 > other ideas - lower priority
 
+- add support for mermaid diagrams
+- make file header like in obsidian - the file heading will show the file name changing the header will change the filename
 - add something like .gitwriter file to each notebook folder, there will be the remote credentials etc., it wont be commited, but comes in handy when you want to open folder with remote already configured
 - when there is a merge conflict, add preview on the conflicted files and content
 - when note is opened and image is clicked from the sidebar, make the image appear on new tab

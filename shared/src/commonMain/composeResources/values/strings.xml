@@ -162,8 +162,6 @@
     <string name="err_paste_image_no_notebook">Failed to paste image: no active notebook</string>
     <string name="err_failed_save_images">Failed to save one or more pasted images</string>
     <string name="err_failed_create_base_directory">Failed to create base directory</string>
-
-    <!-- spell check suggestions group label -->
     <string name="spellcheck_suggestions">Suggestions</string>
 
     <!-- text field context menu; supplies what Compose only resolves once per process -->
@@ -172,10 +170,20 @@
     <string name="menu_paste">Paste</string>
     <string name="menu_select_all">Select all</string>
 
-    <!-- its own choice: the UI language and the language you write in often differ -->
     <string name="settings_spellcheck_language_label">Spell check language</string>
     <string name="settings_spellcheck_language_same_as_app">Same as app language</string>
     <string name="image_size_header">Image size</string>
     <string name="image_size_original">Original size</string>
     <string name="image_size_reset">Reset size</string>
+    <string name="export_pdf_context_menu_item">Export to PDF</string>
+    <string name="exporting_pdf">Exporting %1$s…</string>
+    <string name="msg_pdf_exported">Saved as %1$s</string>
+    <string name="err_failed_export_pdf">Failed to export the PDF</string>
+    <string name="encrypt_notebook_label">Encrypt notebook</string>
+    <string name="encrypt_notebook_subtitle">The remote only gets encrypted data. Needs a new, empty repository.</string>
+    <string name="notebook_encrypted_info">Notes in this notebook are encrypted.</string>
+    <string name="encryption_password_label">Notebook password</string>
+    <string name="encryption_password_confirm_label">Repeat the password</string>
+    <string name="encryption_password_warning">Without this password nobody can read the notes on the remote - it cannot be recovered.</string>
+    <string name="encrypted_notebook_password_label">Notebook password (only for encrypted notebooks)</string>
 </resources>

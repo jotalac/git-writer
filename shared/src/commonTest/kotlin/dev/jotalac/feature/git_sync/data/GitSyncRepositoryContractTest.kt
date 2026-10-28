@@ -113,6 +113,19 @@ abstract class GitSyncRepositoryContractTest {
     }
 
     @Test
+    fun `a new notebook without notes syncs with an empty remote`() = runTest {
+        // nothing to upload yet - there is not even a branch
+        val emptyRemote = Path(root, "empty.git").toString()
+        createEmptyRemote(emptyRemote)
+        val notebook = Path(root, "notebook").toString()
+        SystemFileSystem.createDirectories(Path(notebook))
+        repository.initRepository(notebook).getOrThrow()
+        repository.updateRemoteUrl(notebook, emptyRemote).getOrThrow()
+
+        assertEquals(GitSyncStatus.UpToDate, sync(notebook).getOrThrow())
+    }
+
+    @Test
     fun `an empty new notebook connected to a remote gets its notes`() = runTest {
         // no commit at all yet - the branch only exists on the remote
         val notebook = Path(root, "notebook").toString()

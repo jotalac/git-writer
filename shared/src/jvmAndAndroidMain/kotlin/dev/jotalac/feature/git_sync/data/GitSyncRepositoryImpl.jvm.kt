@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.*
 import org.eclipse.jgit.lib.BranchTrackingStatus
+import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.RepositoryState
 import org.eclipse.jgit.transport.RemoteRefUpdate
 import org.eclipse.jgit.transport.URIish
@@ -18,10 +19,8 @@ import java.io.File
 
 class JGitSyncRepositoryImpl : GitSyncRepository {
 
-    private fun getCredentials(username: String?, tokenOrPassword: String): UsernamePasswordCredentialsProvider {
-        val safeName = if (username.isNullOrBlank()) tokenOrPassword else username
-        return UsernamePasswordCredentialsProvider(safeName, tokenOrPassword)
-    }
+    private fun getCredentials(username: String?, tokenOrPassword: String): UsernamePasswordCredentialsProvider =
+        credentialsProvider(username, tokenOrPassword)
 
     override suspend fun validateCredentials(
         repoUrl: String,
@@ -159,6 +158,9 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
     }
 
     private fun pushChanges(git: Git, credentials: UsernamePasswordCredentialsProvider) {
+        // a notebook without any commit yet (no notes) has no branch to push
+        if (git.repository.resolve(Constants.HEAD) == null) return
+
         val currentBranch = git.repository.branch
         val trackingStatus = BranchTrackingStatus.of(git.repository, currentBranch)
 
@@ -350,3 +352,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
     override val gitSyncStatus: Flow<GitSyncStatus> = _syncStatus.asSharedFlow()
 
 }
+
+/** Without a username the token is sent as the username too - git hosts accept a token in either field. */
+internal fun credentialsProvider(username: String?, tokenOrPassword: String): UsernamePasswordCredentialsProvider =
+    UsernamePasswordCredentialsProvider(if (username.isNullOrBlank()) tokenOrPassword else username, tokenOrPassword)

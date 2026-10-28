@@ -7,4 +7,7 @@ data class Notebook(
     val remoteUrl: String?,
     val remoteUsername: String?,
     val remotePassword: String?,
+    // an encrypted notebook's remote only holds encrypted bundles - the key comes from its password
+    val isEncrypted: Boolean = false,
+    val encryptionKey: String? = null,
 )

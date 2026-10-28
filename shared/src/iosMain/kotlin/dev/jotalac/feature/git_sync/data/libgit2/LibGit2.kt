@@ -24,11 +24,11 @@ import kotlinx.cinterop.value
 * */
 
 /** A libgit2 call failed - the message is libgit2's own. */
-internal class GitException(message: String) : IllegalStateException(message)
+internal class GitException(message: String, val code: Int = 0) : IllegalStateException(message)
 
 /** Throws a [GitException] when [result] is a libgit2 error code (negative), returns it otherwise. */
 internal fun checkGit(result: Int): Int {
-    if (result < 0) throw GitException(lastErrorMessage())
+    if (result < 0) throw GitException(lastErrorMessage(), code = result)
     return result
 }
 

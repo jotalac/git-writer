@@ -59,6 +59,33 @@ class MarkdownChunkerTest {
     }
 
     @Test
+    fun chunkListsSeparatedByEmptyBlockTest() {
+        val text = "- one\n- two\n\n\n\n- three\n- four\n- five\n\n\n\n- six"
+
+        val result = chunkMarkdownIntoBlocks(text)
+
+        assertEquals(listOf("- one\n- two", "", "- three\n- four\n- five", "", "- six"), result)
+    }
+
+    @Test
+    fun chunkOrderedListsSeparatedByEmptyBlocksTest() {
+        val text = "1. one\n\n\n\n\n\n2. two"
+
+        val result = chunkMarkdownIntoBlocks(text)
+
+        assertEquals(listOf("1. one", "", "", "2. two"), result)
+    }
+
+    @Test
+    fun chunkLooseListKeepsOneBlockTest() {
+        val text = "- one\n\n- two\n\n  continuation\n- three"
+
+        val result = chunkMarkdownIntoBlocks(text)
+
+        assertEquals(listOf(text), result)
+    }
+
+    @Test
     fun chunkCodeBlocksTest() {
         val text = """
            ```kotlin

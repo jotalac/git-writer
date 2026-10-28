@@ -68,6 +68,8 @@ internal class GitRepository internal constructor(val handle: CPointer<git_repos
             git_reference_symbolic_target(head)?.toKString()?.removePrefix("refs/heads/")
         }
 
+    fun hasReference(name: String): Boolean = memScoped { findReference(name) != null }
+
     fun setConfig(key: String, value: String): Unit = memScoped {
         val config = create(::git_config_free) { git_repository_config(it, handle) }
         checkGit(git_config_set_string(config, key, value))

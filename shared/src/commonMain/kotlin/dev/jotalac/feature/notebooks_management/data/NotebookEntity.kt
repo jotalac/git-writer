@@ -1,5 +1,6 @@
 package dev.jotalac.feature.notebooks_management.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -12,4 +13,7 @@ data class NotebookEntity(
     val remoteUrl: String?,
     val remoteUsername: String?,
     val remotePassword: String?,
+    @ColumnInfo(defaultValue = "0")
+    val isEncrypted: Boolean = false,
+    val encryptionKey: String? = null,
 )
