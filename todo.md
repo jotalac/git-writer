@@ -18,7 +18,6 @@
 - follow clean architecture and introduce UseCases instead of injecting repositories into *r*epositories
 - run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - in the settings as possibility to change the commit message
-- add encryption possibility, this looks nice but probably wont work with iOS devices (<https://github.com/cryptomator/cryptofs>)
 - add nucleus fs-watcher (or other fs watcher)
 - fix pdf export -> dont export the compose page -> convert to html for proper text selection and reduced size
 - make section collapsible, like in obsidian, eg. everything under h1 can be collased

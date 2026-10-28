@@ -182,6 +182,20 @@ abstract class EncryptedGitSyncContractTest {
     }
 
     @Test
+    fun `a remote with a branch of another name is not used for an encrypted notebook`() = runTest {
+        // the readable history on master would stay on the remote, whatever the encrypted branch is called
+        createRemote(remote)
+        val other = notebook("other", "master", "readable.md" to "readable")
+        gitSync.updateRemoteUrl(other, remote).getOrThrow()
+        gitSync.syncNotes(other, "token", "user").getOrThrow()
+        val laptop = notebook("laptop", "main", "diary.md" to "dear diary")
+
+        val result = encryption.enable(laptop, remote, "token", "user", PASSWORD)
+
+        assertIs<RemoteNotEmptyException>(result.exceptionOrNull())
+    }
+
+    @Test
     fun `a notebook on an older branch name is encrypted with its history`() = runTest {
         // notebooks cloned from older repositories have their notes on master
         createRemote(remote)

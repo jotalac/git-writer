@@ -9,7 +9,7 @@ interface MailboxRepository {
     /** A new copy at [path] of the empty mailbox at [remoteUrl]. */
     suspend fun create(path: String, remoteUrl: String): Result<Unit>
 
-    /** Whether the copy at [path] has nothing published yet - no commit at all. */
+    /** Whether the remote of the copy at [path] has no branch at all - not even one that holds readable notes. */
     suspend fun isEmpty(path: String): Result<Boolean>
 
     /** Makes the copy at [path] exactly what the mailbox has. Nothing changes while the mailbox is empty. */

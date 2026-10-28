@@ -14,6 +14,7 @@ import java.io.File
 
 private const val ORIGIN = "origin"
 private const val REMOTE_MAIN = "refs/remotes/origin/main"
+private const val REMOTE_BRANCHES = "refs/remotes/origin/"
 
 class JGitMailboxRepositoryImpl : MailboxRepository {
 
@@ -24,7 +25,8 @@ class JGitMailboxRepositoryImpl : MailboxRepository {
     }
 
     override suspend fun isEmpty(path: String): Result<Boolean> = runGit {
-        Git.open(File(path)).use { it.repository.resolve(BUNDLE_MAIN_REF) == null }
+        // a fetch creates a remote-tracking ref for every branch of the remote, whatever its name
+        Git.open(File(path)).use { it.repository.refDatabase.getRefsByPrefix(REMOTE_BRANCHES).isEmpty() }
     }
 
     override suspend fun update(path: String, tokenOrPassword: String, username: String?): Result<Unit> = runGit {

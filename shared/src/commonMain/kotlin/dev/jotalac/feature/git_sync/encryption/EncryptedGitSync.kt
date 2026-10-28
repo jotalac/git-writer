@@ -5,6 +5,7 @@ import dev.jotalac.feature.git_sync.domain.MirrorRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.domain.PushRejectedException
+import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.core.utils.suspendRunCatching
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -58,6 +59,8 @@ class EncryptedGitSync(
         password: String,
     ): Result<NotebookKey> = suspendRunCatching {
         val paths = NotebookPaths(notebookPath)
+        // a copy left by an earlier attempt still knows the branches of the remote it had then
+        Path(paths.mailbox).deleteRecursively()
         mailbox.create(paths.mailbox, remoteUrl).getOrThrow()
         mailbox.update(paths.mailbox, tokenOrPassword, username).getOrThrow()
         if (!mailbox.isEmpty(paths.mailbox).getOrThrow()) throw RemoteNotEmptyException()

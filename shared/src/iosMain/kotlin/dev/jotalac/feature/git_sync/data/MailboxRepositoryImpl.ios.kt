@@ -7,7 +7,7 @@ import dev.jotalac.feature.git_sync.data.libgit2.GitRepository
 import dev.jotalac.feature.git_sync.data.libgit2.addRemote
 import dev.jotalac.feature.git_sync.data.libgit2.commitAll
 import dev.jotalac.feature.git_sync.data.libgit2.fetch
-import dev.jotalac.feature.git_sync.data.libgit2.mainHead
+import dev.jotalac.feature.git_sync.data.libgit2.hasRemoteBranches
 import dev.jotalac.feature.git_sync.data.libgit2.push
 import dev.jotalac.feature.git_sync.data.libgit2.resetHard
 import dev.jotalac.feature.git_sync.domain.MailboxRepository
@@ -38,7 +38,7 @@ class LibGit2MailboxRepositoryImpl : MailboxRepository {
     }
 
     override suspend fun isEmpty(path: String): Result<Boolean> = runGit {
-        GitRepository.open(path).use { it.mainHead() == null }
+        GitRepository.open(path).use { !it.hasRemoteBranches(ORIGIN) }
     }
 
     override suspend fun update(path: String, tokenOrPassword: String, username: String?): Result<Unit> = runGit {
