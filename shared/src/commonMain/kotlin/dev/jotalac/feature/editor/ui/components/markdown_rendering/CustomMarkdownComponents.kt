@@ -71,7 +71,7 @@ fun CustomOrderedListComponent(model: MarkdownComponentModel) {
         depth = model.listDepth,
         bullet = { index, _, _ ->
             val alpha = NUMBER_ALPHAS[model.listDepth % NUMBER_ALPHAS.size]
-            Text("${index + 1}.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha))
+            Text("${index + 1}. ", color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha))
         }
     )
 }

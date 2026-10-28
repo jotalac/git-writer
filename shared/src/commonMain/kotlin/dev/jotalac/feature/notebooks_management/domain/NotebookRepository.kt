@@ -12,9 +12,11 @@ interface NotebookRepository {
         directoryPath: String,
     ): Result<Notebook>
 
+    /** [encryptionPassword] opens a remote that is an encrypted notebook - it is ignored for any other. */
     suspend fun cloneNotebook(
         name: String, directoryPath: String,
         remoteUrl: String, remotePasswordOrToken: String, remoteUsername: String? = null,
+        encryptionPassword: String? = null,
     ): Result<Notebook>
 
 
@@ -26,6 +28,7 @@ interface NotebookRepository {
         remoteUrl: String?,
         remoteUsername: String?,
         remotePassword: String?,
+        encryptionPassword: String? = null, // turns on encryption - the remote has to be empty
     ): Result<Notebook>
 
     val activeNotebookState: Flow<Notebook?>

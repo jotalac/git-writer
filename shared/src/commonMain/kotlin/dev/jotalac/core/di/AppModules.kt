@@ -8,6 +8,7 @@ import dev.jotalac.core.data.UserSettings
 import dev.jotalac.core.data.UserSettingsManager
 import dev.jotalac.core.database.AppDatabase
 import dev.jotalac.core.utils.AppExitTasks
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
 import dev.jotalac.core.utils.HttpRemoteReachability
 import dev.jotalac.core.utils.RemoteReachability
 import dev.jotalac.core.utils.RemoteStatusMonitor
@@ -55,6 +56,8 @@ val coreModule = module {
 
     single { AppExitTasks() }
 
+    single { EncryptedGitSync(get(), get(), get()) }
+
     single { HttpClient() }
     single<RemoteReachability> { HttpRemoteReachability(get()) }
     single { RemoteStatusMonitor(get(), get()) }
@@ -70,6 +73,7 @@ val featureModules = module {
             activeNotebookManager = get(),
             gitSyncRepository = get(),
             notebookPathProvider = get(),
+            encryptedGitSync = get(),
         )
     }
     //files management

@@ -6,7 +6,10 @@ import dev.jotalac.core.utils.RemoteStatusMonitor
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.notebooks_management.domain.Notebook
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
 import dev.jotalac.testing.fakes.FakeEditorRepository
+import dev.jotalac.testing.fakes.FakeMailboxRepository
+import dev.jotalac.testing.fakes.FakeMirrorRepository
 import dev.jotalac.testing.fakes.FakeGitSyncRepository
 import dev.jotalac.testing.fakes.FakeNotebookRepository
 import dev.jotalac.testing.fakes.FakeUserSettings
@@ -40,6 +43,7 @@ class EditorScreenViewModelTest {
     // auto sync has its own tests - here its endless loop would keep advanceUntilIdle() from ever finishing
     private val settings = FakeUserSettings(UserSettingsState(autoSync = false))
     private val gitSync = FakeGitSyncRepository()
+    private val encryptedSync = EncryptedGitSync(gitSync, FakeMirrorRepository(), FakeMailboxRepository())
     // no network, so no request is ever made
     private val remoteStatus = RemoteStatusMonitor({ false }, { flowOf(false) })
 
@@ -47,7 +51,7 @@ class EditorScreenViewModelTest {
     private val imagePath = "/notebook/picture.png"
 
     private fun createViewModel(): EditorViewModel =
-        EditorViewModel(notebooks, editor, snackbar, settings, gitSync, remoteStatus)
+        EditorViewModel(notebooks, editor, snackbar, settings, gitSync, remoteStatus, encryptedSync)
 
     /** Subscribes before anything is triggered: the flow does not replay, so a late read would miss it. */
     private fun TestScope.collectSnackbars(): List<SnackbarText> {
@@ -84,6 +88,7 @@ class EditorScreenViewModelTest {
         val viewModel = EditorViewModel(
             notebooks, editor, snackbar, settings, gitSync,
             RemoteStatusMonitor({ url -> checkedUrls += url; true }, { flowOf(true) }),
+            encryptedSync,
         )
         advanceUntilIdle()
 

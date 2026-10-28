@@ -11,9 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AlertDialogTitleWithIcon
+import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.ui.components.SubmittableTextField
 import git_writer.shared.generated.resources.*
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -32,6 +34,7 @@ fun EditNotebookDialog(
             remoteUrl = notebook.remoteUrl,
             remoteUsername = notebook.remoteUsername,
             remotePassword = notebook.remotePassword,
+            isEncrypted = notebook.isEncrypted,
         )
     }
 
@@ -78,6 +81,8 @@ fun EditNotebookDialog(
 
                     TextButton(
                         onClick = { viewModel.onEvent(EditNotebookViewModel.EditNotebookEvent.ClearRemoteCredentials) },
+                        // an encrypted notebook's bundles are on its remote
+                        enabled = !state.isEncrypted,
                     ) {
                         Text(
                             text = stringResource(Res.string.clear_button),
@@ -93,6 +98,7 @@ fun EditNotebookDialog(
                     label = { Text(stringResource(Res.string.git_repository_url_input_label)) },
                     placeholder = { Text(stringResource(Res.string.git_remote_example)) },
                     singleLine = true,
+                    enabled = !state.isEncrypted,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -166,6 +172,8 @@ fun EditNotebookDialog(
                     }
                 }
 
+                EncryptionSection(state, onEvent = viewModel::onEvent)
+
                 if (state.errorMessage != null) {
                     Text(
                         text = state.errorMessage!!,
@@ -203,4 +211,60 @@ fun EditNotebookDialog(
             }
         }
     )
+}
+
+@Composable
+private fun EncryptionSection(state: EditNotebookState, onEvent: (EditNotebookViewModel.EditNotebookEvent) -> Unit) {
+    HorizontalDivider()
+
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(Res.string.encrypt_notebook_label),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(
+                    if (state.isEncrypted) Res.string.notebook_encrypted_info else Res.string.encrypt_notebook_subtitle
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        // turning it off would need the notes moved to a readable remote again - not supported
+        if (!state.isEncrypted) {
+            Switch(
+                checked = state.encrypt,
+                onCheckedChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.EncryptChanged(it)) },
+                enabled = !state.isLoading,
+            )
+        } else {
+            Icon(
+                painter = painterResource(Res.drawable.shield_lock),
+                contentDescription = stringResource(Res.string.notebook_encrypted_info),
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+
+    if (state.encrypt && !state.isEncrypted) {
+        OutlinedTextField(
+            value = state.encryptionPassword,
+            onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.EncryptionPasswordChanged(it)) },
+            label = { Text(stringResource(Res.string.encryption_password_label)) },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = state.encryptionPasswordConfirm,
+            onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.EncryptionPasswordConfirmChanged(it)) },
+            label = { Text(stringResource(Res.string.encryption_password_confirm_label)) },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            supportingText = { Text(stringResource(Res.string.encryption_password_warning)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }

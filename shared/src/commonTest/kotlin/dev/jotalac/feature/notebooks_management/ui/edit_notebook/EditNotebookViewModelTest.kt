@@ -125,6 +125,80 @@ class EditNotebookViewModelTest {
         assertNull(dialog.uiState.value.errorMessage)
     }
 
+    // --- encryption
+
+    /** The edit dialog of a notebook with a remote, encryption switched on with [password] typed twice. */
+    private fun encryptingDialog(password: String = "correct horse", confirm: String = password) =
+        EditNotebookViewModel(notebooks, snackbar).apply {
+            initWithNotebook(id = 3, name = "Work", remoteUrl = validUrl, remoteUsername = "me", remotePassword = "token")
+            onEvent(EditNotebookEvent.EncryptChanged(true))
+            onEvent(EditNotebookEvent.EncryptionPasswordChanged(password))
+            onEvent(EditNotebookEvent.EncryptionPasswordConfirmChanged(confirm))
+        }
+
+    @Test
+    fun `encryption needs a remote repository`() = viewModelTest {
+        val dialog = editDialog()
+        dialog.onEvent(EditNotebookEvent.EncryptChanged(true))
+        dialog.onEvent(EditNotebookEvent.EncryptionPasswordChanged("correct horse"))
+        dialog.onEvent(EditNotebookEvent.EncryptionPasswordConfirmChanged("correct horse"))
+
+        dialog.save()
+        advanceUntilIdle()
+
+        dialog.assertRejected("Encryption needs a remote repository")
+    }
+
+    @Test
+    fun `a short notebook password is refused`() = viewModelTest {
+        // the key comes from it - a short one is quick to guess from the encrypted remote
+        val dialog = encryptingDialog(password = "short")
+
+        dialog.save()
+        advanceUntilIdle()
+
+        dialog.assertRejected("The notebook password needs at least 8 characters")
+    }
+
+    @Test
+    fun `a password typed differently the second time is refused`() = viewModelTest {
+        val dialog = encryptingDialog(password = "correct horse", confirm = "correct hrose")
+
+        dialog.save()
+        advanceUntilIdle()
+
+        dialog.assertRejected("The passwords do not match")
+    }
+
+    @Test
+    fun `turning on encryption saves the notebook with its password`() = viewModelTest {
+        notebooks.notebookResult = Result.success(Notebook(3, "Work", "/nb/Work", validUrl, "me", "token", isEncrypted = true))
+        val dialog = encryptingDialog()
+
+        dialog.save()
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(NotebookUpdate(3, "Work", validUrl, "me", "token", encryptionPassword = "correct horse")),
+            notebooks.notebookUpdates,
+        )
+        assertTrue(dialogClosed)
+    }
+
+    @Test
+    fun `saving an encrypted notebook does not turn encryption on again`() = viewModelTest {
+        notebooks.notebookResult = Result.success(Notebook(3, "Work", "/nb/Work", validUrl, "me", "new token", isEncrypted = true))
+        val dialog = EditNotebookViewModel(notebooks, snackbar).apply {
+            initWithNotebook(3, "Work", validUrl, "me", "token", isEncrypted = true)
+        }
+        dialog.onEvent(EditNotebookEvent.PasswordChanged("new token"))
+
+        dialog.save()
+        advanceUntilIdle()
+
+        assertEquals(listOf(NotebookUpdate(3, "Work", validUrl, "me", "new token")), notebooks.notebookUpdates)
+    }
+
     // --- saving
 
     @Test

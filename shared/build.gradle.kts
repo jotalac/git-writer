@@ -111,6 +111,11 @@ kotlin {
             implementation(libs.latex.parser) // Parsing logic
 
             implementation(libs.connectivity.core)
+
+            // encrypted notebooks: AES-GCM and PBKDF2 from the platform (JDK, Apple CommonCrypto + CryptoKit)
+            implementation(libs.cryptography.core)
+            implementation(libs.cryptography.provider.optimal)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

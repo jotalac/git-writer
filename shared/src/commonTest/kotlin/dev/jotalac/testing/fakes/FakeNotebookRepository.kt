@@ -46,10 +46,12 @@ class FakeNotebookRepository : NotebookRepository {
 
     data class NotebookUpdate(
         val id: Long, val name: String, val remoteUrl: String?, val remoteUsername: String?, val remotePassword: String?,
+        val encryptionPassword: String? = null,
     )
 
     data class ClonedNotebook(
         val name: String, val directoryPath: String, val remoteUrl: String, val password: String, val username: String?,
+        val encryptionPassword: String? = null,
     )
     val closedActiveNotes = 0
 
@@ -64,8 +66,9 @@ class FakeNotebookRepository : NotebookRepository {
         remoteUrl: String,
         remotePasswordOrToken: String,
         remoteUsername: String?,
+        encryptionPassword: String?,
     ): Result<Notebook> {
-        clonedNotebooks += ClonedNotebook(name, directoryPath, remoteUrl, remotePasswordOrToken, remoteUsername)
+        clonedNotebooks += ClonedNotebook(name, directoryPath, remoteUrl, remotePasswordOrToken, remoteUsername, encryptionPassword)
         return notebookResult
     }
 
@@ -80,9 +83,10 @@ class FakeNotebookRepository : NotebookRepository {
         remoteUrl: String?,
         remoteUsername: String?,
         remotePassword: String?,
+        encryptionPassword: String?,
     ): Result<Notebook> {
         updatedNotebookIds += id
-        notebookUpdates += NotebookUpdate(id, name, remoteUrl, remoteUsername, remotePassword)
+        notebookUpdates += NotebookUpdate(id, name, remoteUrl, remoteUsername, remotePassword, encryptionPassword)
         return notebookResult
     }
 

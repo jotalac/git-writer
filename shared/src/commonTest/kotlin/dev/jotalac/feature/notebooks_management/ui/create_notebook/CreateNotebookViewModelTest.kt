@@ -141,6 +141,22 @@ class CreateNotebookViewModelTest {
     }
 
     @Test
+    fun `cloning an encrypted notebook passes its password`() = viewModelTest {
+        notebooks.notebookResult = Result.success(work)
+        val viewModel = createViewModel()
+        viewModel.onEvent(CreateNotebookEvent.NotebookNameChanged("Diary"))
+        viewModel.onEvent(CreateNotebookEvent.RemoteUrlChanged("https://example.com/diary.git"))
+        viewModel.onEvent(CreateNotebookEvent.UsernameChanged("me"))
+        viewModel.onEvent(CreateNotebookEvent.PasswordChanged("token"))
+        viewModel.onEvent(CreateNotebookEvent.EncryptionPasswordChanged("correct horse"))
+
+        viewModel.onEvent(CreateNotebookEvent.CloneRemoteNotebook("/notebooks/Diary") { dialogClosed = true })
+        advanceUntilIdle()
+
+        assertEquals("correct horse", notebooks.clonedNotebooks.single().encryptionPassword)
+    }
+
+    @Test
     fun `opening an existing folder says it was opened and not created`() = viewModelTest {
         notebooks.notebookResult = Result.success(work)
         val viewModel = createViewModel()

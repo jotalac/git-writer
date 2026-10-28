@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
@@ -43,7 +44,7 @@ fun ActiveNotebookMenu(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ActiveNotebookName(notebook?.name, notebook?.remoteUrl)
+        ActiveNotebookName(notebook)
         Spacer(Modifier.height(12.dp))
         ActiveNotebookActions(
             anyFolderExpanded,
@@ -57,7 +58,7 @@ fun ActiveNotebookMenu(
 }
 
 @Composable
-private fun ActiveNotebookName(notebookName: String?, remoteUrl: String?) {
+private fun ActiveNotebookName(notebook: Notebook?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -65,22 +66,36 @@ private fun ActiveNotebookName(notebookName: String?, remoteUrl: String?) {
     ) {
 
         Text(
-            text = notebookName ?: stringResource(Res.string.no_active_notebook_label),
+            text = notebook?.name ?: stringResource(Res.string.no_active_notebook_label),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = if (notebookName != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+            color = if (notebook?.name != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
 
-        if (remoteUrl != null) {
-            Icon(
-                painter = painterResource(Res.drawable.git_fork),
-                tint = MaterialTheme.colorScheme.outline,
-                contentDescription = stringResource(Res.string.git_merge_icon),
-                modifier = Modifier.offset(x = (-4).dp).size(20.dp),
-            )
+        Row(
+            modifier = Modifier.offset(x = (-4).dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (notebook?.isEncrypted == true) {
+                Icon(
+                    painter = painterResource(Res.drawable.shield_lock),
+                    tint = MaterialTheme.colorScheme.outline,
+                    contentDescription = stringResource(Res.string.notebook_encrypted_info),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+
+            notebook?.remoteUrl?.let {
+                Icon(
+                    painter = painterResource(Res.drawable.git_fork),
+                    tint = MaterialTheme.colorScheme.outline,
+                    contentDescription = stringResource(Res.string.git_merge_icon),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
         }
     }
 }

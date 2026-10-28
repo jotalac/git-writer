@@ -3,7 +3,7 @@
 > high priority
 
 - add button for creating new note from the widget (i guess from the root)
-- add support for mermaid diagrams
+- when highlighting text in the codeblock, it crashed with (all code blocks scrolling and non-scrolling) not only code blocks, it does it even on normal text ![error image](readme_images/error_highligh_codeblock.png)
 
 > medium priority
 
@@ -25,6 +25,7 @@
 
 > other ideas - lower priority
 
+- add support for mermaid diagrams
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename
 - add something like .gitwriter file to each notebook folder, there will be the remote credentials etc., it wont be commited, but comes in handy when you want to open folder with remote already configured
 - when there is a merge conflict, add preview on the conflicted files and content

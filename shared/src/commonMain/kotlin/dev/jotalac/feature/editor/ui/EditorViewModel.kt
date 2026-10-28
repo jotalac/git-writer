@@ -12,6 +12,7 @@ import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor.domain.EditorTabItem
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -35,6 +36,7 @@ class EditorViewModel(
     private val userSettingsManager: UserSettings,
     gitSyncRepository: GitSyncRepository,
     private val remoteStatusMonitor: RemoteStatusMonitor,
+    encryptedGitSync: EncryptedGitSync,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorScreenState())
@@ -54,6 +56,7 @@ class EditorViewModel(
 
     private val syncController = EditorSyncController(
         gitSyncRepository = gitSyncRepository,
+        encryptedGitSync = encryptedGitSync,
         notebookRepository = notebookRepository,
         snackbarManager = snackbarManager,
         userSettingsManager = userSettingsManager,

@@ -36,10 +36,15 @@ build-konfig = "0.22.0"
 nucleus-spell-check = "2.5.18"
 glance = "1.2.0"
 connectivity = "2.5.3"
+cryptography = "0.6.0"
+kotlinx-serialization-json = "1.7.3"
 
 
 
 [libraries]
+cryptography-core = { module = "dev.whyoleg.cryptography:cryptography-core", version.ref = "cryptography" }
+cryptography-provider-optimal = { module = "dev.whyoleg.cryptography:cryptography-provider-optimal", version.ref = "cryptography" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 

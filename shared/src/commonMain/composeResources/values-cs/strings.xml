@@ -181,4 +181,11 @@
     <string name="exporting_pdf">Exportuji %1$s…</string>
     <string name="msg_pdf_exported">Uloženo jako %1$s</string>
     <string name="err_failed_export_pdf">Export do PDF se nezdařil</string>
+    <string name="encrypt_notebook_label">Šifrovat sešit</string>
+    <string name="encrypt_notebook_subtitle">Na vzdálený repozitář jdou jen šifrovaná data. Je potřeba nový, prázdný repozitář.</string>
+    <string name="notebook_encrypted_info">Tento sešit je šifrovaný - jeho vzdálený repozitář obsahuje jen šifrovaná data.</string>
+    <string name="encryption_password_label">Heslo sešitu</string>
+    <string name="encryption_password_confirm_label">Zopakujte heslo</string>
+    <string name="encryption_password_warning">Bez tohoto hesla nikdo poznámky ve vzdáleném repozitáři nepřečte - nelze ho obnovit.</string>
+    <string name="encrypted_notebook_password_label">Heslo sešitu (jen pro šifrované sešity)</string>
 </resources>

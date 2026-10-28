@@ -18,6 +18,8 @@ class FakeGitSyncRepository : GitSyncRepository {
     var initResult: Result<Unit> = Result.success(Unit)
     var validateCredentialsResult: Result<Unit> = Result.success(Unit)
     var cloneResult: Result<Unit> = Result.success(Unit)
+    /** what a clone puts into its destination - e.g. the files of an encrypted notebook's remote */
+    var onClone: (destination: String) -> Unit = {}
 
     val initializedPaths = mutableListOf<String>()
     val clonedDestinations = mutableListOf<String>()
@@ -47,6 +49,7 @@ class FakeGitSyncRepository : GitSyncRepository {
         username: String?,
     ): Result<Unit> {
         clonedDestinations += destinationPath
+        onClone(destinationPath)
         return cloneResult
     }
 

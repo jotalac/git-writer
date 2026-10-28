@@ -6,6 +6,9 @@ import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
+import dev.jotalac.feature.git_sync.encryption.NotebookKey
+import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -29,6 +32,7 @@ import git_writer.shared.generated.resources.msg_sync_aborted
  */
 class EditorSyncController(
     private val gitSyncRepository: GitSyncRepository,
+    private val encryptedGitSync: EncryptedGitSync,
     private val notebookRepository: NotebookRepository,
     private val snackbarManager: SnackbarManager,
     private val userSettingsManager: UserSettings,
@@ -48,22 +52,13 @@ class EditorSyncController(
         state.update { it.copy(gitSyncStatus = GitSyncStatus.Syncing) }
         saveCurrentNote()
 
-        val result = gitSyncRepository.syncNotes(
-            notebook.directoryPath,
-            notebook.remotePassword,
-            notebook.remoteUsername
-        )
+        val result = syncNotebook(notebook, notebook.remotePassword)
 
         result.onSuccess { syncResult ->
             if (syncResult is GitSyncStatus.Conflict) {
                 val strategy = userSettingsManager.userSettingsStateFlow.first().gitConflictStrategy
                 if (strategy != GitConflictResolutionStrategy.MANUAL) {
-                    executeResolveAllConflicts(
-                        notebookPath = notebook.directoryPath,
-                        remotePassword = notebook.remotePassword,
-                        remoteUsername = notebook.remoteUsername,
-                        keepLocal = strategy == GitConflictResolutionStrategy.LOCAL
-                    )
+                    executeResolveAllConflicts(notebook, keepLocal = strategy == GitConflictResolutionStrategy.LOCAL)
                 } else {
                     state.update {
                         it.copy(conflictedFiles = syncResult.files.toList(), gitSyncStatus = syncResult)
@@ -99,7 +94,7 @@ class EditorSyncController(
             }
 
             if (remaining.isEmpty()) {
-                pushResolvedConflicts(notebook.directoryPath, notebook.remotePassword, notebook.remoteUsername)
+                pushResolvedConflicts(notebook)
             }
         }.onFailure {
             snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_resolve_conflict, it.message))
@@ -108,12 +103,7 @@ class EditorSyncController(
 
     suspend fun resolveAllConflicts(keepLocal: Boolean) {
         val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return
-        executeResolveAllConflicts(
-            notebookPath = notebook.directoryPath,
-            remotePassword = notebook.remotePassword,
-            remoteUsername = notebook.remoteUsername,
-            keepLocal = keepLocal
-        )
+        executeResolveAllConflicts(notebook, keepLocal)
     }
 
     suspend fun abort() {
@@ -128,14 +118,9 @@ class EditorSyncController(
         }
     }
 
-    private suspend fun executeResolveAllConflicts(
-        notebookPath: String,
-        remotePassword: String?,
-        remoteUsername: String?,
-        keepLocal: Boolean
-    ) {
+    private suspend fun executeResolveAllConflicts(notebook: Notebook, keepLocal: Boolean) {
         val result = gitSyncRepository.resolveAllConflicts(
-            currentNotebookPath = notebookPath,
+            currentNotebookPath = notebook.directoryPath,
             keepLocalChanges = keepLocal
         )
 
@@ -144,7 +129,7 @@ class EditorSyncController(
 
             state.value.activeNotePath?.let { reloadNote(it) }
 
-            pushResolvedConflicts(notebookPath, remotePassword, remoteUsername)
+            pushResolvedConflicts(notebook)
         }.onFailure {
             state.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
             snackbarManager.showMessage(SnackbarText.message(Res.string.err_failed_resolve_conflicts, it.message))
@@ -152,14 +137,18 @@ class EditorSyncController(
     }
 
     // the resolution is already committed locally, so a failed push is not lost - the next sync pushes it
-    private suspend fun pushResolvedConflicts(notebookPath: String, remotePassword: String?, remoteUsername: String?) {
-        val pushResult = if (remotePassword.isNullOrBlank()) {
-            Result.success(Unit)
-        } else {
-            gitSyncRepository.pushChanges(
-                currentNotebookPath = notebookPath,
-                tokenOrPassword = remotePassword,
-                username = remoteUsername
+    private suspend fun pushResolvedConflicts(notebook: Notebook) {
+        val token = notebook.remotePassword
+        val pushResult = when {
+            token.isNullOrBlank() -> Result.success(Unit)
+            // the resolution is a merge commit the encrypted sync publishes like any other
+            notebook.isEncrypted -> syncNotebook(notebook, token).map { status ->
+                check(status !is GitSyncStatus.Conflict) { "Another device changed the same notes meanwhile - sync again" }
+            }
+            else -> gitSyncRepository.pushChanges(
+                currentNotebookPath = notebook.directoryPath,
+                tokenOrPassword = token,
+                username = notebook.remoteUsername
             )
         }
 
@@ -170,5 +159,14 @@ class EditorSyncController(
             state.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }
             snackbarManager.showMessage(SnackbarText.message(Res.string.err_push_after_resolve, it.message))
         }
+    }
+
+    // an encrypted notebook's remote only takes encrypted bundles - see EncryptedGitSync
+    private suspend fun syncNotebook(notebook: Notebook, token: String): Result<GitSyncStatus> {
+        if (!notebook.isEncrypted) return gitSyncRepository.syncNotes(notebook.directoryPath, token, notebook.remoteUsername)
+
+        val key = notebook.encryptionKey
+            ?: return Result.failure(IllegalStateException("This device has no key for the encrypted notebook"))
+        return encryptedGitSync.sync(notebook.directoryPath, NotebookKey.fromEncoded(key), token, notebook.remoteUsername)
     }
 }

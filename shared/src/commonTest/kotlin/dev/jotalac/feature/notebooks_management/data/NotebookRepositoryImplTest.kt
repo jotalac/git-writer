@@ -2,18 +2,19 @@ package dev.jotalac.feature.notebooks_management.data
 
 import dev.jotalac.core.data.ActiveNotebookManager
 import dev.jotalac.core.utils.deleteRecursively
+import dev.jotalac.feature.git_sync.domain.GitSyncStatus
+import dev.jotalac.feature.git_sync.encryption.ENCRYPTION_CONFIG_FILE
+import dev.jotalac.feature.git_sync.encryption.EncryptedGitSync
+import dev.jotalac.feature.git_sync.encryption.NotebookEncryption
+import dev.jotalac.feature.git_sync.encryption.PasswordRequiredException
+import dev.jotalac.feature.git_sync.encryption.WrongPasswordException
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
+import dev.jotalac.testing.fakes.FakeMailboxRepository
+import dev.jotalac.testing.fakes.FakeMirrorRepository
 import dev.jotalac.testing.fakes.FakeGitSyncRepository
 import dev.jotalac.testing.fakes.FakeNotebookDao
 import dev.jotalac.testing.fakes.InMemoryDataStore
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import kotlinx.io.buffered
-import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
-import kotlinx.io.files.SystemTemporaryDirectory
-import kotlinx.io.writeString
 import kotlin.random.Random
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -21,8 +22,17 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
+import kotlinx.io.buffered
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.files.SystemTemporaryDirectory
+import kotlinx.io.writeString
 
 /*
 * Runs against real folders in a temporary directory. The database and the preferences are in-memory
@@ -44,6 +54,7 @@ class NotebookRepositoryImplTest {
         notebookPathProvider = object : NotebookPathProvider {
             override fun getDefaultNotebookDirectory() = defaultNotebookDirectory
         },
+        encryptedGitSync = EncryptedGitSync(gitSync, FakeMirrorRepository(), FakeMailboxRepository()),
     )
 
     private lateinit var testDir: Path
@@ -324,6 +335,96 @@ class NotebookRepositoryImplTest {
 
         assertEquals(listOf(pathOf("Team")), gitSync.removedRemotes)
         assertNull(dao.getNotebookById(notebook.id)?.remoteUrl)
+    }
+
+    // --- encrypted notebooks
+
+    /** A notebook whose remote is an encrypted notebook's. */
+    private suspend fun encryptedNotebook(): Notebook {
+        val notebook = createNotebook("Diary")
+        val stored = dao.getNotebookById(notebook.id)!!
+        dao.upsertNotebook(
+            stored.copy(
+                remoteUrl = "https://example.com/diary.git", remoteUsername = "me", remotePassword = "token",
+                isEncrypted = true, encryptionKey = "key",
+            )
+        )
+        return notebook
+    }
+
+    /** Clones look like the remote of an encrypted notebook with [password]. */
+    private suspend fun encryptedRemote(password: String = "correct horse") {
+        val config = NotebookEncryption.create(password, iterations = 1_000).first.toJson()
+        gitSync.onClone = { destination ->
+            SystemFileSystem.createDirectories(Path(destination))
+            SystemFileSystem.sink(Path(destination, ENCRYPTION_CONFIG_FILE)).buffered().use { it.writeString(config) }
+        }
+    }
+
+    @Test
+    fun `a new token for an encrypted notebook keeps its git remote on the mirror`() = runTest {
+        // its git remote is the local mirror - pointing it at the remote repository would break the encryption
+        val notebook = encryptedNotebook()
+
+        repository.updateNotebook(notebook.id, "Diary", "https://example.com/diary.git", "me", "new token").getOrThrow()
+
+        assertTrue(gitSync.updatedRemoteUrls.isEmpty())
+        val saved = dao.getNotebookById(notebook.id)!!
+        assertEquals("new token", saved.remotePassword)
+        assertTrue(saved.isEncrypted)
+        assertEquals("key", saved.encryptionKey)
+    }
+
+    @Test
+    fun `the remote of an encrypted notebook can be neither changed nor removed`() = runTest {
+        // its bundles are there
+        val notebook = encryptedNotebook()
+
+        assertTrue(repository.updateNotebook(notebook.id, "Diary", "https://example.com/other.git", "me", "token").isFailure)
+        assertTrue(repository.updateNotebook(notebook.id, "Diary", null, null, null).isFailure)
+
+        assertTrue(gitSync.removedRemotes.isEmpty())
+        assertEquals("https://example.com/diary.git", dao.getNotebookById(notebook.id)?.remoteUrl)
+    }
+
+    @Test
+    fun `an encrypted remote is not added without its password`() = runTest {
+        encryptedRemote()
+
+        val result = repository.cloneNotebook("Diary", pathOf("Diary"), "https://example.com/diary.git", "token")
+
+        assertIs<PasswordRequiredException>(result.exceptionOrNull())
+        assertFalse(exists(pathOf("Diary")))
+        assertNull(dao.getNotebookByName("Diary"))
+    }
+
+    @Test
+    fun `an encrypted remote is not added with a wrong password`() = runTest {
+        encryptedRemote(password = "correct horse")
+
+        val result = repository.cloneNotebook(
+            "Diary", pathOf("Diary"), "https://example.com/diary.git", "token", encryptionPassword = "battery staple",
+        )
+
+        assertIs<WrongPasswordException>(result.exceptionOrNull())
+        assertFalse(exists(pathOf("Diary")))
+        assertNull(dao.getNotebookByName("Diary"))
+    }
+
+    @Test
+    fun `an encrypted remote opens with its password and the notebook keeps its key`() = runTest {
+        encryptedRemote(password = "correct horse")
+        gitSync.syncResult = Result.success(GitSyncStatus.UpToDate)
+
+        val notebook = repository.cloneNotebook(
+            "Diary", pathOf("Diary"), "https://example.com/diary.git", "token", encryptionPassword = "correct horse",
+        ).getOrThrow()
+
+        val saved = dao.getNotebookById(notebook.id)!!
+        assertTrue(saved.isEncrypted)
+        assertNotNull(saved.encryptionKey)
+        // the notebook's git remote is the mirror inside it, not the remote repository
+        assertTrue(gitSync.updatedRemoteUrls.all { (path, url) -> path == pathOf("Diary") && url.endsWith("mirror.git") })
     }
 
     // --- the open notebook and note

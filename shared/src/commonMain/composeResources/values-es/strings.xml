@@ -181,4 +181,11 @@
     <string name="exporting_pdf">Exportando %1$s…</string>
     <string name="msg_pdf_exported">Guardado como %1$s</string>
     <string name="err_failed_export_pdf">No se pudo exportar el PDF</string>
+    <string name="encrypt_notebook_label">Cifrar cuaderno</string>
+    <string name="encrypt_notebook_subtitle">El repositorio remoto solo recibe datos cifrados. Necesita un repositorio nuevo y vacío.</string>
+    <string name="notebook_encrypted_info">Este cuaderno está cifrado: su repositorio remoto solo contiene datos cifrados.</string>
+    <string name="encryption_password_label">Contraseña del cuaderno</string>
+    <string name="encryption_password_confirm_label">Repite la contraseña</string>
+    <string name="encryption_password_warning">Sin esta contraseña nadie puede leer las notas del repositorio remoto y no se puede recuperar.</string>
+    <string name="encrypted_notebook_password_label">Contraseña del cuaderno (solo para cuadernos cifrados)</string>
 </resources>

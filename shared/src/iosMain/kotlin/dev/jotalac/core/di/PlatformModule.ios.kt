@@ -19,6 +19,10 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import dev.jotalac.core.data.createDataStore
 import dev.jotalac.feature.git_sync.data.LibGit2SyncRepositoryImpl
+import dev.jotalac.feature.git_sync.data.LibGit2MailboxRepositoryImpl
+import dev.jotalac.feature.git_sync.data.LibGit2MirrorRepositoryImpl
+import dev.jotalac.feature.git_sync.domain.MailboxRepository
+import dev.jotalac.feature.git_sync.domain.MirrorRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 
 
@@ -49,6 +53,9 @@ actual val platformModule: Module = module {
             "$dirPath/$DATA_STORE_FILE_NAME"
         }
     }
+
+    single<MirrorRepository> { LibGit2MirrorRepositoryImpl() }
+    single<MailboxRepository> { LibGit2MailboxRepositoryImpl() }
 
     single<GitSyncRepository> {
         LibGit2SyncRepositoryImpl()

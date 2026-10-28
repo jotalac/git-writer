@@ -182,4 +182,11 @@
     <string name="exporting_pdf">%1$s wird exportiert…</string>
     <string name="msg_pdf_exported">Gespeichert als %1$s</string>
     <string name="err_failed_export_pdf">PDF-Export fehlgeschlagen</string>
+    <string name="encrypt_notebook_label">Notizbuch verschlüsseln</string>
+    <string name="encrypt_notebook_subtitle">Das Remote-Repository erhält nur verschlüsselte Daten. Benötigt ein neues, leeres Repository.</string>
+    <string name="notebook_encrypted_info">Dieses Notizbuch ist verschlüsselt - sein Remote-Repository enthält nur verschlüsselte Daten.</string>
+    <string name="encryption_password_label">Notizbuch-Passwort</string>
+    <string name="encryption_password_confirm_label">Passwort wiederholen</string>
+    <string name="encryption_password_warning">Ohne dieses Passwort kann niemand die Notizen im Remote-Repository lesen - es lässt sich nicht wiederherstellen.</string>
+    <string name="encrypted_notebook_password_label">Notizbuch-Passwort (nur für verschlüsselte Notizbücher)</string>
 </resources>
