@@ -3,10 +3,10 @@
 > high priority
 
 - add button for creating new note from the widget (i guess from the root)
-- when highlighting text in the codeblock, it crashed with (all code blocks scrolling and non-scrolling) not only code blocks, it does it even on normal text ![error image](readme_images/error_highligh_codeblock.png)
 
 > medium priority
 
+- when highlighting text in the codeblock, it crashed with (all code blocks scrolling and non-scrolling) not only code blocks, it does it even on normal text ![error image](readme_images/error_highligh_codeblock.png)
 - add something like quick note, which it be deleted after the application exit (for some quick test notes)
 - add note linking
 - save the expanded folder to database (so that the file tree looks the same on app open)+ save all tabs that were opened

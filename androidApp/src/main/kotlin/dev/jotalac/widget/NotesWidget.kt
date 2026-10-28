@@ -160,6 +160,15 @@ private fun Header(title: String) {
             backgroundColor = null,
             contentColor = GlanceTheme.colors.onSurfaceVariant,
         )
+        CircleIconButton(
+            imageProvider = ImageProvider(R.drawable.note_add),
+            contentDescription = "New note",
+            onClick = actionStartActivity<MainActivity>(
+                actionParametersOf(MainActivity.NEW_NOTE_PARAM to true)
+            ),
+            backgroundColor = null,
+            contentColor = GlanceTheme.colors.onSurfaceVariant,
+        )
     }
 }
 

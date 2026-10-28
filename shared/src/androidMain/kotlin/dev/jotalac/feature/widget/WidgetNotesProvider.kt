@@ -1,9 +1,11 @@
 package dev.jotalac.feature.widget
 
+import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import org.koin.mp.KoinPlatform
@@ -33,6 +35,9 @@ object WidgetNotesProvider {
     private val notebookRepository: NotebookRepository
         get() = KoinPlatform.getKoin().get()
 
+    private val editorRepository: EditorRepository
+        get() = KoinPlatform.getKoin().get()
+
     // emits null when there is no active notebook, re-emits whenever the active notebook changes
     fun activeNotebookFlow(): Flow<WidgetNotebook?> = notebookRepository.activeNotebookState
         .map { notebook -> notebook?.let(::loadNotebook) }
@@ -56,6 +61,14 @@ object WidgetNotesProvider {
 
     // the editor opens the active note, so activating it is enough to open it on app start
     suspend fun openNote(notePath: String): Result<Unit> = notebookRepository.activateNote(notePath)
+
+    // a new note in the root of the active notebook, made active so the editor opens it
+    suspend fun createNote(): Result<Unit> {
+        val notebook = notebookRepository.activeNotebookState.first()
+            ?: return Result.failure(IllegalStateException("No active notebook"))
+        val notePath = editorRepository.createNote(notebook.directoryPath).getOrElse { return Result.failure(it) }
+        return notebookRepository.activateNote(notePath)
+    }
 
     private fun File.toWidgetNote(root: File): WidgetNote {
         val folder = parentFile
