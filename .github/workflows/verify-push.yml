@@ -73,3 +73,13 @@ jobs:
       # run the tests on ios simulator
       - name: Tests
         run: ./gradlew :shared:iosSimulatorArm64Test
+
+  verify:
+    name: verify
+    needs: [ desktop-android, ios ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All checks passed
+        run: |
+          [ "${{ needs.desktop-android.result }}" = "success" ] && [ "${{ needs.ios.result }}" = "success" ]
