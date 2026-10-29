@@ -2,7 +2,8 @@
 
 > high priority
 
-- add button for creating new note from the widget (i guess from the root)
+- edit notebook dialog, should be a screen on mobile devices (like settings on mobile vs desktop)
+- when a notebook have active encryption, add possiblity to disable it again -> it would remove the .git, and just create a new local repo, and then force push to the remote to overwrite the encrypted bundles?
 
 > medium priority
 
@@ -11,7 +12,6 @@
 - add note linking
 - save the expanded folder to database (so that the file tree looks the same on app open)+ save all tabs that were opened
 - make latex blocks work also in the middle of the block, not only on empty block
-- lists are splitted into multiple blocks, but when reloaded it is only one list block (no other components are in the middle of it)
 - add bottom bar - info button and character/word count (add some help to topAppBar - usage, shortcuts in the app,
   markdown cheatsheet, etc.)
 - add ctrl+r replace (replace all/current)
@@ -26,7 +26,6 @@
 
 - add support for mermaid diagrams
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename
-- add something like .gitwriter file to each notebook folder, there will be the remote credentials etc., it wont be commited, but comes in handy when you want to open folder with remote already configured
 - when there is a merge conflict, add preview on the conflicted files and content
 - when note is opened and image is clicked from the sidebar, make the image appear on new tab
 - share notes on mobile? like normal share button to quickshare, email ...
@@ -34,6 +33,5 @@
 - when renaming image resource – refactor the notes to use the new image name?
 - add some highlight cursor to the file tree so that i can be operated only with keyboard (f2 for renaming and ctrl+n
   for new file)
-- better messages while syncing (eg. when nothing is commited or pulled - display up to date message)
 - make username and password optional for cloning when cloning public repo – then the sync would be disabled?
 - add some overview of the opened note, it will show the headers, and you can jump to the specified header

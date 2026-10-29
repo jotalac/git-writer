@@ -164,7 +164,7 @@ jobs:
             echo "::error::v${VERSION} is already published. Bump app.version.number in gradle.properties."
             exit 1
           else
-            gh release create "v${VERSION}" \
+            gh release create "${VERSION}" \
               --draft \
               --title "v${VERSION}" \
               --target "$GITHUB_SHA" \
