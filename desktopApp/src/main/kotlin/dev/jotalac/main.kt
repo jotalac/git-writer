@@ -24,6 +24,7 @@ import dev.jotalac.core.ui.window.LocalDesktopAwtWindow
 import dev.jotalac.core.ui.window.LocalWindowChrome
 import dev.jotalac.core.utils.isMacOsPlatform
 import dev.jotalac.feature.git_sync.data.jgitBypassUrlRewrite
+import dev.jotalac.input.fixX11ShortcutKeys
 import dev.jotalac.window.DesktopWindowChrome
 import dev.jotalac.window.applyMacOsUnifiedTitleBar
 import git_writer.shared.generated.resources.Res
@@ -39,6 +40,7 @@ fun main() {
 
     initKoin()
     jgitBypassUrlRewrite()
+    fixX11ShortcutKeys()
 
     application {
         val scope = rememberCoroutineScope()
