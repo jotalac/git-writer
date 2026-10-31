@@ -18,7 +18,7 @@ interface UserSettings {
     suspend fun setLanguage(language: AppLanguage)
     suspend fun setGitConflictStrategy(strategy: GitConflictResolutionStrategy)
     suspend fun setUseDynamicColor(useDynamicColor: Boolean)
-    suspend fun setSpellcheckLanguage(language: AppLanguage?)
+    suspend fun setSpellcheckLanguage(language: SpellcheckLanguage)
     suspend fun setEditorFullWidth(fullWidth: Boolean)
     suspend fun setAutoSync(autoSync: Boolean)
 }

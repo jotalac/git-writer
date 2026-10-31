@@ -3,325 +3,173 @@ package dev.jotalac.feature.editor.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import dev.jotalac.feature.editor.ui.components.active_block.EditorHistoryItem
-import dev.jotalac.feature.editor.ui.components.active_block.EditorHistoryManager
 import dev.jotalac.feature.editor.ui.utils.addLink
 import dev.jotalac.feature.editor.ui.utils.applyBold
 import dev.jotalac.feature.editor.ui.utils.applyInlineCode
 import dev.jotalac.feature.editor.ui.utils.applyItalic
+import dev.jotalac.feature.editor.ui.utils.continueMarkdownOnNewLine
+import dev.jotalac.feature.editor.ui.utils.handleIndentation
+import dev.jotalac.feature.editor.ui.utils.insertImageMarkdown
+import dev.jotalac.feature.editor.ui.utils.insertTextBetween
+import dev.jotalac.feature.editor.ui.utils.moveLines
 
+/**
+ * The note being edited, as one text - its cursor, undo history and the edits the editor makes in it.
+ * Every change of the text goes to the view model as [EditorAction.UpdateText].
+ */
 @Stable
 class MarkdownEditorState(
-    private val blocksState: State<List<String>>,
+    private val noteTextState: State<String>,
     private val onActionState: State<(EditorAction) -> Unit>,
-    private val historyManager: EditorHistoryManager
+    private val historyManager: EditorHistoryManager,
 ) {
-    var focusedIndex by mutableStateOf<Int?>(null)
+    var value by mutableStateOf(TextFieldValue(noteTextState.value))
         private set
 
-    var activeTextFieldValue by mutableStateOf(TextFieldValue())
-        private set
+    /** Whether the text field has the focus - the markdown syntax is shown only then, where the cursor is. */
+    var isFocused by mutableStateOf(false)
 
-
+    // set by the editor's composables
+    var requestFieldFocus: (() -> Unit)? = null
     var requestRootFocus: (() -> Unit)? = null
 
-    fun requestEditorFocus() {
-        requestRootFocus?.invoke()
+    /** A change from the text field - a new line continues a list, like the Enter key does. */
+    fun onValueChange(newValue: TextFieldValue) {
+        updateValue(continueMarkdownOnNewLine(value, newValue) ?: newValue)
     }
 
-    fun focusBlock(index: Int, cursor: TextRange? = null) {
-        if (index !in blocksState.value.indices) return
-
-        focusedIndex = index
-        val text = blocksState.value.getOrNull(index) ?: ""
-        val safeCursor = if (cursor != null) {
-            TextRange(
-                cursor.start.coerceIn(0, text.length),
-                cursor.end.coerceIn(0, text.length)
-            )
-        } else {
-            TextRange(text.length)
+    /**
+     * Shows [newValue] and saves its text. [isSeparateEdit] keeps the edit as one undo step, instead of joining it
+     * with the typing around it.
+     */
+    fun updateValue(newValue: TextFieldValue, isSeparateEdit: Boolean = false) {
+        if (newValue.text != value.text) {
+            historyManager.record(createCurrentSnapshot(), isSeparateEdit)
+            dispatchAction(EditorAction.UpdateText(newValue.text))
         }
-        activeTextFieldValue = TextFieldValue(
-            text = text,
-            selection = safeCursor
+        value = newValue
+    }
+
+    /** Replaces [start, end) with [replacement] - an edit made by clicking a checkbox or resizing an image. */
+    fun replaceRange(start: Int, end: Int, replacement: String) {
+        val text = value.text
+        if (start < 0 || end > text.length || start > end) return
+
+        val shift = replacement.length - (end - start)
+        fun moved(offset: Int) = when {
+            offset >= end -> offset + shift
+            offset > start -> start + replacement.length
+            else -> offset
+        }
+        updateValue(
+            TextFieldValue(
+                text = insertTextBetween(text, start, end, replacement),
+                selection = TextRange(moved(value.selection.start), moved(value.selection.end)),
+            ),
+            isSeparateEdit = true,
         )
     }
 
-    fun clearFocus() {
-        focusedIndex = null
-        requestEditorFocus()
-    }
-
-    fun updateActiveText(newValue: TextFieldValue, fromIndex: Int? = null) {
-        //only update the block when it came from the actual block - handles synchronization errors
-        if (fromIndex != null && fromIndex != focusedIndex) return
-
-        // only update when some block is focused
-        val index = focusedIndex ?: return
-
-        if (blocksState.value.getOrNull(index) != newValue.text) {
-            historyManager.record(createCurrentSnapshot())
-            dispatchAction(EditorAction.UpdateBlock(index, newValue.text))
-        }
-
-        activeTextFieldValue = newValue
-    }
-
-    fun updateBlockText(index: Int, newText: String) {
-        if (index !in blocksState.value.indices) return
-        historyManager.record(createCurrentSnapshot(), true)
-        dispatchAction(EditorAction.UpdateBlock(index, newText))
-    }
-
-    fun dispatchAction(action: EditorAction) {
+    private fun dispatchAction(action: EditorAction) {
         onActionState.value(action)
     }
 
-    // make sure the activeTextFieldValue is in sync with the focused block and blocksState
-    fun syncExternalBlocks() {
-        val index = focusedIndex ?: return
-        val currentText = blocksState.value.getOrNull(index) ?: return
+    // the note was changed outside the editor (reloaded after a sync) - keep the cursor where it can be
+    fun syncExternalText() {
+        val text = noteTextState.value
+        if (text == value.text) return
 
-        if (activeTextFieldValue.text != currentText) {
-            activeTextFieldValue = activeTextFieldValue.copy(
-                text = currentText,
-                selection = TextRange(
-                    activeTextFieldValue.selection.start.coerceIn(0, currentText.length),
-                    activeTextFieldValue.selection.end.coerceIn(0, currentText.length)
-                )
-            )
-        }
-    }
-
-    // undo/redo logic
-    private fun createCurrentSnapshot(): EditorHistoryItem {
-        return EditorHistoryItem(
-            blocks = blocksState.value.toList(),
-            focusedIndex = focusedIndex,
-            selection = activeTextFieldValue.selection,
+        value = TextFieldValue(
+            text = text,
+            selection = TextRange(
+                value.selection.start.coerceIn(0, text.length),
+                value.selection.end.coerceIn(0, text.length),
+            ),
         )
     }
 
-    fun undo() {
-        val prevState = historyManager.undo(createCurrentSnapshot()) ?: return
+    // --- focus and cursor ---
 
-        dispatchAction(EditorAction.SetBlocks(prevState.blocks))
-        if (prevState.focusedIndex != null && prevState.focusedIndex in prevState.blocks.indices) {
-            focusBlock(prevState.focusedIndex, prevState.selection)
-        } else {
-            clearFocus()
-        }
+    /** Selects [range] in the text field and focuses it, e.g. a match of the find bar. */
+    fun select(range: TextRange) {
+        val length = value.text.length
+        value = value.copy(selection = TextRange(range.start.coerceIn(0, length), range.end.coerceIn(0, length)))
+        requestFieldFocus?.invoke()
+    }
+
+    fun focusAt(offset: Int) = select(TextRange(offset))
+
+    fun focusEnd() = focusAt(value.text.length)
+
+    fun clearFocus() {
+        requestRootFocus?.invoke()
+    }
+
+    // --- undo/redo ---
+
+    private fun createCurrentSnapshot() = EditorHistoryItem(text = value.text, selection = value.selection)
+
+    fun undo() {
+        val previousState = historyManager.undo(createCurrentSnapshot()) ?: return
+        restore(previousState)
     }
 
     fun redo() {
         val nextState = historyManager.redo(createCurrentSnapshot()) ?: return
-
-        dispatchAction(EditorAction.SetBlocks(nextState.blocks))
-        if (nextState.focusedIndex != null && nextState.focusedIndex in nextState.blocks.indices) {
-            focusBlock(nextState.focusedIndex, nextState.selection)
-        } else {
-            clearFocus()
-        }
+        restore(nextState)
     }
 
-    // block actions
-
-    fun evaluateFocusLost(index: Int) {
-        if (index == focusedIndex) {
-            focusedIndex = null
-        }
-        dispatchAction(
-            EditorAction.EvaluateBlockOnFocusLost(
-                index = index,
-                currentFocusedIndex = focusedIndex,
-                onFocusAdjusted = { adjustedIndex -> focusBlock(adjustedIndex ?: index) }
-            )
-        )
+    private fun restore(item: EditorHistoryItem) {
+        dispatchAction(EditorAction.UpdateText(item.text))
+        value = TextFieldValue(item.text, item.selection)
     }
 
-    fun addBlockBelow(index: Int) {
-        historyManager.record(createCurrentSnapshot(), true)
+    // --- edits ---
 
-        dispatchAction(EditorAction.AddBlock(index + 1))
-        focusBlock(index + 1, TextRange(0))
-    }
-
-    fun splitBlock(cursorStart: Int) {
-        val index = focusedIndex ?: return
-
-        historyManager.record(createCurrentSnapshot(), true)
-
-        dispatchAction(EditorAction.SplitBlock(index, cursorStart) { newFocusIndex ->
-            focusBlock(newFocusIndex, TextRange(0))
-        })
-    }
-
-    fun moveUp(): Boolean {
-        val index = focusedIndex ?: return false
-        if (index > 0) {
-            val previousText = blocksState.value.getOrNull(index - 1) ?: ""
-            focusBlock(index - 1, TextRange(previousText.length))
-            return true
-        }
-        return false
-    }
-
-    fun moveDown(): Boolean {
-        val index = focusedIndex ?: return false
-        if (index < blocksState.value.size - 1) {
-            val nextText = blocksState.value.getOrNull(index + 1) ?: ""
-            focusBlock(index + 1, TextRange(nextText.length))
-            return true
-        }
-        return false
-    }
-
-
-    fun swapBlockUp(blockIndex: Int? = null) {
-        val index = blockIndex ?: focusedIndex ?: return
-        if (index > 0) {
-            historyManager.record(createCurrentSnapshot(), true)
-
-            val targetIndex = index - 1
-            dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
-
-            // if the block was swapped from modal bottom sheet dont focus it
-            focusedIndex?.let {
-                focusBlock(targetIndex, activeTextFieldValue.selection)
-            }
-        }
-    }
-
-    fun swapBlockDown(blockIndex: Int? = null) {
-        val index = blockIndex ?: focusedIndex ?: return
-        if (index < blocksState.value.lastIndex) {
-            historyManager.record(createCurrentSnapshot(), true)
-
-            val targetIndex = index + 1
-            dispatchAction(EditorAction.SwapBlocks(index, targetIndex))
-
-            // if the block was swapped from modal bottom sheet dont focus it
-            focusedIndex?.let {
-                focusBlock(targetIndex, activeTextFieldValue.selection)
-            }
-        }
-    }
-
-    fun backspaceOnEmpty(): Boolean {
-        val index = focusedIndex ?: return false
-
-        historyManager.record(createCurrentSnapshot(), true)
-
-        dispatchAction(EditorAction.RemoveBlock(index))
-
-        val blocks = blocksState.value
-        if (blocks.isNotEmpty()) {
-            val newIndex = maxOf(0, index - 1)
-            val text = blocks.getOrNull(newIndex) ?: ""
-            focusBlock(newIndex, TextRange(text.length))
-        } else {
-            clearFocus()
-        }
-        return true
-    }
-
-    fun backspaceOnStart(): Boolean {
-        val index = focusedIndex ?: return false
-        if (index <= 0) return true
-
-        historyManager.record(createCurrentSnapshot(), true)
-
-        val originalBlockLength = blocksState.value.getOrNull(index - 1)?.length ?: 0
-        dispatchAction(EditorAction.MergeWithPrevBlock(index))
-        focusBlock(index - 1, TextRange(originalBlockLength))
-
-        return true
-    }
-
-    fun addBlockAtEndIfNotEmpty() {
-        historyManager.record(createCurrentSnapshot(), true)
-
-        var newIndex = blocksState.value.lastIndex
-
-        // dont add new empty block when the last is already empty
-        if (blocksState.value.isEmpty() || blocksState.value.last().isNotEmpty()) {
-            dispatchAction(EditorAction.AddBlock())
-            newIndex++
-        }
-
-        focusBlock(newIndex, TextRange(0))
-    }
-
-    fun deleteBlock(index: Int) {
-        historyManager.record(createCurrentSnapshot(), true)
-
-        dispatchAction(EditorAction.RemoveBlock(index))
-        val current = focusedIndex
-        if (current == index) {
-            clearFocus()
-        } else if (current != null && current > index) {
-            focusedIndex = current - 1
-        } else if (current == null) {
-            requestEditorFocus()
-        }
-    }
-
-    fun pasteImages(imageBytesList: List<ByteArray>, targetIndex: Int? = null) {
+    fun pasteImages(imageBytesList: List<ByteArray>) {
         if (imageBytesList.isEmpty()) return
-        val index = targetIndex ?: focusedIndex ?: maxOf(0, blocksState.value.lastIndex)
-        historyManager.record(createCurrentSnapshot(), true)
-
         dispatchAction(
-            EditorAction.PasteImages(
-                imageBytesList = imageBytesList,
-                focusedIndex = index,
-                onFocusCalculated = { newFocusIndex ->
-                    focusBlock(newFocusIndex, TextRange(0))
-                }
-            )
+            EditorAction.PasteImages(imageBytesList) { imageMarkdown ->
+                updateValue(value.insertImageMarkdown(imageMarkdown), isSeparateEdit = true)
+            }
         )
     }
 
-
-    fun handleEscape() {
-        clearFocus()
+    /** A line break that does not continue a list (Shift+Enter). */
+    fun insertPlainNewLine() {
+        val selection = value.selection
+        val newText = insertTextBetween(value.text, selection.min, selection.max, "\n")
+        updateValue(TextFieldValue(newText, TextRange(selection.min + 1)))
     }
 
-    fun applyBold() {
-        historyManager.record(createCurrentSnapshot(), true)
-        updateActiveText(activeTextFieldValue.applyBold())
-    }
+    fun indent(isUntab: Boolean) = updateValue(handleIndentation(value, isUntab), isSeparateEdit = true)
 
-    fun applyItalic() {
-        historyManager.record(createCurrentSnapshot(), true)
-        updateActiveText(activeTextFieldValue.applyItalic())
-    }
+    fun moveLinesUp() = updateValue(value.moveLines(up = true), isSeparateEdit = true)
 
-    fun addLinkTemplate() {
-        historyManager.record(createCurrentSnapshot(), true)
-        updateActiveText(activeTextFieldValue.addLink())
-    }
+    fun moveLinesDown() = updateValue(value.moveLines(up = false), isSeparateEdit = true)
 
-    fun applyInlineCode() {
-        historyManager.record(createCurrentSnapshot(), true)
-        updateActiveText(activeTextFieldValue.applyInlineCode())
-    }
+    fun applyBold() = updateValue(value.applyBold(), isSeparateEdit = true)
+
+    fun applyItalic() = updateValue(value.applyItalic(), isSeparateEdit = true)
+
+    fun addLinkTemplate() = updateValue(value.addLink(), isSeparateEdit = true)
+
+    fun applyInlineCode() = updateValue(value.applyInlineCode(), isSeparateEdit = true)
 }
 
 @Composable
 fun rememberMarkdownEditorState(
-    blocks: List<String>,
+    noteText: String,
     onAction: (EditorAction) -> Unit
 ): MarkdownEditorState {
-    val blocksState = rememberUpdatedState(blocks)
+    val noteTextState = rememberUpdatedState(noteText)
     val onActionState = rememberUpdatedState(onAction)
     val historyManager = remember { EditorHistoryManager() }
 
-    val state = remember { MarkdownEditorState(blocksState, onActionState, historyManager) }
+    val state = remember { MarkdownEditorState(noteTextState, onActionState, historyManager) }
 
-    LaunchedEffect(state.focusedIndex, blocks) {
-        state.syncExternalBlocks()
+    LaunchedEffect(noteText) {
+        state.syncExternalText()
     }
 
     return state

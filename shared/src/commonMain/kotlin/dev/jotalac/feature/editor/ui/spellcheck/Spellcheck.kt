@@ -18,10 +18,38 @@ import androidx.compose.ui.input.pointer.pointerInput
 data class MisspelledSpan(val start: Int, val end: Int)
 
 /**
+ * These spans of [oldText] where they are in [newText], for showing them until [newText] is checked: the ones
+ * after the edit move with the text, the ones the edit touched (even at their edge, the word changed) are dropped.
+ */
+fun List<MisspelledSpan>.movedByEdit(oldText: String, newText: String): List<MisspelledSpan> {
+    if (oldText == newText) return this
+
+    // the edit is what is between the same start and the same end of both texts
+    val prefix = oldText.commonPrefixWith(newText).length
+    var suffix = 0
+    while (suffix < minOf(oldText.length, newText.length) - prefix &&
+        oldText[oldText.length - 1 - suffix] == newText[newText.length - 1 - suffix]
+    ) suffix++
+    val editEnd = oldText.length - suffix
+    val shift = newText.length - oldText.length
+
+    return mapNotNull { span ->
+        when {
+            span.end < prefix -> span
+            span.start > editEnd -> MisspelledSpan(span.start + shift, span.end + shift)
+            else -> null
+        }
+    }
+}
+
+/**
  * Language the editor checks spelling in, as a language tag, or null to follow the app
  * language. Provided at the app root from the settings.
  */
 val LocalSpellcheckLanguage = staticCompositionLocalOf<String?> { null }
+
+/** False when the spell check is turned off in the settings - nothing is checked then. */
+val LocalSpellcheckEnabled = staticCompositionLocalOf { true }
 
 /**
  * Misspelled spans of [text], or an empty list when the platform has no spell checker.

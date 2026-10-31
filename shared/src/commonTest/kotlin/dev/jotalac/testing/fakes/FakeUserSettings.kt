@@ -35,7 +35,7 @@ class FakeUserSettings(
         settings.value = settings.value.copy(autoSync = autoSync)
     }
 
-    override suspend fun setSpellcheckLanguage(language: AppLanguage?) {
+    override suspend fun setSpellcheckLanguage(language: SpellcheckLanguage) {
         calledWrites += "spellcheckLanguage"
         settings.value = settings.value.copy(spellcheckLanguage = language)
     }

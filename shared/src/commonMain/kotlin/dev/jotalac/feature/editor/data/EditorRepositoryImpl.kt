@@ -3,7 +3,6 @@ package dev.jotalac.feature.editor.data
 import dev.jotalac.core.utils.deleteRecursively
 import dev.jotalac.core.utils.suspendRunCatching
 import dev.jotalac.core.utils.toSafeFileName
-import dev.jotalac.feature.editor.data.mapper.chunkMarkdownIntoBlocks
 import dev.jotalac.feature.editor.domain.EditorRepository
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.CoroutineDispatcher
@@ -22,14 +21,6 @@ class EditorRepositoryImpl(
     override suspend fun fileExists(filePath: String): Boolean = withContext(ioDispatcher) {
         val file = PlatformFile(filePath)
         file.exists() && file.isRegularFile()
-    }
-
-    override suspend fun loadMarkdownFileBlocks(filePath: String): Result<List<String>> {
-        return suspendRunCatching {
-            withContext(ioDispatcher) {
-                chunkMarkdownIntoBlocks(PlatformFile(filePath).readString())
-            }
-        }
     }
 
     override suspend fun readNoteContent(filePath: String): Result<String> {

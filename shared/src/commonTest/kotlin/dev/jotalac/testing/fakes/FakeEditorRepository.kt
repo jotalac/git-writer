@@ -7,7 +7,6 @@ data class SavedFile(val path: String, val content: String)
 class FakeEditorRepository : EditorRepository {
 
     // what the next call returns
-    var blocksResult: Result<List<String>> = Result.success(emptyList())
     var readResult: Result<String> = Result.success("")
     var saveResult: Result<Unit> = Result.success(Unit)
     var createNoteResult: Result<String> = Result.success("/notebook/untitled.md")
@@ -21,7 +20,6 @@ class FakeEditorRepository : EditorRepository {
     val existingPaths: MutableSet<String> = mutableSetOf()
 
     // what production asked for
-    val loadedPaths = mutableListOf<String>()
     val readPaths = mutableListOf<String>()
     val savedFiles = mutableListOf<SavedFile>()
     val createdNotes = mutableListOf<CreatedNote>()
@@ -33,11 +31,6 @@ class FakeEditorRepository : EditorRepository {
 
     data class CreatedNote(val directoryPath: String, val baseName: String, val content: String)
     data class PastedImage(val notebookRootPath: String, val filename: String, val size: Int)
-
-    override suspend fun loadMarkdownFileBlocks(filePath: String): Result<List<String>> {
-        loadedPaths += filePath
-        return blocksResult
-    }
 
     override suspend fun fileExists(filePath: String): Boolean = filePath in existingPaths
 

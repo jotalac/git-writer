@@ -63,8 +63,8 @@ actual fun rememberMisspelledSpans(text: String, language: String?): List<Misspe
         checked = CheckedText(text, spans)
     }
 
-    // never hand back spans belonging to older text: their offsets may no longer exist.
-    return checked?.takeIf { it.text == text }?.spans.orEmpty()
+    // spans of an older text are moved by the edit - the underlines stay while the new text is checked
+    return checked?.let { if (it.text == text) it.spans else it.spans.movedByEdit(it.text, text) }.orEmpty()
 }
 
 /**

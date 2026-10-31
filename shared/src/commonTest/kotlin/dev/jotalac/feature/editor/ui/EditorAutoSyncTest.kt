@@ -158,7 +158,7 @@ class EditorAutoSyncTest {
         // typing (an edit every second) just as the next sync is due
         wait(10.minutes - 1.seconds)
         repeat(5) {
-            viewModel.onAction(EditorAction.AddBlock())
+            viewModel.onAction(EditorAction.UpdateText("typing $it"))
             wait(1.seconds)
         }
         assertEquals(1, gitSync.syncedPaths.size)
@@ -204,21 +204,22 @@ class EditorAutoSyncTest {
     }
 
     @Test
-    fun `the open note is reloaded after a sync only when the pull changed it`() = autoSyncTest {
+    fun `the open note is reloaded after a sync only when the pull changed it`() = autoSyncTest { viewModel ->
         notebooks.activeNotebook.value = notebbokoWithRemote
         notebooks.activeNote.value = "/notes/note.md"
         editor.existingPaths += "/notes/note.md"
-        editor.blocksResult = Result.success(listOf("# Note", "text"))
-        // what is on disk after the sync saved the note - nothing was pulled
+        // what is on disk - also after the sync saved the note, nothing was pulled
         editor.readResult = Result.success("# Note\n\ntext")
         wait(4.seconds)
-        val loadsAfterFirstSync = editor.loadedPaths.size
+        // opened, then compared with the disk after the sync
+        val readsAfterFirstSync = editor.readPaths.size
 
         // the next sync pulls a change to the open note
         editor.readResult = Result.success("# Note\n\ntext\n\nfrom another device")
         wait(10.minutes + 4.seconds)
 
-        assertEquals(1, loadsAfterFirstSync, "opened once, not reloaded after a sync without changes")
-        assertEquals(2, editor.loadedPaths.size, "reloaded after the sync that changed it")
+        assertEquals(2, readsAfterFirstSync, "opened once, not reloaded after a sync without changes")
+        assertEquals(4, editor.readPaths.size, "compared, then reloaded after the sync that changed it")
+        assertEquals("# Note\n\ntext\n\nfrom another device", viewModel.noteText.value)
     }
 }

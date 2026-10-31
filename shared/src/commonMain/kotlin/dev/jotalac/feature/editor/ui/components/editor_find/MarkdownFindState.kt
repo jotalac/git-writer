@@ -5,25 +5,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+/** Where [findAll] found the query in the note's text - [start, end). */
 data class FindMatch(
-    val blockIndex: Int,
     val start: Int,
     val end: Int,
 )
 
 
-fun findAll(blocks: List<String>, query: String, ignoreCase: Boolean = true): List<FindMatch> {
+fun findAll(text: String, query: String, ignoreCase: Boolean = true): List<FindMatch> {
     if (query.isEmpty()) return emptyList()
 
     val result = mutableListOf<FindMatch>()
-    blocks.forEachIndexed { index, block ->
-        var from = 0
-        while (true) {
-            val found = block.indexOf(query, startIndex = from, ignoreCase = ignoreCase)
-            if (found == -1) break
-            result.add(FindMatch(index, found, found + query.length))
-            from = found + query.length
-        }
+    var from = 0
+    while (true) {
+        val found = text.indexOf(query, startIndex = from, ignoreCase = ignoreCase)
+        if (found == -1) break
+        result.add(FindMatch(found, found + query.length))
+        from = found + query.length
     }
     return result
 }
@@ -52,9 +50,9 @@ class MarkdownFindState {
         currentIndex = 0
     }
 
-    fun updateQuery(newQuery: String, blocks: List<String>) {
+    fun updateQuery(newQuery: String, text: String) {
         query = newQuery
-        matches = findAll(blocks, newQuery)
+        matches = findAll(text, newQuery)
         currentIndex = 0
     }
 

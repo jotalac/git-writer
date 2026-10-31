@@ -39,9 +39,6 @@
     <string name="duplicate_contect_menu_item">创建副本</string>
     <string name="note_add_contect_menu_item">添加笔记</string>
     <string name="folder_add_contect_menu_item">添加文件夹</string>
-    <string name="add_new_block_message">点按以添加文本...</string>
-    <string name="move_block_up">向上移动块</string>
-    <string name="move_block_down">向下移动块</string>
     <string name="toolbar_h1">标题 1</string>
     <string name="toolbar_h2">标题 2</string>
     <string name="toolbar_h3">标题 3</string>
@@ -124,7 +121,6 @@
     <string name="settings_auto_accept_local">始终接受本地更改</string>
     <string name="settings_auto_accept_remote">始终接受远程更改</string>
     <string name="settings_use_dynamic_color">使用动态取色</string>
-    <string name="delete_block_content_description">删除块</string>
     <string name="new_tab">新建标签页</string>
     <string name="open_new_file_message">打开新文件</string>
     <string name="find_placeholder">查找</string>
@@ -175,6 +171,7 @@
     <!-- its own choice: the UI language and the language you write in often differ -->
     <string name="settings_spellcheck_language_label">拼写检查语言</string>
     <string name="settings_spellcheck_language_same_as_app">与应用语言相同</string>
+    <string name="no_spell_check">不检查拼写</string>
     <string name="image_size_header">图片大小</string>
     <string name="image_size_original">原始大小</string>
     <string name="image_size_reset">重置大小</string>

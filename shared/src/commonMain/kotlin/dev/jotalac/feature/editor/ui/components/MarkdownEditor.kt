@@ -4,9 +4,9 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import dev.jotalac.feature.editor.ui.utils.ignoreLeftoverScroll
-import dev.jotalac.feature.editor.ui.utils.restoreScroll
-import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,51 +16,61 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
+import dev.jotalac.core.utils.requestFocusSafely
 import dev.jotalac.feature.editor.platform.isKeyboardVisible
 import dev.jotalac.feature.editor.platform.pickCameraImage
 import dev.jotalac.feature.editor.ui.EditorAction
-import dev.jotalac.feature.editor.ui.components.active_block.MarkdownKeyboardToolbar
+import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import dev.jotalac.feature.editor.ui.components.dialogs_overlays.ImageDropOverlay
-import dev.jotalac.feature.editor.ui.components.dialogs_overlays.MarkdownBlockActionsBottomSheet
+import dev.jotalac.feature.editor.ui.components.editor_find.FindMatch
 import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindBar
 import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindState
+import dev.jotalac.feature.editor.ui.live_preview.LivePreviewField
 import dev.jotalac.feature.editor.ui.rememberMarkdownEditorState
+import dev.jotalac.feature.editor.ui.utils.ignoreLeftoverScroll
+import dev.jotalac.feature.editor.ui.utils.restoreScroll
+import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.empty_note_message
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+
+val LocalEditorFullWidth = compositionLocalOf { false }
 
 @Composable
 fun MarkdownEditor(
-    markdownBlocks: List<String>,
+    noteText: String,
     onAction: (EditorAction) -> Unit,
     modifier: Modifier = Modifier,
     initialScroll: Int = 0,
     onScrollOffsetChanged: (Int) -> Unit = {},
     findState: MarkdownFindState,
 ) {
-    val editorState = rememberMarkdownEditorState(markdownBlocks, onAction)
+    val editorState = rememberMarkdownEditorState(noteText, onAction)
 
     var isDraggingImageOver by remember { mutableStateOf(false) }
-    var selectedBlockIndex by remember { mutableStateOf<Int?>(null) }
     val focusManager = LocalFocusManager.current
 
     val surfaceFocusRequester = remember { FocusRequester() }
     val findQueryFocusRequester = remember { FocusRequester() }
 
-    val listScrollState = rememberScrollState()
+    val scrollState = rememberScrollState()
+    val fullWidth = LocalEditorFullWidth.current
 
     // restore where this note was scrolled to, then report the position so it can be restored next time -
     // only after restoring, the positions on the way there are not where the user was
-    LaunchedEffect(listScrollState) {
-        listScrollState.restoreScroll(initialScroll)
-        snapshotFlow { listScrollState.value }
+    LaunchedEffect(scrollState) {
+        scrollState.restoreScroll(initialScroll)
+        snapshotFlow { scrollState.value }
             .collect { onScrollOffsetChanged(it) }
     }
 
@@ -68,21 +78,10 @@ fun MarkdownEditor(
 
     val isKeyboardOpen = isKeyboardVisible()
 
-    // clear focus when the mobile keyboard is closed
-//    LaunchedEffect(isKeyboardOpen) {
-//        if (!isDesktopPlatform && !isKeyboardOpen && editorState.focusedIndex != null) {
-//            editorState.clearFocus()
-//            focusManager.clearFocus()
-//        }
-//    }
-
-
     DisposableEffect(editorState, surfaceFocusRequester) {
         editorState.requestRootFocus = {
-            try {
-                surfaceFocusRequester.requestFocus()
-            } catch (_: Exception) {
-            }
+            focusManager.clearFocus()
+            surfaceFocusRequester.requestFocusSafely()
         }
         onDispose {
             editorState.requestRootFocus = null
@@ -90,10 +89,16 @@ fun MarkdownEditor(
     }
 
     LaunchedEffect(Unit) {
-        try {
-            if (isDesktopPlatform) surfaceFocusRequester.requestFocus()
-        } catch (_: Exception) {
-        }
+        if (isDesktopPlatform) surfaceFocusRequester.requestFocusSafely()
+    }
+
+    fun selectMatch(match: FindMatch?) {
+        match?.let { editorState.select(TextRange(it.start, it.end)) }
+    }
+
+    fun closeFindBar() {
+        findState.close()
+        surfaceFocusRequester.requestFocusSafely()
     }
 
     Box(
@@ -102,20 +107,6 @@ fun MarkdownEditor(
             .focusRequester(surfaceFocusRequester)
             .focusable()
             .imePadding()
-            .pointerInput(Unit) {
-                detectTapGestures {
-                    if (editorState.focusedIndex != null) {
-                        focusManager.clearFocus()
-                        editorState.clearFocus()
-                    } else {
-                        editorState.addBlockAtEndIfNotEmpty()
-                    }
-                    try {
-                        surfaceFocusRequester.requestFocus()
-                    } catch (_: Exception) {
-                    }
-                }
-            }
             .onExternalImageDrop(
                 onDragOverChange = { isDraggingImageOver = it },
                 onImageDropped = { imageBytesList ->
@@ -123,160 +114,62 @@ fun MarkdownEditor(
                 }
             )
             .onPreviewKeyEvent { event ->
-                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
-
-                val isShortcutModifier = event.isCtrlPressed || event.isMetaPressed
-
-                // handle undo and redo
-                if (isShortcutModifier && event.key == Key.Z) {
-                    if (event.isShiftPressed) {
-                        editorState.redo()
-                    } else {
-                        editorState.undo()
-                    }
-                    return@onPreviewKeyEvent true
-                }
-
-                // Handle redo (ctrl+y)
-                if (isShortcutModifier && event.key == Key.Y) {
-                    editorState.redo()
-                    return@onPreviewKeyEvent true
-                }
-
-                // tab shortcuts management
-                if (isShortcutModifier) {
-                    when (event.key) {
-                        Key.W -> {
-                            onAction(EditorAction.CloseActiveTab)
-                            return@onPreviewKeyEvent true
-                        }
-
-                        Key.T -> {
-                            onAction(EditorAction.NewTab)
-                            return@onPreviewKeyEvent true
-                        }
-
-                        Key.Tab -> {
-                            onAction(
-                                if (event.isShiftPressed) EditorAction.PreviousTab else EditorAction.NextTab
-                            )
-                            return@onPreviewKeyEvent true
-                        }
-                    }
-                }
-
-                // open the find bar (Ctrl+F), or refocus its query field when already open
-                val isBlockFocused = editorState.focusedIndex != null
-                if (isShortcutModifier && event.key == Key.F || event.key == Key.Slash && !isBlockFocused) {
-                    if (findState.isOpen) {
-                        try {
-                            findQueryFocusRequester.requestFocus()
-                        } catch (_: Exception) {
-                        }
-                    } else {
-                        findState.open()
-                    }
-                    return@onPreviewKeyEvent true
-                }
-
-                // find navigation while the find bar is open
-                if (findState.isOpen) {
-                    when (event.key) {
-                        Key.Enter -> {
-                            val match =
-                                if (event.isShiftPressed) findState.findPrevious() else findState.findNext()
-                            if (match != null) {
-                                editorState.focusBlock(match.blockIndex, TextRange(match.start, match.end))
-                            }
-                            return@onPreviewKeyEvent true
-                        }
-
-                        Key.Escape -> {
-                            findState.close()
-                            try {
-                                surfaceFocusRequester.requestFocus()
-                            } catch (_: Exception) {
-                            }
-                            return@onPreviewKeyEvent true
-                        }
-
-                        else -> return@onPreviewKeyEvent false
-                    }
-                }
-
-
-                // Navigation and creation when no block is actively focused
-                if (editorState.focusedIndex == null) {
-                    when (event.key) {
-                        Key.DirectionUp -> {
-                            val lastIndex = markdownBlocks.lastIndex
-                            if (lastIndex >= 0) {
-                                editorState.focusBlock(
-                                    lastIndex,
-                                    TextRange(markdownBlocks[lastIndex].length)
-                                )
-                                return@onPreviewKeyEvent true
-                            }
-                        }
-
-                        Key.DirectionDown -> {
-                            if (markdownBlocks.isNotEmpty()) {
-                                editorState.focusBlock(
-                                    0,
-                                    TextRange(markdownBlocks[0].length)
-                                )
-                                return@onPreviewKeyEvent true
-                            }
-                        }
-
-                        Key.Enter -> {
-                            editorState.addBlockAtEndIfNotEmpty()
-                            return@onPreviewKeyEvent true
-                        }
-                    }
-                }
-                false
+                event.type == KeyEventType.KeyDown && handleEditorShortcut(
+                    event = event,
+                    editorState = editorState,
+                    findState = findState,
+                    onAction = onAction,
+                    onFindQueryFocus = { findQueryFocusRequester.requestFocusSafely() },
+                    onSelectMatch = ::selectMatch,
+                    onCloseFindBar = ::closeFindBar,
+                )
             },
         contentAlignment = Alignment.TopCenter
     ) {
-        SelectionContainer {
-            MarkdownEditorBlocksList(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(
+                    bottom = if (isKeyboardOpen) 75.dp else 0.dp,
+                    top = if (findState.isOpen) 50.dp else 0.dp
+                ), // see what is currently being edited
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        bottom = if (isKeyboardOpen) 75.dp else 0.dp,
-                        top = if (findState.isOpen) 50.dp else 0.dp
-                    ) // see what is currently being edited
-                ,
-                blocks = markdownBlocks,
-                editorState = editorState,
-                scrollState = listScrollState,
-                onBlockLongClick = { selectedBlockIndex = it }
-            )
+                    .widthIn(max = if (fullWidth) Dp.Unspecified else 800.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+            ) {
+                // text when the editor is empty
+                if (editorState.value.text.trim().isEmpty() && !editorState.isFocused) {
+                    Text(text = stringResource(Res.string.empty_note_message), color = MaterialTheme.colorScheme.outline)
+                }
+
+                LivePreviewField(editorState = editorState)
+
+
+                // the space under the note - a click there writes at its end
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures { editorState.focusEnd() }
+                        }
+                )
+            }
         }
 
         if (findState.isOpen) {
             MarkdownFindBar(
                 findState = findState,
                 focusRequester = findQueryFocusRequester,
-                onQueryChange = { findState.updateQuery(it, markdownBlocks) },
-                onNext = {
-                    findState.findNext()?.let {
-                        editorState.focusBlock(it.blockIndex, TextRange(it.start, it.end))
-                    }
-                },
-                onPrevious = {
-                    findState.findPrevious()?.let {
-                        editorState.focusBlock(it.blockIndex, TextRange(it.start, it.end))
-                    }
-                },
-                onClose = {
-                    findState.close()
-                    try {
-                        surfaceFocusRequester.requestFocus()
-                    } catch (_: Exception) {
-                    }
-                },
+                onQueryChange = { findState.updateQuery(it, editorState.value.text) },
+                onNext = { selectMatch(findState.findNext()) },
+                onPrevious = { selectMatch(findState.findPrevious()) },
+                onClose = ::closeFindBar,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .widthIn(max = 500.dp)
@@ -284,38 +177,29 @@ fun MarkdownEditor(
             )
         }
 
-        selectedBlockIndex?.let { index ->
-            MarkdownBlockActionsBottomSheet(
-                editorState = editorState,
-                blockIndex = index,
-                onDismissRequest = { selectedBlockIndex = null }
-            )
-        }
-
         AppVerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-            listState = listScrollState
+            listState = scrollState
         )
 
         if (isDraggingImageOver) {
             ImageDropOverlay()
         }
 
-        // show the action bar for phones when some block is being edited
-        if (!isDesktopPlatform && editorState.focusedIndex != null && isKeyboardOpen) {
+        // show the action bar for phones while the note is being edited
+        if (!isDesktopPlatform && editorState.isFocused && isKeyboardOpen) {
             MarkdownKeyboardToolbar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
-                textFieldValue = editorState.activeTextFieldValue,
-                onValueChange = editorState::updateActiveText,
+                textFieldValue = editorState.value,
+                onValueChange = { editorState.updateValue(it, isSeparateEdit = true) },
                 onImageAdd = {
-                    val targetIndex = editorState.focusedIndex
                     scope.launch {
                         val files = FileKit.openFilePicker(type = FileKitType.Image, mode = FileKitMode.Multiple())
                             ?: return@launch
                         val bytesArray = files.map { it.readBytes() }
-                        editorState.pasteImages(bytesArray, targetIndex)
+                        editorState.pasteImages(bytesArray)
                     }
                 },
                 onCameraOpen = {
@@ -332,3 +216,48 @@ fun MarkdownEditor(
     }
 }
 
+/** The shortcuts of the whole editor (a key down [event]) - undo, the tabs, the find bar. */
+private fun handleEditorShortcut(
+    event: KeyEvent,
+    editorState: MarkdownEditorState,
+    findState: MarkdownFindState,
+    onAction: (EditorAction) -> Unit,
+    onFindQueryFocus: () -> Unit,
+    onSelectMatch: (FindMatch?) -> Unit,
+    onCloseFindBar: () -> Unit,
+): Boolean {
+    val isShortcut = event.isCtrlPressed || event.isMetaPressed
+
+    if (isShortcut) {
+        val action: (() -> Unit)? = when (event.key) {
+            Key.Z -> if (event.isShiftPressed) editorState::redo else editorState::undo
+            Key.Y -> editorState::redo
+            Key.W -> { -> onAction(EditorAction.CloseActiveTab) }
+            Key.T -> { -> onAction(EditorAction.NewTab) }
+            Key.Tab -> { -> onAction(if (event.isShiftPressed) EditorAction.PreviousTab else EditorAction.NextTab) }
+            else -> null
+        }
+        if (action != null) {
+            action()
+            return true
+        }
+    }
+
+    // open the find bar (Ctrl+F, or / outside the text), or focus its query field when it is open already
+    if (isShortcut && event.key == Key.F || event.key == Key.Slash && !editorState.isFocused) {
+        if (findState.isOpen) onFindQueryFocus() else findState.open()
+        return true
+    }
+
+    // moving between the matches while the find bar is open
+    if (findState.isOpen) {
+        when (event.key) {
+            Key.Enter -> onSelectMatch(if (event.isShiftPressed) findState.findPrevious() else findState.findNext())
+            Key.Escape -> onCloseFindBar()
+            else -> return false
+        }
+        return true
+    }
+
+    return false
+}

@@ -25,7 +25,7 @@ import org.intellij.markdown.ast.findChildOfType
 import org.intellij.markdown.ast.getTextInNode
 
 /*
-* The editor's own versions of the markdown library's components, used by RenderedEditorBlock.
+* The editor's own versions of the markdown library's components, used by RenderedMarkdownBlock.
 * Images live in CustomImageComponent.kt, maths in MarkdownMath.kt.
 * */
 

@@ -39,9 +39,6 @@
     <string name="duplicate_contect_menu_item">Duplikovat</string>
     <string name="note_add_contect_menu_item">Přidat poznámku</string>
     <string name="folder_add_contect_menu_item">Přidat složku</string>
-    <string name="add_new_block_message">Klepnutím přidejte text...</string>
-    <string name="move_block_up">Posunout blok nahoru</string>
-    <string name="move_block_down">Posunout blok dolů</string>
     <string name="toolbar_h1">Nadpis 1</string>
     <string name="toolbar_h2">Nadpis 2</string>
     <string name="toolbar_h3">Nadpis 3</string>
@@ -124,7 +121,6 @@
     <string name="settings_auto_accept_local">Vždy přijmout místní změny</string>
     <string name="settings_auto_accept_remote">Vždy přijmout vzdálené změny</string>
     <string name="settings_use_dynamic_color">Použít Dynamic Color</string>
-    <string name="delete_block_content_description">Smazat blok</string>
     <string name="new_tab">Nová karta</string>
     <string name="open_new_file_message">Otevřít nový soubor</string>
     <string name="find_placeholder">Najít</string>
@@ -174,6 +170,7 @@
     <!-- its own choice: the UI language and the language you write in often differ -->
     <string name="settings_spellcheck_language_label">Jazyk kontroly pravopisu</string>
     <string name="settings_spellcheck_language_same_as_app">Stejné jako jazyk aplikace</string>
+    <string name="no_spell_check">Bez kontroly pravopisu</string>
     <string name="image_size_header">Velikost obrázku</string>
     <string name="image_size_original">Původní velikost</string>
     <string name="image_size_reset">Obnovit velikost</string>

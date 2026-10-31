@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components.active_block
+package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
