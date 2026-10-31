@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor.ui.components.active_block
+package dev.jotalac.feature.editor.ui
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,7 +13,7 @@ class EditorHistoryManagerTest {
 
     private val oneHour = 60 * 60 * 1000L
 
-    private fun state(vararg blocks: String) = EditorHistoryItem(blocks.toList(), focusedIndex = 0)
+    private fun state(vararg lines: String) = EditorHistoryItem(lines.joinToString("\n"))
 
     @Test
     fun `undo walks back through the recorded states`() {
@@ -60,7 +60,7 @@ class EditorHistoryManagerTest {
 
     @Test
     fun `immediate changes are their own undo step even while typing`() {
-        // e.g. splitting or deleting a block in the middle of typing
+        // e.g. a formatting shortcut in the middle of typing
         val history = EditorHistoryManager(typingDebounceMillis = oneHour)
         history.record(state("text"))
         history.record(state("text", "new block"), isImmediate = true)

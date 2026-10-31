@@ -2,6 +2,8 @@ package dev.jotalac.feature.editor.ui
 
 import dev.jotalac.core.utils.RemoteStatus
 import dev.jotalac.core.utils.RemoteStatusMonitor
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.data.UserSettings
@@ -48,8 +50,9 @@ class EditorViewModel(
         .status(notebookRepository.activeNotebookState.map { it?.remoteUrl })
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    private val blocksState = EditorBlocksState()
-    val markdownBlocks = blocksState.blocks
+    // the text of the open note - Compose state, so the editor gets every change at once
+    private val _noteText = mutableStateOf("")
+    val noteText: State<String> = _noteText
 
     // where each note was scrolled to, by path, so that tab switching doesnt reset the scroll
     val noteScrollPositions = mutableMapOf<String, Int>()
@@ -61,13 +64,13 @@ class EditorViewModel(
         snackbarManager = snackbarManager,
         userSettingsManager = userSettingsManager,
         state = _uiState,
-        saveCurrentNote = { saveNotesContent(markdownBlocks) },
+        saveCurrentNote = { saveNotesContent() },
         reloadNote = { reloadIfChanged(it) },
     )
 
     private var nextTabId = 1L
 
-    // the note whose content is currently held in markdownBlocks
+    // the note whose content is currently held in noteText
     private var loadedNotePath: String? = null
 
     private var autosaveJob: Job? = null
@@ -81,7 +84,7 @@ class EditorViewModel(
         viewModelScope.launch {
             notebookRepository.activeNotePath.collect { notePath ->
                 // save old files
-                saveNotesContent(markdownBlocks)
+                saveNotesContent()
 
                 // show the loading state before the active tab's note changes
                 if (notePath != null) {
@@ -95,7 +98,7 @@ class EditorViewModel(
                     loadFileContent(notePath)
                 } else {
                     loadedNotePath = null
-                    markdownBlocks.clear()
+                    _noteText.value = ""
                     _uiState.update { it.copy(isImage = false) }
                 }
             }
@@ -111,7 +114,7 @@ class EditorViewModel(
                 .map { it?.id }
                 .collect { notebookId ->
                     if (previousNotebookId != null && notebookId != previousNotebookId) {
-                        saveNotesContent(markdownBlocks)
+                        saveNotesContent()
                         resetTabs()
                     }
                     previousNotebookId = notebookId
@@ -188,18 +191,18 @@ class EditorViewModel(
     // after a sync - reloading resets the editor (focus, cursor), so only when the pull changed the open note
     private suspend fun reloadIfChanged(notePath: String) {
         val onDisk = editorRepository.readNoteContent(notePath).getOrNull()
-        if (onDisk == null || onDisk != markdownBlocks.joinToString("\n\n")) {
+        if (onDisk == null || onDisk.normalizeLineEndings() != _noteText.value) {
             loadFileContent(notePath)
         }
     }
 
 
-     // Autosave is triggered by block-editing actions
+     // Autosave is triggered by the edits of the note
     private fun scheduleAutosave() {
         autosaveJob?.cancel()
         autosaveJob = viewModelScope.launch {
             delay(1.seconds)
-            saveNotesContent(markdownBlocks.toList())
+            saveNotesContent()
         }
     }
 
@@ -216,25 +219,25 @@ class EditorViewModel(
 
         val isImage = isImageFile(filePath.substringAfterLast("/"))
 
-        loadedNotePath = filePath
-
-        if (isImage) {
-            markdownBlocks.clear()
-        } else {
-            val loadResult = editorRepository.loadMarkdownFileBlocks(filePath)
-            markdownBlocks.clear()
-            loadResult.onSuccess { blocks -> markdownBlocks.addAll(blocks) }
+        val content = if (isImage) "" else editorRepository.readNoteContent(filePath).getOrElse {
+            // nothing is loaded, so nothing may be saved over the note either
+            loadedNotePath = null
+            _noteText.value = ""
+            _uiState.update { state -> state.copy(error = "Error loading file - $filePath", isLoading = false) }
+            return
         }
+
+        loadedNotePath = filePath
+        _noteText.value = content.normalizeLineEndings()
 
         _uiState.update { it.copy(isLoading = false, isImage = isImage) }
     }
 
-    private suspend fun saveNotesContent(currentBlocks: List<String>) {
+    private suspend fun saveNotesContent() {
         val notePath = loadedNotePath ?: return
 
         if (!_uiState.value.isLoading && !_uiState.value.isImage) {
-            val contentToSave = currentBlocks.joinToString("\n\n")
-            editorRepository.saveFile(contentToSave, notePath)
+            editorRepository.saveFile(_noteText.value, notePath)
         }
     }
 
@@ -246,7 +249,7 @@ class EditorViewModel(
         if (tab.id == state.activeTabId) return
 
         viewModelScope.launch {
-            saveNotesContent(markdownBlocks)
+            saveNotesContent()
 
             val loadsDifferentNote = tab.notePath != null && tab.notePath != state.activeNotePath
 
@@ -278,7 +281,7 @@ class EditorViewModel(
 
     fun addNewTab() {
         viewModelScope.launch {
-            saveNotesContent(markdownBlocks)
+            saveNotesContent()
 
             val newTab = EditorTabItem(id = nextTabId++, notePath = null)
             _uiState.update {
@@ -294,7 +297,7 @@ class EditorViewModel(
         if (state.openedTabs.none { it.id == id }) return
 
         viewModelScope.launch {
-            saveNotesContent(markdownBlocks)
+            saveNotesContent()
 
             if (state.openedTabs.size == 1) {
                 // closing the only tab: replace it with a fresh empty one so at least one tab always exists
@@ -376,30 +379,8 @@ class EditorViewModel(
 
     fun onAction(action: EditorAction) {
         when (action) {
-            is EditorAction.AddBlock -> blocksState.addBlock(action.index)
-            is EditorAction.UpdateBlock -> blocksState.updateBlock(action.index, action.newText)
-            is EditorAction.RemoveBlock -> blocksState.removeBlock(action.index)
-            is EditorAction.AddBlocks -> blocksState.addBlocks(action.index, action.newBlocks)
-            is EditorAction.BlockTurnedIntoMoreBlocks -> blocksState.replaceBlockWithBlocks(
-                action.index,
-                action.newBlocks
-            )
-
-            is EditorAction.SplitBlock -> blocksState.splitBlock(action.index, action.cursorStart)
-                ?.let(action.onFocusCalculated)
-
-            is EditorAction.MergeWithPrevBlock -> blocksState.mergeWithPrevious(action.index)
-            is EditorAction.EvaluateBlockOnFocusLost ->
-                blocksState.evaluateBlockOnFocusLost(action.index, action.currentFocusedIndex)
-                    ?.let(action.onFocusAdjusted)
-
-            is EditorAction.SwapBlocks -> blocksState.swapBlocks(action.fromIndex, action.toIndex)
-            is EditorAction.SetBlocks -> blocksState.setBlocks(action.blocks)
-            is EditorAction.PasteImages -> savePastedImages(
-                action.imageBytesList,
-                action.focusedIndex,
-                action.onFocusCalculated
-            )
+            is EditorAction.UpdateText -> _noteText.value = action.text
+            is EditorAction.PasteImages -> savePastedImages(action.imageBytesList, action.onImagesSaved)
 
             is EditorAction.SyncNotes -> viewModelScope.launch { syncController.sync() }
             is EditorAction.SyncBeforeLeaving -> viewModelScope.launch { syncBeforeLeaving() }
@@ -421,7 +402,7 @@ class EditorViewModel(
             is EditorAction.NewNote -> createNewNote()
         }
 
-        if (action.isBlockEditing()) {
+        if (action.isNoteEditing()) {
             onTyped()
             scheduleAutosave()
         }
@@ -429,8 +410,7 @@ class EditorViewModel(
 
     private fun savePastedImages(
         imageBytesList: List<ByteArray>,
-        focusedIndex: Int,
-        onFocusCalculated: (Int) -> Unit
+        onImagesSaved: (imageMarkdown: List<String>) -> Unit,
     ) {
         if (imageBytesList.isEmpty()) return
 
@@ -460,11 +440,13 @@ class EditorViewModel(
 
             if (savedMarkdownSyntaxes.isEmpty()) return@launch
 
-            val targetFocusIndex = blocksState.insertImageBlocks(savedMarkdownSyntaxes, focusedIndex)
-            onFocusCalculated(targetFocusIndex)
+            onImagesSaved(savedMarkdownSyntaxes)
         }
     }
 }
 
 private val AUTO_SYNC_INTERVAL = 10.minutes
 private val TYPING_PAUSE = 3.seconds
+
+// the editor works with "\n" only - notes written on Windows have "\r\n"
+private fun String.normalizeLineEndings(): String = replace("\r\n", "\n").replace("\r", "\n")

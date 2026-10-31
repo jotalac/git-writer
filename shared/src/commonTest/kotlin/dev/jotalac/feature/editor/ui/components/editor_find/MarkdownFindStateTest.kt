@@ -8,35 +8,36 @@ import kotlin.test.assertTrue
 
 class MarkdownFindStateTest {
 
-    private val blocks = listOf("# Shopping", "milk, more milk", "no match here", "MILK")
+    // "milk" at 11, 22 and 41
+    private val text = "# Shopping\nmilk, more milk\nno match here\nMILK"
 
     // --- findAll
 
     @Test
-    fun `finds every match across all blocks ignoring case`() {
+    fun `finds every match in the note ignoring case`() {
         assertEquals(
             listOf(
-                FindMatch(blockIndex = 1, start = 0, end = 4),
-                FindMatch(blockIndex = 1, start = 11, end = 15),
-                FindMatch(blockIndex = 3, start = 0, end = 4),
+                FindMatch(start = 11, end = 15),
+                FindMatch(start = 22, end = 26),
+                FindMatch(start = 41, end = 45),
             ),
-            findAll(blocks, "milk"),
+            findAll(text, "milk"),
         )
     }
 
     @Test
     fun `case sensitive search skips other casing`() {
-        assertEquals(listOf(FindMatch(3, 0, 4)), findAll(blocks, "MILK", ignoreCase = false))
+        assertEquals(listOf(FindMatch(41, 45)), findAll(text, "MILK", ignoreCase = false))
     }
 
     @Test
     fun `matches do not overlap`() {
-        assertEquals(listOf(FindMatch(0, 0, 2), FindMatch(0, 2, 4)), findAll(listOf("aaaa"), "aa"))
+        assertEquals(listOf(FindMatch(0, 2), FindMatch(2, 4)), findAll("aaaa", "aa"))
     }
 
     @Test
     fun `an empty query finds nothing`() {
-        assertEquals(emptyList(), findAll(blocks, ""))
+        assertEquals(emptyList(), findAll(text, ""))
     }
 
     // --- find bar state
@@ -45,7 +46,7 @@ class MarkdownFindStateTest {
     fun `typing a query jumps to the first match`() {
         val find = MarkdownFindState()
 
-        find.updateQuery("milk", blocks)
+        find.updateQuery("milk", text)
 
         assertEquals(3, find.matches.size)
         assertEquals(0, find.currentIndex)
@@ -53,35 +54,35 @@ class MarkdownFindStateTest {
 
     @Test
     fun `next goes through the matches and wraps to the first`() {
-        val find = MarkdownFindState().apply { updateQuery("milk", blocks) }
+        val find = MarkdownFindState().apply { updateQuery("milk", text) }
 
-        assertEquals(FindMatch(1, 11, 15), find.findNext())
-        assertEquals(FindMatch(3, 0, 4), find.findNext())
-        assertEquals(FindMatch(1, 0, 4), find.findNext())
+        assertEquals(FindMatch(22, 26), find.findNext())
+        assertEquals(FindMatch(41, 45), find.findNext())
+        assertEquals(FindMatch(11, 15), find.findNext())
     }
 
     @Test
     fun `previous from the first match wraps to the last`() {
-        val find = MarkdownFindState().apply { updateQuery("milk", blocks) }
+        val find = MarkdownFindState().apply { updateQuery("milk", text) }
 
-        assertEquals(FindMatch(3, 0, 4), find.findPrevious())
+        assertEquals(FindMatch(41, 45), find.findPrevious())
         assertEquals(2, find.currentIndex)
     }
 
     @Test
     fun `changing the query starts again from the first match`() {
-        val find = MarkdownFindState().apply { updateQuery("milk", blocks) }
+        val find = MarkdownFindState().apply { updateQuery("milk", text) }
         find.findNext()
 
-        find.updateQuery("milk,", blocks)
+        find.updateQuery("milk,", text)
 
-        assertEquals(listOf(FindMatch(1, 0, 5)), find.matches)
+        assertEquals(listOf(FindMatch(11, 16)), find.matches)
         assertEquals(0, find.currentIndex)
     }
 
     @Test
     fun `next and previous do nothing without matches`() {
-        val find = MarkdownFindState().apply { updateQuery("bread", blocks) }
+        val find = MarkdownFindState().apply { updateQuery("bread", text) }
 
         assertNull(find.findNext())
         assertNull(find.findPrevious())
@@ -91,7 +92,7 @@ class MarkdownFindStateTest {
     fun `closing the find bar clears the search`() {
         val find = MarkdownFindState().apply {
             open()
-            updateQuery("milk", blocks)
+            updateQuery("milk", text)
             findNext()
         }
 

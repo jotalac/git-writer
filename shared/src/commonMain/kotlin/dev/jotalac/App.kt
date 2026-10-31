@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.jotalac.core.domain.AppThemeMode
+import dev.jotalac.core.domain.SpellcheckLanguage
 import dev.jotalac.core.navigation.Route
 import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.ui.window.AppWindowLayout
@@ -19,6 +20,7 @@ import dev.jotalac.core.ui.window.TitleBarHost
 import dev.jotalac.core.ui.window.WindowTitleBarTheme
 import dev.jotalac.core.utils.ConfigureAppImageLoader
 import dev.jotalac.core.utils.applyAppLanguage
+import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckEnabled
 import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckLanguage
 import dev.jotalac.feature.editor.ui.components.LocalEditorFullWidth
 import dev.jotalac.feature.editor.ui.EditorScreen
@@ -54,7 +56,8 @@ fun App(
 
             CompositionLocalProvider(
                 LocalTitleBarHost provides titleBarHost,
-                LocalSpellcheckLanguage provides settingsState.spellcheckLanguage?.code,
+                LocalSpellcheckLanguage provides (settingsState.spellcheckLanguage as? SpellcheckLanguage.Of)?.language?.code,
+                LocalSpellcheckEnabled provides (settingsState.spellcheckLanguage != SpellcheckLanguage.Off),
                 LocalEditorFullWidth provides settingsState.editorFullWidth,
             ) {
                 AppWindowLayout(titleBarHost) {

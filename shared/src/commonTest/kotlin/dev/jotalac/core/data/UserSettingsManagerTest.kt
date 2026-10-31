@@ -7,12 +7,12 @@ import dev.jotalac.core.domain.AppLanguage
 import dev.jotalac.core.domain.AppThemeAccentColor
 import dev.jotalac.core.domain.AppThemeMode
 import dev.jotalac.core.domain.GitConflictResolutionStrategy
+import dev.jotalac.core.domain.SpellcheckLanguage
 import dev.jotalac.testing.fakes.InMemoryDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class UserSettingsManagerTest {
 
@@ -35,7 +35,7 @@ class UserSettingsManagerTest {
         settings.setLanguage(AppLanguage.GERMAN)
         settings.setGitConflictStrategy(GitConflictResolutionStrategy.REMOTE)
         settings.setUseDynamicColor(true)
-        settings.setSpellcheckLanguage(AppLanguage.CZECH)
+        settings.setSpellcheckLanguage(SpellcheckLanguage.Of(AppLanguage.CZECH))
         settings.setEditorFullWidth(true)
         settings.setAutoSync(true)
 
@@ -47,7 +47,7 @@ class UserSettingsManagerTest {
                 language = AppLanguage.GERMAN,
                 gitConflictStrategy = GitConflictResolutionStrategy.REMOTE,
                 useDynamicColor = true,
-                spellcheckLanguage = AppLanguage.CZECH,
+                spellcheckLanguage = SpellcheckLanguage.Of(AppLanguage.CZECH),
                 editorFullWidth = true,
                 autoSync = true,
             ),
@@ -56,12 +56,14 @@ class UserSettingsManagerTest {
     }
 
     @Test
-    fun `turning the spellcheck off removes its language`() = runTest {
-        settings.setSpellcheckLanguage(AppLanguage.CZECH)
+    fun `the spellcheck can follow the app language again or be turned off`() = runTest {
+        settings.setSpellcheckLanguage(SpellcheckLanguage.Of(AppLanguage.CZECH))
 
-        settings.setSpellcheckLanguage(null)
+        settings.setSpellcheckLanguage(SpellcheckLanguage.SameAsApp)
+        assertEquals(SpellcheckLanguage.SameAsApp, current().spellcheckLanguage)
 
-        assertNull(current().spellcheckLanguage)
+        settings.setSpellcheckLanguage(SpellcheckLanguage.Off)
+        assertEquals(SpellcheckLanguage.Off, current().spellcheckLanguage)
     }
 
     @Test

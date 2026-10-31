@@ -1,28 +1,13 @@
 package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-    import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
@@ -33,75 +18,14 @@ import com.mikepenz.markdown.model.ReferenceLinkHandlerImpl
 import com.mikepenz.markdown.model.State
 import com.mikepenz.markdown.model.markdownPadding
 import com.mikepenz.markdown.model.parseMarkdown
-import dev.jotalac.core.ui.theme.dimensions
-import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.editor.ui.utils.getHeaderFontSize
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
-import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.delete_block_content_description
-import git_writer.shared.generated.resources.x_icon
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.parser.CancellationToken
 import org.intellij.markdown.parser.MarkdownParser
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 
-@Composable
-fun RenderedEditorBlock(
-    text: String,
-    modifier: Modifier = Modifier,
-    onDeleteClick: () -> Unit,
-    onTextChange: (String) -> Unit = {},
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .hoverable(interactionSource)
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-    ) {
-        // the displayed text content
-        if (text.isBlank()) {
-            Text(
-                text = " ",
-                style = MaterialTheme.typography.bodyLarge,
-            )
-        } else {
-            RenderedMarkdownBlock(
-                text = text,
-                onTextChange = onTextChange,
-            )
-        }
-
-        // the delete button
-        if (isDesktopPlatform) {
-            Icon(
-                painter = painterResource(Res.drawable.x_icon),
-                contentDescription = stringResource(Res.string.delete_block_content_description),
-                modifier = Modifier
-                    .alpha(if (isHovered) 1f else 0f)
-                    .dropShadow(
-                        shape = RectangleShape,
-                        shadow = Shadow(
-                            radius = 10.dp,
-                            color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            spread = 5.dp
-                        )
-                    )
-                    .align(AbsoluteAlignment.TopRight)
-                    .padding(5.dp)
-                    .size(MaterialTheme.dimensions.iconMedium)
-                    .clickable(onClick = onDeleteClick),
-                tint = MaterialTheme.colorScheme.outline
-            )
-        }
-    }
-}
-
-/** One markdown block as the editor shows it - also used to render notes for the PDF export. */
+/** One markdown block rendered - used to render notes for the PDF export. */
 @Composable
 internal fun RenderedMarkdownBlock(
     text: String,

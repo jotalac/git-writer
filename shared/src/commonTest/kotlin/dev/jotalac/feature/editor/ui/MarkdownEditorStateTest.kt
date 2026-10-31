@@ -1,321 +1,174 @@
 package dev.jotalac.feature.editor.ui
 
-import androidx.compose.runtime.TestOnly
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import dev.jotalac.feature.editor.ui.components.active_block.EditorHistoryManager
-import io.ktor.client.request.invoke
-import org.intellij.markdown.lexer.Compat.assert
-import org.koin.viewmodel.emptyState
-import kotlin.collections.emptyList
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class MarkdownEditorStateTest {
 
-    private val blocksState = mutableStateOf(emptyList<String>())
+    private val noteText = mutableStateOf("")
 
     private val dispatchedActions = mutableListOf<EditorAction>()
     private val onActionState = mutableStateOf<(EditorAction) -> Unit>({ action ->
         dispatchedActions.add(action)
+        // the view model keeps the text, like EditorViewModel does
+        if (action is EditorAction.UpdateText) noteText.value = action.text
     })
 
-    private lateinit var historyManager: EditorHistoryManager
-    private lateinit var markdownEditorState: MarkdownEditorState
+    private lateinit var editorState: MarkdownEditorState
 
     @BeforeTest
     fun setup() {
-        //clear all actions before each test
         dispatchedActions.clear()
-        blocksState.value = listOf("first block", "second block")
-        historyManager = EditorHistoryManager()
-
-        markdownEditorState = MarkdownEditorState(
-            blocksState = blocksState,
-            historyManager = historyManager,
-            onActionState = onActionState
-        )
+        noteText.value = "first line\nsecond line"
+        // every edit is its own undo step
+        editorState = MarkdownEditorState(noteText, onActionState, EditorHistoryManager(typingDebounceMillis = 0))
     }
 
+    private fun typed(text: String, cursor: Int = text.length) = TextFieldValue(text, TextRange(cursor))
+
+    private fun lastText() = assertIs<EditorAction.UpdateText>(dispatchedActions.last()).text
 
     @Test
-    fun `focusBlock sets the focusedIndex and activeTextFieldValue correctly`() {
-        markdownEditorState.focusBlock(1)
-
-        assertEquals(1, markdownEditorState.focusedIndex)
-        assertEquals("second block", markdownEditorState.activeTextFieldValue.text)
-        // makes sure the cursor is at the end of the text field
-        assertEquals(blocksState.value[1].length, markdownEditorState.activeTextFieldValue.selection.start)
+    fun `the editor starts with the note's text`() {
+        assertEquals("first line\nsecond line", editorState.value.text)
     }
 
     @Test
-    fun `focusBlock respects the cursor TextRange when indexes are out of bounds`() {
-        markdownEditorState.focusBlock(0, TextRange(0, 80))
+    fun `an edit is sent to the view model`() {
+        editorState.onValueChange(typed("first line!\nsecond line", cursor = 11))
 
-        assertEquals(0, markdownEditorState.focusedIndex)
-        assertEquals("first block", markdownEditorState.activeTextFieldValue.text)
-        assertEquals(TextRange(0, blocksState.value[0].length), markdownEditorState.activeTextFieldValue.selection)
+        assertEquals("first line!\nsecond line", lastText())
+        assertEquals(TextRange(11), editorState.value.selection)
     }
 
     @Test
-    fun `focusBlock focues unexisting index doesn't do anything`() {
-        markdownEditorState.focusBlock(10)
+    fun `moving the cursor sends nothing and uses no undo step`() {
+        editorState.onValueChange(typed("first line\nsecond line", cursor = 3))
 
-        assertEquals(null, markdownEditorState.focusedIndex)
+        assertTrue(dispatchedActions.isEmpty())
+        assertEquals(TextRange(3), editorState.value.selection)
+
+        editorState.undo()
+        assertTrue(dispatchedActions.isEmpty())
     }
 
     @Test
-    fun `moving the caret without changing the text still reaches the field`() {
-        markdownEditorState.focusBlock(0)
+    fun `undo and redo go back and forth with the cursor`() {
+        editorState.onValueChange(typed("first line\nsecond line", cursor = 10))
+        editorState.onValueChange(typed("first line!\nsecond line", cursor = 11))
 
-        // same text, new caret: what a click in the middle of the block produces
-        markdownEditorState.updateActiveText(TextFieldValue("first block", TextRange(3)))
+        editorState.undo()
+        assertEquals("first line\nsecond line", lastText())
+        assertEquals(TextRange(10), editorState.value.selection)
 
-        assertEquals(TextRange(3), markdownEditorState.activeTextFieldValue.selection)
+        editorState.redo()
+        assertEquals("first line!\nsecond line", lastText())
+        assertEquals(TextRange(11), editorState.value.selection)
     }
 
     @Test
-    fun `a caret move does not use up an undo step`() {
-        markdownEditorState.focusBlock(0)
-        markdownEditorState.updateActiveText(TextFieldValue("new text"))
-        markdownEditorState.updateActiveText(TextFieldValue("new text", TextRange(2)))
+    fun `a new line in a list continues the list`() {
+        noteText.value = "- milk"
+        editorState.syncExternalText()
 
-        markdownEditorState.undo()
+        // what the text field gives for Enter (or a mobile keyboard) at the end
+        editorState.onValueChange(typed("- milk\n"))
 
-        assertEquals("first block", markdownEditorState.activeTextFieldValue.text)
+        assertEquals("- milk\n- ", lastText())
+        assertEquals(TextRange(9), editorState.value.selection)
     }
 
     @Test
-    fun `updateActiveText updates the activeTextFieldValue correctly`() {
-        val newTextValue = "new text"
-        markdownEditorState.focusBlock(0)
-        markdownEditorState.updateActiveText(TextFieldValue(newTextValue))
+    fun `a new line in code is only a new line`() {
+        noteText.value = "```\n- milk"
+        editorState.syncExternalText()
 
-        assertEquals("new text", markdownEditorState.activeTextFieldValue.text)
+        editorState.onValueChange(typed("```\n- milk\n"))
+
+        assertEquals("```\n- milk\n", lastText())
     }
 
     @Test
-    fun `updateActiveText doesn't update when it comes from different block index safety synchronization check`() {
-        val newTextValue = "new text"
-        markdownEditorState.focusBlock(0)
-        markdownEditorState.updateActiveText(TextFieldValue(newTextValue), 10)
+    fun `replacing a range keeps the cursor on the same text`() {
+        noteText.value = "- [ ] milk\nbread"
+        editorState.syncExternalText()
+        editorState.onValueChange(typed("- [ ] milk\nbread", cursor = 13))
 
-        assertEquals("first block", markdownEditorState.activeTextFieldValue.text)
+        editorState.replaceRange(3, 4, "x")
+
+        assertEquals("- [x] milk\nbread", lastText())
+        assertEquals(TextRange(13), editorState.value.selection)
     }
 
     @Test
-    fun `undo text change`() {
-        markdownEditorState.focusBlock(0)
-        markdownEditorState.updateActiveText(TextFieldValue("new text"))
-        markdownEditorState.undo()
+    fun `a text changed outside the editor keeps the cursor where it can be`() {
+        editorState.onValueChange(typed("first line\nsecond line", cursor = 20))
 
-        assertEquals("first block", markdownEditorState.activeTextFieldValue.text)
+        noteText.value = "short"
+        editorState.syncExternalText()
+
+        assertEquals("short", editorState.value.text)
+        assertEquals(TextRange(5), editorState.value.selection)
     }
 
     @Test
-    fun `calling undo multiple times doesnt do anything`() {
-        markdownEditorState.focusBlock(0)
-        markdownEditorState.updateActiveText(TextFieldValue("new text"))
-        markdownEditorState.undo()
-        markdownEditorState.undo()
-        markdownEditorState.undo()
+    fun `selecting focuses the text field with the selection inside the text`() {
+        var focusRequests = 0
+        editorState.requestFieldFocus = { focusRequests++ }
 
-        assertEquals("first block", markdownEditorState.activeTextFieldValue.text)
-    }
+        editorState.select(TextRange(6, 100))
 
-    // moving between blocks
-
-    @Test
-    fun `moveUp puts the cursor at the end of the previous block`() {
-        markdownEditorState.focusBlock(1)
-
-        assertTrue(markdownEditorState.moveUp())
-        assertEquals(0, markdownEditorState.focusedIndex)
-        assertEquals(
-            blocksState.value[0].length,
-            markdownEditorState.activeTextFieldValue.selection.start,
-        )
+        assertEquals(TextRange(6, 22), editorState.value.selection)
+        assertEquals(1, focusRequests)
     }
 
     @Test
-    fun `moveUp on the first block stays there and reports false`() {
-        markdownEditorState.focusBlock(0)
+    fun `pasted images go after the line with the cursor once they are saved`() {
+        editorState.onValueChange(typed("first line\nsecond line", cursor = 3))
 
-        assertFalse(markdownEditorState.moveUp())
-        assertEquals(0, markdownEditorState.focusedIndex)
+        editorState.pasteImages(listOf(byteArrayOf(1)))
+        val paste = assertIs<EditorAction.PasteImages>(dispatchedActions.last())
+        paste.onImagesSaved(listOf("![pasted image](images/a.png)"))
+
+        assertEquals("first line\n\n![pasted image](images/a.png)\n\nsecond line", lastText())
     }
 
     @Test
-    fun `moveDown puts the cursor at the end of the next block`() {
-        markdownEditorState.focusBlock(0)
+    fun `bold wraps the selection`() {
+        editorState.onValueChange(TextFieldValue("first line\nsecond line", TextRange(0, 5)))
 
-        assertTrue(markdownEditorState.moveDown())
-        assertEquals(1, markdownEditorState.focusedIndex)
-        assertEquals(
-            blocksState.value[1].length,
-            markdownEditorState.activeTextFieldValue.selection.start,
-        )
+        editorState.applyBold()
+
+        assertEquals("**first** line\nsecond line", lastText())
     }
 
     @Test
-    fun `moveDown on the last block stays there and reports false`() {
-        markdownEditorState.focusBlock(1)
+    fun `lines move up and down with the cursor`() {
+        editorState.onValueChange(typed("first line\nsecond line", cursor = 13))
 
-        assertFalse(markdownEditorState.moveDown())
-        assertEquals(1, markdownEditorState.focusedIndex)
+        editorState.moveLinesUp()
+        assertEquals("second line\nfirst line", lastText())
+        assertEquals(TextRange(2), editorState.value.selection)
+
+        editorState.moveLinesDown()
+        assertEquals("first line\nsecond line", lastText())
+        assertEquals(TextRange(13), editorState.value.selection)
     }
 
     @Test
-    fun `swapBlockUp reports the swap and keeps the moved block focused`() {
-        markdownEditorState.focusBlock(1)
+    fun `shift enter breaks the line without continuing the list`() {
+        noteText.value = "- milk"
+        editorState.syncExternalText()
+        editorState.onValueChange(typed("- milk"))
 
-        markdownEditorState.swapBlockUp()
+        editorState.insertPlainNewLine()
 
-        assertIs<EditorAction.SwapBlocks>(dispatchedActions.last())
-        assertEquals(0, markdownEditorState.focusedIndex)
-    }
-
-    @Test
-    fun `swapBlockUp on the first block does nothing`() {
-        markdownEditorState.focusBlock(0)
-
-        markdownEditorState.swapBlockUp()
-
-        assertTrue(dispatchedActions.none { it is EditorAction.SwapBlocks })
-        assertEquals(0, markdownEditorState.focusedIndex)
-    }
-
-    @Test
-    fun `swapBlockDown reports the swap and keeps the moved block focused`() {
-        blocksState.value = listOf("a", "b", "c")
-        markdownEditorState.focusBlock(1)
-
-        markdownEditorState.swapBlockDown()
-
-        assertIs<EditorAction.SwapBlocks>(dispatchedActions.last())
-        assertEquals(2, markdownEditorState.focusedIndex)
-    }
-
-    // removing and merging blocks
-
-    @Test
-    fun `backspaceOnEmpty removes the block and moves the cursor to the end of the previous one`() {
-        markdownEditorState.focusBlock(1)
-
-        assertTrue(markdownEditorState.backspaceOnEmpty())
-
-        assertIs<EditorAction.RemoveBlock>(dispatchedActions.last())
-        assertEquals(0, markdownEditorState.focusedIndex)
-        assertEquals(
-            blocksState.value[0].length,
-            markdownEditorState.activeTextFieldValue.selection.start,
-        )
-    }
-
-    @Test
-    fun `backspaceOnStart in the first block keeps the block`() {
-        markdownEditorState.focusBlock(0)
-
-        assertTrue(markdownEditorState.backspaceOnStart())
-
-        assertTrue(dispatchedActions.none { it is EditorAction.MergeWithPrevBlock })
-        assertEquals(0, markdownEditorState.focusedIndex)
-    }
-
-    @Test
-    fun `backspaceOnStart merges into the previous block with the cursor at the join`() {
-        markdownEditorState.focusBlock(1)
-
-        assertTrue(markdownEditorState.backspaceOnStart())
-
-        assertIs<EditorAction.MergeWithPrevBlock>(dispatchedActions.last())
-        assertEquals(0, markdownEditorState.focusedIndex)
-        assertEquals(
-            blocksState.value[0].length,
-            markdownEditorState.activeTextFieldValue.selection.start,
-        )
-    }
-
-    @Test
-    fun `addBlockAtEndIfNotEmpty reuses a trailing empty block`() {
-        blocksState.value = listOf("first block", "")
-        markdownEditorState.focusBlock(0)
-
-        markdownEditorState.addBlockAtEndIfNotEmpty()
-
-        assertTrue(dispatchedActions.none { it is EditorAction.AddBlock })
-        assertEquals(1, markdownEditorState.focusedIndex)
-    }
-
-    @Test
-    fun `addBlockAtEndIfNotEmpty adds a block when the last one has text`() {
-        markdownEditorState.focusBlock(0)
-
-        markdownEditorState.addBlockAtEndIfNotEmpty()
-
-        assertIs<EditorAction.AddBlock>(dispatchedActions.last())
-    }
-
-    // focus lost
-
-    @Test
-    fun `evaluateFocusLost clears the focus and reports which block lost it`() {
-        markdownEditorState.focusBlock(1)
-
-        markdownEditorState.evaluateFocusLost(1)
-
-        assertNull(markdownEditorState.focusedIndex)
-        val action = assertIs<EditorAction.EvaluateBlockOnFocusLost>(dispatchedActions.last())
-        assertEquals(1, action.index)
-        assertNull(action.currentFocusedIndex)
-    }
-
-    @Test
-    fun `evaluateFocusLost of another block keeps the current focus`() {
-        markdownEditorState.focusBlock(1)
-
-        markdownEditorState.evaluateFocusLost(0)
-
-        assertEquals(1, markdownEditorState.focusedIndex)
-        val action = assertIs<EditorAction.EvaluateBlockOnFocusLost>(dispatchedActions.last())
-        assertEquals(0, action.index)
-        assertEquals(1, action.currentFocusedIndex)
-    }
-
-    @Test
-    fun `evaluateFocusLost can move the focus to an adjusted block`() {
-        markdownEditorState.focusBlock(1)
-
-        markdownEditorState.evaluateFocusLost(1)
-        val action = assertIs<EditorAction.EvaluateBlockOnFocusLost>(dispatchedActions.last())
-        action.onFocusAdjusted(0)
-
-        assertEquals(0, markdownEditorState.focusedIndex)
-    }
-
-    @Test
-    fun `splitBlock reports the split to the platform`() {
-        markdownEditorState.focusBlock(0)
-
-        markdownEditorState.splitBlock(cursorStart = 3)
-
-        assertIs<EditorAction.SplitBlock>(dispatchedActions.last())
-    }
-
-    @Test
-    fun `redo without anything to redo does nothing`() {
-        markdownEditorState.focusBlock(0)
-
-        markdownEditorState.redo()
-
-        assertEquals(0, markdownEditorState.focusedIndex)
-        assertEquals("first block", markdownEditorState.activeTextFieldValue.text)
+        assertEquals("- milk\n", lastText())
     }
 }

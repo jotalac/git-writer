@@ -39,9 +39,6 @@
     <string name="duplicate_contect_menu_item">Duplizieren</string>
     <string name="note_add_contect_menu_item">Notiz hinzufügen</string>
     <string name="folder_add_contect_menu_item">Ordner hinzufügen</string>
-    <string name="add_new_block_message">Tippen Sie, um Text hinzuzufügen...</string>
-    <string name="move_block_up">Block nach oben verschieben</string>
-    <string name="move_block_down">Block nach unten verschieben</string>
     <string name="toolbar_h1">Überschrift 1</string>
     <string name="toolbar_h2">Überschrift 2</string>
     <string name="toolbar_h3">Überschrift 3</string>
@@ -124,7 +121,6 @@
     <string name="settings_auto_accept_local">Lokale Änderungen immer übernehmen</string>
     <string name="settings_auto_accept_remote">Remote-Änderungen immer übernehmen</string>
     <string name="settings_use_dynamic_color">Dynamic Color verwenden</string>
-    <string name="delete_block_content_description">Block löschen</string>
     <string name="new_tab">Neuer Tab</string>
     <string name="open_new_file_message">Neue Datei öffnen</string>
     <string name="find_placeholder">Suchen</string>
@@ -175,6 +171,7 @@
     <!-- its own choice: the UI language and the language you write in often differ -->
     <string name="settings_spellcheck_language_label">Sprache der Rechtschreibprüfung</string>
     <string name="settings_spellcheck_language_same_as_app">Wie die Sprache der App</string>
+    <string name="no_spell_check">Keine Rechtschreibprüfung</string>
     <string name="image_size_header">Bildgröße</string>
     <string name="image_size_original">Originalgröße</string>
     <string name="image_size_reset">Größe zurücksetzen</string>

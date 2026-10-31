@@ -145,22 +145,6 @@ class EditorRepositoryImplTest {
         assertFalse(editorRepository.fileExists(folderPath.toString()))
     }
 
-    // ----------------------------------------------------- loadMarkdownFileBlocks
-
-    @Test
-    fun `loadMarkdownFileBlocks splits the file into markdown blocks`() = runTest(testDispatcher) {
-        val notePath = createTestNote(noteContent = "# h1\n# h2").getOrThrow()
-
-        val blocks = editorRepository.loadMarkdownFileBlocks(notePath).getOrThrow()
-
-        assertEquals(listOf("# h1", "# h2"), blocks)
-    }
-
-    @Test
-    fun `loadMarkdownFileBlocks fails for a missing file`() = runTest(testDispatcher) {
-        assertTrue(editorRepository.loadMarkdownFileBlocks(missingFilePath()).isFailure)
-    }
-
     // ----------------------------------------------------------------- addFolder
 
     @Test

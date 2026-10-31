@@ -1,12 +1,11 @@
-package dev.jotalac.feature.editor.ui.components.active_block
+package dev.jotalac.feature.editor.ui
 
 import androidx.compose.ui.text.TextRange
 import kotlin.time.Clock
 
 data class EditorHistoryItem(
-    val blocks: List<String>,
-    val focusedIndex: Int?,
-    val selection: TextRange? = null,
+    val text: String,
+    val selection: TextRange = TextRange.Zero,
 )
 
 class EditorHistoryManager(

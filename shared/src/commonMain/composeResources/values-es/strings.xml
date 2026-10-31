@@ -39,9 +39,6 @@
     <string name="duplicate_contect_menu_item">Duplicar</string>
     <string name="note_add_contect_menu_item">Añadir nota</string>
     <string name="folder_add_contect_menu_item">Añadir carpeta</string>
-    <string name="add_new_block_message">Toca para añadir texto...</string>
-    <string name="move_block_up">Mover bloque arriba</string>
-    <string name="move_block_down">Mover bloque abajo</string>
     <string name="toolbar_h1">Encabezado 1</string>
     <string name="toolbar_h2">Encabezado 2</string>
     <string name="toolbar_h3">Encabezado 3</string>
@@ -123,7 +120,6 @@
     <string name="settings_auto_accept_local">Aceptar siempre cambios locales</string>
     <string name="settings_auto_accept_remote">Aceptar siempre cambios remotos</string>
     <string name="settings_use_dynamic_color">Usar Dynamic Color</string>
-    <string name="delete_block_content_description">Eliminar bloque</string>
     <string name="new_tab">Nueva pestaña</string>
     <string name="open_new_file_message">Abrir nuevo archivo</string>
     <string name="find_placeholder">Encontrar</string>
@@ -174,6 +170,7 @@
     <!-- its own choice: the UI language and the language you write in often differ -->
     <string name="settings_spellcheck_language_label">Idioma del corrector ortográfico</string>
     <string name="settings_spellcheck_language_same_as_app">Igual que el idioma de la aplicación</string>
+    <string name="no_spell_check">Sin corrector ortográfico</string>
     <string name="image_size_header">Tamaño de la imagen</string>
     <string name="image_size_original">Tamaño original</string>
     <string name="image_size_reset">Restablecer tamaño</string>

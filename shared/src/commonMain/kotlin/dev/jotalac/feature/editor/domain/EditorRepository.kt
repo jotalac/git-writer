@@ -1,7 +1,6 @@
 package dev.jotalac.feature.editor.domain
 
 interface EditorRepository {
-    suspend fun loadMarkdownFileBlocks(filePath: String): Result<List<String>>
     suspend fun fileExists(filePath: String): Boolean
     suspend fun readNoteContent(filePath: String): Result<String>
     suspend fun saveFile(fileContent: String, filePath: String): Result<Unit>
