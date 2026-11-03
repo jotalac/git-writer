@@ -13,10 +13,6 @@ import dev.jotalac.feature.editor.ui.utils.insertImageMarkdown
 import dev.jotalac.feature.editor.ui.utils.insertTextBetween
 import dev.jotalac.feature.editor.ui.utils.moveLines
 
-/**
- * The note being edited, as one text - its cursor, undo history and the edits the editor makes in it.
- * Every change of the text goes to the view model as [EditorAction.UpdateText].
- */
 @Stable
 class MarkdownEditorState(
     private val noteTextState: State<String>,
