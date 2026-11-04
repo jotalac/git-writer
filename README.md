@@ -5,6 +5,8 @@ and synchronized across devices. Supports all major platforms (Linux, macOS, Win
 
 <img src="readme_images/git-writer-logo.svg" height="150">
 
+Docs, installation and usage guide - [here](https://jotalac.github.io/git-writer-docs/installation.html)
+
 ---
 
 ## Installation
