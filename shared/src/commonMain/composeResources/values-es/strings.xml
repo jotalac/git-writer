@@ -128,7 +128,7 @@
     <string name="find_button">Buscar en la nota</string>
     <string name="navigate_back">Atrás</string>
     <string name="app_version_display">Versión: </string>
-    <string name="open_existing_notebook">Abrir existente</string>
+    <string name="open_existing_notebook">Importar existente</string>
 
     <!-- snackbar / status messages -->
     <string name="msg_path_copied">Ruta copiada al portapapeles</string>

@@ -34,13 +34,14 @@ internal fun LivePreviewText.linkAt(
 /**
  * Watches the pointer before the text field gets it (the Initial pass), which still gets every event: tells whether
  * a button is down, and whether the pointer is over a link ([linkAt]). A click on a link opens it with [onLinkClick]
- * instead of putting the cursor there.
+ * instead of putting the cursor there - any other press is told to [onPress] first.
  */
 internal fun Modifier.previewPointerInput(
     linkAt: (Offset, PointerKeyboardModifiers) -> LinkTarget?,
     onPointerDownChange: (Boolean) -> Unit,
     onOverLinkChange: (Boolean) -> Unit,
     onLinkClick: (LinkTarget) -> Unit,
+    onPress: (Offset) -> Unit,
 ): Modifier = pointerInput(Unit) {
     awaitPointerEventScope {
         while (true) {
@@ -50,7 +51,11 @@ internal fun Modifier.previewPointerInput(
 
             val link = linkAt(change.position, event.keyboardModifiers)
             onOverLinkChange(link != null)
-            if (event.type != PointerEventType.Press || link == null) continue
+            if (event.type != PointerEventType.Press) continue
+            if (link == null) {
+                onPress(change.position)
+                continue
+            }
 
             change.consume()
             val release = waitForUpOrCancellation(PointerEventPass.Initial)

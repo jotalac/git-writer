@@ -21,8 +21,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -67,6 +69,8 @@ fun LivePreviewField(
     val text = value.text
 
     var isPointerDown by remember { mutableStateOf(false) }
+    // a click into the field while it is not focused, until the button is up
+    var isFocusingPress by remember { mutableStateOf(false) }
     val selection = rememberShownSelection(editorState, isPointerDown)
 
     val tree = remember(text) { parseNoteMarkdown(text) }
@@ -95,7 +99,8 @@ fun LivePreviewField(
 
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     LaunchedEffect(value.selection, layout, editorState.isFocused) {
-        if (!editorState.isFocused || layout == null) return@LaunchedEffect
+        // the click puts the cursor under the pointer, which is in view already
+        if (!editorState.isFocused || layout == null || isFocusingPress) return@LaunchedEffect
         val cursorRect = layout.getCursorRect(preview.offsetMapping.originalToTransformed(value.selection.end))
         bringIntoViewRequester.bringIntoView(cursorRect.copy(top = cursorRect.top - 40f, bottom = cursorRect.bottom + 40f))
     }
@@ -117,6 +122,9 @@ fun LivePreviewField(
             editorState.updateValue(value.copy(selection = movedSelection))
             return true
         }
+
+//        if (event.key == Key.)
+
         return handleEditorKey(event, editorState) { pasteClipboardImage(editorState, scope) }
     }
 
@@ -146,9 +154,13 @@ fun LivePreviewField(
                             linkAt = { position, keyboardModifiers ->
                                 shownLayout.forText(currentPreview)?.let { currentPreview.linkAt(it, position, keyboardModifiers) }
                             },
-                            onPointerDownChange = { isPointerDown = it },
+                            onPointerDownChange = {
+                                isPointerDown = it
+                                if (!it) isFocusingPress = false
+                            },
                             onOverLinkChange = { isOverLink = it },
                             onLinkClick = { link -> openLink(link, uriHandler::openUri) },
+                            onPress = { if (!editorState.isFocused) isFocusingPress = true },
                         )
                         .pointerHoverIcon(if (isOverLink) PointerIcon.Hand else PointerIcon.Text, overrideDescendants = true)
                         .drawBehind {
@@ -165,6 +177,7 @@ fun LivePreviewField(
                                 preview.offsetMapping.transformedToOriginal(it.getOffsetForPosition(position))
                             }
                         }
+                        .scrollRequestGuard { isFocusingPress } // fixes the braking scrolling on focus
                         .bringIntoViewRequester(bringIntoViewRequester)
                         .focusRequester(focusRequester)
                         .onFocusChanged { editorState.isFocused = it.isFocused }

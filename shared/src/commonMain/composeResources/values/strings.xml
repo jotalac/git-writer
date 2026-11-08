@@ -128,7 +128,7 @@
     <string name="find_next">Next match</string>
     <string name="find_button">Find in note</string>
     <string name="app_version_display">App version: </string>
-    <string name="open_existing_notebook">Open existing</string>
+    <string name="open_existing_notebook">Import existing</string>
     <string name="empty_note_message">Click to start typing...</string>
     <string name="no_spell_check">No spell checking</string>
 
