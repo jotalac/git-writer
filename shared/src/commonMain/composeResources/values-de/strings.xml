@@ -128,7 +128,7 @@
     <string name="find_next">Nächster Treffer</string>
     <string name="find_button">In Notiz suchen</string>
     <string name="app_version_display">App-Version: </string>
-    <string name="open_existing_notebook">Vorhandenes öffnen</string>
+    <string name="open_existing_notebook">Vorhandenes importieren</string>
 
 
     <!-- snackbar / status messages -->

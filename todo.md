@@ -4,6 +4,7 @@
 
 - edit notebook dialog, should be a screen on mobile devices (like settings on mobile vs desktop)
 - when a notebook have active encryption, add possiblity to disable it again -> it would remove the .git, and just create a new local repo, and then force push to the remote to overwrite the encrypted bundles?
+- when typing pair markdown signs like `, *, _, ... - on the first sign press, write on already the full pair
 
 > medium priority
 
@@ -20,6 +21,7 @@
 - in the settings as possibility to change the commit message
 - add nucleus fs-watcher (or other fs watcher)
 - fix pdf export -> dont export the compose page -> convert to html for proper text selection and reduced size
+- store the repository access tokens and the encryption derived keys in a encrypted store on device eg: Android KeyStore, EncryptedSharedPreferences, iOS/macOS keychain, windows credentials manager, linux secret service
 - make section collapsible, like in obsidian, eg. everything under h1 can be collased
 
 > other ideas - lower priority

@@ -35,7 +35,6 @@ internal class PreviewStyles(
     val look: (TextLook) -> SpanStyle,
     val heading: (level: Int) -> Pair<SpanStyle, ParagraphStyle>,
     val alertTitle: (AlertKind?) -> SpanStyle = { SpanStyle() },
-    /** The syntax highlighting of [code] in [language] - its ranges are offsets in [code]. */
     val codeHighlights: (code: String, language: String?) -> List<StyledRange> = { _, _ -> emptyList() },
     /** How wide [prefix] is shown - the indentation and the bullet of a list item, its wrapped lines start there. */
     val listIndent: (prefix: String) -> TextUnit = { TextUnit.Unspecified },
@@ -92,7 +91,7 @@ internal fun rememberPreviewStyles(textStyle: TextStyle): PreviewStyles {
                     TextLook.Italic -> SpanStyle(fontStyle = FontStyle.Italic)
                     TextLook.Strikethrough -> SpanStyle(textDecoration = TextDecoration.LineThrough)
                     TextLook.Highlight -> SpanStyle(background = colors.primary.copy(alpha = 0.4f))
-                    TextLook.Code -> monospace.copy(background = colors.surfaceContainerHighest)
+                    TextLook.Code -> monospace.copy(background = colors.surfaceContainerHighest.copy(alpha = 0.8f))
                     TextLook.Link -> SpanStyle(color = colors.primary, textDecoration = TextDecoration.Underline)
                     TextLook.Syntax -> SpanStyle(color = colors.onSurface.copy(alpha = 0.35f))
                     TextLook.DoneTask -> SpanStyle(

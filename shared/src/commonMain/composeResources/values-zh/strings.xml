@@ -128,7 +128,7 @@
     <string name="find_next">下一个匹配项</string>
     <string name="find_button">在笔记中查找</string>
     <string name="app_version_display">应用版本：</string>
-    <string name="open_existing_notebook">打开现有笔记本</string>
+    <string name="open_existing_notebook">导入现有笔记本</string>
 
 
     <!-- snackbar / status messages -->

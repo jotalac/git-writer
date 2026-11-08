@@ -315,7 +315,6 @@ private class DecorationCollector(private val text: String, private val selectio
             MarkdownElementTypes.EMPH -> delimited(node, TextLook.Italic)
             GFMElementTypes.STRIKETHROUGH -> delimited(node, TextLook.Strikethrough)
             GFMElementTypes.HIGHLIGHT -> delimited(node, TextLook.Highlight)
-            // the code is not formatted any further
             MarkdownElementTypes.CODE_SPAN -> delimited(node, TextLook.Code, CODE_DELIMITERS, formatsContent = false)
             GFMElementTypes.INLINE_MATH, GFMElementTypes.BLOCK_MATH -> inlineMath(node)
             MarkdownElementTypes.INLINE_LINK, MarkdownElementTypes.FULL_REFERENCE_LINK -> link(node)

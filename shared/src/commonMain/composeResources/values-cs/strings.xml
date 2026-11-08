@@ -128,7 +128,7 @@
     <string name="find_next">Další shoda</string>
     <string name="find_button">Najít v poznámce</string>
     <string name="app_version_display">Verze aplikace: </string>
-    <string name="open_existing_notebook">Otevřít existující</string>
+    <string name="open_existing_notebook">Importovat existující</string>
 
     <!-- snackbar / status messages -->
     <string name="msg_path_copied">Cesta zkopírována do schránky</string>
