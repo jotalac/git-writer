@@ -29,7 +29,6 @@ internal fun handleEditorKey(event: KeyEvent, editorState: MarkdownEditorState, 
     }
 
     return when (event.key) {
-        Key.Escape -> handled { editorState.clearFocus() }
         // Enter itself goes to the text field - its line break continues a list, see MarkdownEditorState
         Key.Enter, Key.NumPadEnter -> event.isShiftPressed && handled { editorState.insertPlainNewLine() }
         Key.Tab -> !isShortcut && handled { editorState.indent(isUntab = event.isShiftPressed) }

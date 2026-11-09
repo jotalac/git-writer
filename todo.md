@@ -2,7 +2,6 @@
 
 > high priority
 
-- edit notebook dialog, should be a screen on mobile devices (like settings on mobile vs desktop)
 
 > medium priority
 

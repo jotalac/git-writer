@@ -27,7 +27,6 @@ class MarkdownEditorState(
 
     // set by the editor's composables
     var requestFieldFocus: (() -> Unit)? = null
-    var requestRootFocus: (() -> Unit)? = null
 
     /** A change from the text field - a new line continues a list, like the Enter key does. */
     fun onValueChange(newValue: TextFieldValue) {
@@ -96,10 +95,6 @@ class MarkdownEditorState(
     fun focusAt(offset: Int) = select(TextRange(offset))
 
     fun focusEnd() = focusAt(value.text.length)
-
-    fun clearFocus() {
-        requestRootFocus?.invoke()
-    }
 
     // --- undo/redo ---
 

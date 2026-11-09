@@ -276,9 +276,23 @@ class LivePreviewTextTest {
         val paragraph = preview.transformed.text.paragraphStyles.single()
         val emptyLastLine = preview.offsetMapping.originalToTransformed(text.length)
 
-        // the widget's paragraph ends before the zero width space of the last line break
+        // the widget's paragraph ends with the first zero width space of the last line break, the second one is the
+        // empty last line
         assertEquals(paragraph.end, emptyLastLine - 1)
-        assertEquals(WIDGET_PLACEHOLDER, preview.transformed.text.text.substring(paragraph.start, paragraph.end))
+        assertEquals(WIDGET_PLACEHOLDER + ZERO_WIDTH_SPACE, preview.transformed.text.text.substring(paragraph.start, paragraph.end))
+    }
+
+    @Test
+    fun `the end of a heading before the note's last line break is in the heading's paragraph`() {
+        val text = "text\n\n# heading\n"
+        val preview = preview(text, cursor = text.length - 1)
+        val paragraph = preview.transformed.text.paragraphStyles.single()
+        val headingEnd = preview.offsetMapping.originalToTransformed(text.length - 1)
+        val emptyLastLine = preview.offsetMapping.originalToTransformed(text.length)
+
+        // the cursor at a paragraph's end is drawn on the paragraph after it
+        assertTrue(headingEnd < paragraph.end, "the heading's end at $headingEnd, its paragraph ends at ${paragraph.end}")
+        assertTrue(emptyLastLine > paragraph.end, "the empty last line in the heading's paragraph")
     }
 
     @Test
