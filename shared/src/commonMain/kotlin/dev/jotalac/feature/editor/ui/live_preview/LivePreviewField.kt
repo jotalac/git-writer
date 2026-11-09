@@ -27,6 +27,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.Layout
@@ -50,6 +51,7 @@ import git_writer.shared.generated.resources.spellcheck_suggestions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 
@@ -111,8 +113,19 @@ fun LivePreviewField(
     val currentPreview by rememberUpdatedState(preview)
 
     val cursorMove = remember { LineCursorMove() }
+    // the character of a key down typed here, which comes once more after it, to be typed by the text field
+    val typedHere = remember { TypedHere() }
     fun handleKey(event: KeyEvent): Boolean {
-        if (event.type != KeyEventType.KeyDown) return false
+        if (event.type != KeyEventType.KeyDown) {
+            if (event.type != KeyEventType.Unknown || event.utf16CodePoint != typedHere.char) return false
+            typedHere.char = null
+            return true
+        }
+        typedHere.char = null
+        if (typePairedMark(event, editorState)) {
+            typedHere.char = event.utf16CodePoint
+            return true
+        }
         if (isContextMenuShortcut(event)) {
             spellcheck.openMenuAtCaret(layout, preview.offsetMapping)
             return true
@@ -122,8 +135,6 @@ fun LivePreviewField(
             editorState.updateValue(value.copy(selection = movedSelection))
             return true
         }
-
-//        if (event.key == Key.)
 
         return handleEditorKey(event, editorState) { pasteClipboardImage(editorState, scope) }
     }
@@ -177,8 +188,10 @@ fun LivePreviewField(
                                 preview.offsetMapping.transformedToOriginal(it.getOffsetForPosition(position))
                             }
                         }
-                        .scrollRequestGuard { isFocusingPress } // fixes the braking scrolling on focus
                         .bringIntoViewRequester(bringIntoViewRequester)
+                        // The text field scrolls itself when it gets focus - to all of itself, taller than the window,
+                        // and to its cursor from before the click. Only the cursor following above scrolls it.
+                        .dropScrollRequests()
                         .focusRequester(focusRequester)
                         .onFocusChanged { editorState.isFocused = it.isFocused }
                         .onPreviewKeyEvent(::handleKey),
