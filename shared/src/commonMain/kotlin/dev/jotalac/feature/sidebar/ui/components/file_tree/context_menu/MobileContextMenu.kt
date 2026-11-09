@@ -3,17 +3,14 @@ package dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.design.BottomSheet
 import dev.jotalac.feature.sidebar.domain.FileType
 import dev.jotalac.feature.sidebar.ui.SidebarAction
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** A file's or a folder's actions in a sheet from the bottom - the right click menu of mobile. */
 @Composable
 fun MobileContextMenu(
     showMenu: Boolean,
@@ -22,31 +19,26 @@ fun MobileContextMenu(
     itemPath: String,
     onAction: (SidebarAction) -> Unit
 ) {
-    val sheetState = rememberBottomSheetState(SheetValue.Hidden)
-    
-    if (showMenu) {
-        ModalBottomSheet(
-            onDismissRequest = onDismissRequest,
-            sheetState = sheetState,
+    if (!showMenu) return
+
+    BottomSheet(onDismissRequest = onDismissRequest) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp, top = 24.dp)
-            ) {
-                if (itemType == FileType.FILE) {
-                    FileContextMenuContent(
-                        onAction = onAction,
-                        itemPath = itemPath,
-                        onDismissRequest = onDismissRequest
-                    )
-                } else {
-                    FolderContextMenuContent(
-                        onAction = onAction,
-                        itemPath = itemPath,
-                        onDismissRequest = onDismissRequest
-                    )
-                }
+            if (itemType == FileType.FILE) {
+                FileContextMenuContent(
+                    onAction = onAction,
+                    itemPath = itemPath,
+                    onDismissRequest = onDismissRequest
+                )
+            } else {
+                FolderContextMenuContent(
+                    onAction = onAction,
+                    itemPath = itemPath,
+                    onDismissRequest = onDismissRequest
+                )
             }
         }
     }

@@ -7,6 +7,7 @@ import com.hrm.latex.renderer.model.LatexTheme
 import com.mikepenz.markdown.annotator.AnnotatorSettings
 import com.mikepenz.markdown.annotator.annotatorSettings
 import com.mikepenz.markdown.model.DefaultMarkdownAnnotator
+import dev.jotalac.core.ui.theme.AppTheme
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 
@@ -28,7 +29,7 @@ internal fun ASTNode.loneMathExpression(content: String): ASTNode? =
 
 @Composable
 internal fun LatexExpression(content: String, mathNode: ASTNode) {
-    LatexAutoWrap(mathNode.latexSource(content), config = LatexConfig(theme = LatexTheme.material3()))
+    LatexAutoWrap(mathNode.latexSource(content), config = LatexConfig(theme = LatexTheme.light(color = AppTheme.colors.text)))
 }
 
 /** The library's annotator, except maths is kept as its source text instead of being dropped. */

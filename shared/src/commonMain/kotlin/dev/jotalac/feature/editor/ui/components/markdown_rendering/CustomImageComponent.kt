@@ -1,10 +1,7 @@
 package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +20,7 @@ import dev.jotalac.core.ui.components.ContextMenuHeader
 import dev.jotalac.core.ui.components.ContextMenuItem
 import dev.jotalac.core.ui.components.DesktopContextMenu
 import dev.jotalac.core.ui.components.onContextMenuOpen
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.isDesktopPlatform
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.image_size_header
@@ -61,7 +59,7 @@ fun CustomImageComponent(
             contentDescription = alt.text ?: imageData.contentDescription,
             modifier = imageData.modifier
                 .imageSize(alt, pictureSize)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(AppTheme.shapes.medium)
                 .then(if (canResize) Modifier.onContextMenuOpen { menuPosition = it } else Modifier),
             alignment = imageData.alignment,
             contentScale = if (alt.isStretched) ContentScale.FillBounds else imageData.contentScale,

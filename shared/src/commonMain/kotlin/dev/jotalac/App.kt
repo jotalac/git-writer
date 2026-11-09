@@ -21,12 +21,12 @@ import dev.jotalac.core.ui.window.TitleBarHost
 import dev.jotalac.core.ui.window.WindowTitleBarTheme
 import dev.jotalac.core.utils.ConfigureAppImageLoader
 import dev.jotalac.core.utils.applyAppLanguage
+import dev.jotalac.feature.editor.ui.EditorScreen
+import dev.jotalac.feature.editor.ui.components.LocalEditorFullWidth
 import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckEnabled
 import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckLanguage
-import dev.jotalac.feature.editor.ui.components.LocalEditorFullWidth
-import dev.jotalac.feature.editor.ui.EditorScreen
-import dev.jotalac.feature.settings.ui.SettingsScreen
 import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookScreen
+import dev.jotalac.feature.settings.ui.SettingsScreen
 import org.koin.compose.koinInject
 
 @Composable
@@ -50,7 +50,6 @@ fun App(
             darkTheme = isDarkTheme,
             accentColor = settingsState.themeAccentColor,
             fontFamily = settingsState.font,
-            dynamicColor = settingsState.useDynamicColor,
         ) {
             WindowTitleBarTheme(isDarkTheme)
 

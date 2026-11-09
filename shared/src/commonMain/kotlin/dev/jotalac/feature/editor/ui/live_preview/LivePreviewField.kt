@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +20,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -39,6 +37,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.getImageBytesFromClipboard
 import dev.jotalac.core.utils.requestFocusSafely
 import dev.jotalac.feature.editor.ui.MarkdownEditorState
@@ -66,7 +65,7 @@ fun LivePreviewField(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val textStyle = MaterialTheme.typography.bodyLarge
+    val textStyle = AppTheme.typography.bodyLarge
     val value = editorState.value
     val text = value.text
 
@@ -139,7 +138,7 @@ fun LivePreviewField(
         return handleEditorKey(event, editorState) { pasteClipboardImage(editorState, scope) }
     }
 
-    val colors = MaterialTheme.colorScheme
+    val colors = AppTheme.colors
 
     Layout(
         modifier = modifier,
@@ -157,8 +156,8 @@ fun LivePreviewField(
                         textLayout = it
                     },
                     visualTransformation = remember(preview) { LivePreviewTransformation(preview) },
-                    textStyle = textStyle.copy(color = colors.onSurface),
-                    cursorBrush = SolidColor(colors.primary),
+                    textStyle = textStyle.copy(color = colors.text),
+                    cursorBrush = SolidColor(colors.accent),
                     modifier = Modifier
                         .fillMaxWidth()
                         .previewPointerInput(
@@ -176,12 +175,12 @@ fun LivePreviewField(
                         .pointerHoverIcon(if (isOverLink) PointerIcon.Hand else PointerIcon.Text, overrideDescendants = true)
                         .drawBehind {
                             val drawnLayout = shownLayout.forText(preview) ?: return@drawBehind
-                            drawCodeBackgrounds(drawnLayout, preview.codeBackgrounds, colors.surfaceContainerHigh)
-                            drawQuoteBars(drawnLayout, preview.quoteBars, colors.outlineVariant)
+                            drawCodeBackgrounds(drawnLayout, preview.codeBackgrounds, colors.surfaceSunken)
+                            drawQuoteBars(drawnLayout, preview.quoteBars, colors.surfaceStrong)
                         }
                         .drawWithContent {
                             drawContent()
-                            shownLayout.forText(preview)?.let { drawMisspellingUnderlines(it, underlines, colors.error) }
+                            shownLayout.forText(preview)?.let { drawMisspellingUnderlines(it, underlines, colors.danger) }
                         }
                         .onSpellingMenuRequest { position ->
                             spellcheck.menuAnchor = layout?.let {

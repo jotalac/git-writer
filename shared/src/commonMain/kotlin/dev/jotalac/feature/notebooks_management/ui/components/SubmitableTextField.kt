@@ -2,13 +2,13 @@ package dev.jotalac.feature.notebooks_management.ui.components
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.design.TextField
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -22,11 +22,11 @@ fun SubmittableTextField(
     placeholder: StringResource? = null,
     visualTransformation: VisualTransformation? = null
 ) {
-    OutlinedTextField(
+    TextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(stringResource(label)) },
-        placeholder = { placeholder?.let { Text(stringResource(placeholder)) } },
+        placeholder = placeholder?.let { { Text(stringResource(it)) } },
         singleLine = true,
         visualTransformation = visualTransformation ?: VisualTransformation.None,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),

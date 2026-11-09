@@ -1,8 +1,6 @@
 package dev.jotalac.feature.editor.ui.live_preview
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.InternalComposeUiApi
@@ -12,9 +10,11 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.Density
+import dev.jotalac.core.ui.design.Surface
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.ui.EditorAction
-import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import dev.jotalac.feature.editor.ui.EditorHistoryManager
+import dev.jotalac.feature.editor.ui.MarkdownEditorState
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,7 +34,7 @@ class LivePreviewCursorKeysTest {
         historyManager = EditorHistoryManager(),
     )
     private val scene = ImageComposeScene(width = 700, height = 500, density = Density(1.5f)) {
-        MaterialTheme { Surface(modifier = Modifier.fillMaxSize()) { LivePreviewField(editorState) } }
+        AppTheme { Surface(modifier = Modifier.fillMaxSize()) { LivePreviewField(editorState) } }
     }
     private var time = 0L
 

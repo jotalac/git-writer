@@ -6,20 +6,16 @@ import androidx.compose.foundation.ContextMenuState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.DesktopContextMenu
-import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.MenuDivider
+import dev.jotalac.core.ui.design.MenuItem
+import dev.jotalac.core.ui.design.Text
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -61,10 +57,7 @@ internal class AppContextMenuRepresentation : ContextMenuRepresentation {
             Column {
                 menuItems.forEach { item ->
                     if (item is SeparatorMenuItem) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 6.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                        )
+                        MenuDivider()
                     } else {
                         MenuRow(
                             label = item.label,
@@ -94,21 +87,17 @@ private fun MenuRow(
     onClick: () -> Unit,
     icon: DrawableResource? = null
 ) {
-    DropdownMenuItem(
+    MenuItem(
         text = {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = MaterialTheme.dimensions.listItemTextSize
-                ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         },
         onClick = onClick,
         enabled = enabled,
-        modifier = Modifier.height(MaterialTheme.dimensions.contextMenuItemHeight),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp),
         leadingIcon = icon?.let { resource ->
             {
                 Icon(

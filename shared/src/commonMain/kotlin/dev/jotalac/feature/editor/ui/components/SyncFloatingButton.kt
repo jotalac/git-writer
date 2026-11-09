@@ -2,11 +2,6 @@ package dev.jotalac.feature.editor.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -17,7 +12,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.jotalac.core.ui.components.DelayedTooltip
+import dev.jotalac.core.ui.design.FloatingButton
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.Tooltip
+import dev.jotalac.core.ui.design.TooltipPlacement
 import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import git_writer.shared.generated.resources.*
@@ -54,33 +52,33 @@ fun SyncFloatingButton(
     }
 
     val targetContainerColor = when (gitSyncStatus) {
-        is GitSyncStatus.UpToDate -> MaterialTheme.colorScheme.primaryContainer
-        is GitSyncStatus.Syncing -> MaterialTheme.colorScheme.secondaryContainer
-        is GitSyncStatus.GitSyncFailed -> MaterialTheme.colorScheme.errorContainer
-        is GitSyncStatus.Conflict -> MaterialTheme.colorScheme.error
-        is GitSyncStatus.GitSyncNotConfigured -> MaterialTheme.colorScheme.surfaceContainerHigh
-        is GitSyncStatus.Offline -> MaterialTheme.colorScheme.surfaceContainerHigh
-        is GitSyncStatus.RemoteUnreachable -> MaterialTheme.colorScheme.tertiaryContainer
+        is GitSyncStatus.UpToDate -> AppTheme.colors.accentSoft
+        is GitSyncStatus.Syncing -> AppTheme.colors.accentSoft
+        is GitSyncStatus.GitSyncFailed -> AppTheme.colors.dangerSoft
+        is GitSyncStatus.Conflict -> AppTheme.colors.danger
+        is GitSyncStatus.GitSyncNotConfigured -> AppTheme.colors.surfaceSunken
+        is GitSyncStatus.Offline -> AppTheme.colors.surfaceSunken
+        is GitSyncStatus.RemoteUnreachable -> AppTheme.colors.highlightSoft
     }
 
     val targetContentColor = when (gitSyncStatus) {
-        is GitSyncStatus.UpToDate -> MaterialTheme.colorScheme.onPrimaryContainer
-        is GitSyncStatus.Syncing -> MaterialTheme.colorScheme.onSecondaryContainer
-        is GitSyncStatus.GitSyncFailed -> MaterialTheme.colorScheme.onErrorContainer
-        is GitSyncStatus.Conflict -> MaterialTheme.colorScheme.onError
-        is GitSyncStatus.GitSyncNotConfigured -> MaterialTheme.colorScheme.outline
-        is GitSyncStatus.Offline -> MaterialTheme.colorScheme.outline
-        is GitSyncStatus.RemoteUnreachable -> MaterialTheme.colorScheme.onTertiaryContainer
+        is GitSyncStatus.UpToDate -> AppTheme.colors.onAccentSoft
+        is GitSyncStatus.Syncing -> AppTheme.colors.onAccentSoft
+        is GitSyncStatus.GitSyncFailed -> AppTheme.colors.onDangerSoft
+        is GitSyncStatus.Conflict -> AppTheme.colors.onDanger
+        is GitSyncStatus.GitSyncNotConfigured -> AppTheme.colors.textMuted
+        is GitSyncStatus.Offline -> AppTheme.colors.textMuted
+        is GitSyncStatus.RemoteUnreachable -> AppTheme.colors.highlight
     }
 
     val targetShadowColor = when (gitSyncStatus) {
-        is GitSyncStatus.UpToDate -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
-        is GitSyncStatus.Syncing -> MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.1f)
-        is GitSyncStatus.GitSyncFailed -> MaterialTheme.colorScheme.error.copy(alpha = 0.05f)
-        is GitSyncStatus.Conflict -> MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
+        is GitSyncStatus.UpToDate -> AppTheme.colors.accentSoft.copy(alpha = 0.25f)
+        is GitSyncStatus.Syncing -> AppTheme.colors.onAccentSoft.copy(alpha = 0.1f)
+        is GitSyncStatus.GitSyncFailed -> AppTheme.colors.danger.copy(alpha = 0.05f)
+        is GitSyncStatus.Conflict -> AppTheme.colors.danger.copy(alpha = 0.1f)
         is GitSyncStatus.GitSyncNotConfigured -> Color.Transparent
         is GitSyncStatus.Offline -> Color.Transparent
-        is GitSyncStatus.RemoteUnreachable -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+        is GitSyncStatus.RemoteUnreachable -> AppTheme.colors.highlight.copy(alpha = 0.1f)
     }
 
     val animatedContainerColor by animateColorAsState(
@@ -104,14 +102,14 @@ fun SyncFloatingButton(
     val description = stringResource(getContentDescription(gitSyncStatus))
 
     // the status in words - after hovering a while on desktop, on long press on mobile
-    DelayedTooltip(
+    Tooltip(
         text = description,
-        anchorPosition = TooltipAnchorPosition.Left
+        placement = TooltipPlacement.Left,
     ) {
-        FloatingActionButton(
+        FloatingButton(
             onClick = { if (isEnabled) onClick() },
             modifier = modifier.dropShadow(
-                shape = CircleShape,
+                shape = AppTheme.shapes.large,
                 shadow = Shadow(
                     radius = 10.dp,
                     color = animatedShadowColor,
@@ -120,6 +118,7 @@ fun SyncFloatingButton(
             ),
             containerColor = animatedContainerColor,
             contentColor = animatedContentColor,
+            shape = AppTheme.shapes.large,
         ) {
             Icon(
                 painter = painterResource(getIcon(gitSyncStatus)),

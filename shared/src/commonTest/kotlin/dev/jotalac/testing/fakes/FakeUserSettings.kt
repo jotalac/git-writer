@@ -23,7 +23,6 @@ class FakeUserSettings(
     override suspend fun setFont(font: AppFontFamily) { calledWrites += "font" }
     override suspend fun setLanguage(language: AppLanguage) { calledWrites += "language" }
     override suspend fun setGitConflictStrategy(strategy: GitConflictResolutionStrategy) { calledWrites += "conflictStrategy" }
-    override suspend fun setUseDynamicColor(useDynamicColor: Boolean) { calledWrites += "dynamicColor" }
 
     override suspend fun setEditorFullWidth(fullWidth: Boolean) {
         calledWrites += "editorFullWidth"

@@ -1,9 +1,13 @@
 package dev.jotalac.core.ui.theme
 
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import dev.jotalac.core.domain.AppFontFamily
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.jetbrains_mono_bold
 import git_writer.shared.generated.resources.jetbrains_mono_light
@@ -18,28 +22,42 @@ val JetBrainsMonoFont: FontFamily
         Font(Res.font.jetbrains_mono_light, FontWeight.Light),
     )
 
-val DefaultTypography = Typography()
+@Immutable
+data class AppTypography(
+    /** A big empty-state title. */
+    val display: TextStyle,
+    /** A dialog's or a screen's title. */
+    val title: TextStyle,
+    /** A section's heading. */
+    val heading: TextStyle,
+    /** The note's text. */
+    val bodyLarge: TextStyle,
+    val body: TextStyle,
+    val bodySmall: TextStyle,
+    /** Buttons, tabs, field labels. */
+    val label: TextStyle,
+    val labelSmall: TextStyle,
+)
 
-val MonoSpaceTypography: Typography
-    @Composable
-    get() {
-        val monoFont = JetBrainsMonoFont
+/** The text styles, in the font chosen in the settings. */
+@Composable
+fun appTypography(font: AppFontFamily): AppTypography {
+    val family = if (font == AppFontFamily.DEFAULT) FontFamily.Default else JetBrainsMonoFont
+    fun style(size: Int, lineHeight: Int, weight: FontWeight = FontWeight.Normal, letterSpacing: Float = 0f) =
+        TextStyle(fontFamily = family, fontSize = size.sp, lineHeight = lineHeight.sp, fontWeight = weight, letterSpacing = letterSpacing.sp)
 
-        return Typography(
-            displayLarge = DefaultTypography.displayLarge.copy(fontFamily = monoFont),
-            displayMedium = DefaultTypography.displayMedium.copy(fontFamily = monoFont),
-            displaySmall = DefaultTypography.displaySmall.copy(fontFamily = monoFont),
-            headlineLarge = DefaultTypography.headlineLarge.copy(fontFamily = monoFont),
-            headlineMedium = DefaultTypography.headlineMedium.copy(fontFamily = monoFont),
-            headlineSmall = DefaultTypography.headlineSmall.copy(fontFamily = monoFont),
-            titleLarge = DefaultTypography.titleLarge.copy(fontFamily = monoFont),
-            titleMedium = DefaultTypography.titleMedium.copy(fontFamily = monoFont),
-            titleSmall = DefaultTypography.titleSmall.copy(fontFamily = monoFont),
-            bodyLarge = DefaultTypography.bodyLarge.copy(fontFamily = monoFont),
-            bodyMedium = DefaultTypography.bodyMedium.copy(fontFamily = monoFont),
-            bodySmall = DefaultTypography.bodySmall.copy(fontFamily = monoFont),
-            labelLarge = DefaultTypography.labelLarge.copy(fontFamily = monoFont),
-            labelMedium = DefaultTypography.labelMedium.copy(fontFamily = monoFont),
-            labelSmall = DefaultTypography.labelSmall.copy(fontFamily = monoFont),
-        )
-    }
+    return AppTypography(
+        display = style(26, 32, FontWeight.SemiBold, -0.3f),
+        title = style(17, 24, FontWeight.SemiBold),
+        heading = style(14, 20, FontWeight.SemiBold),
+        bodyLarge = style(16, 24),
+        body = style(14, 20),
+        bodySmall = style(12, 16),
+        label = style(13, 18, FontWeight.Medium),
+        labelSmall = style(12, 16, FontWeight.Medium),
+    )
+}
+
+internal val LocalAppTypography = staticCompositionLocalOf<AppTypography> {
+    error("No AppTypography - wrap the content in AppTheme")
+}

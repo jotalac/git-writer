@@ -5,9 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,10 +16,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.data.UserSettingsState
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
-import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.design.*
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.settings.ui.settings_sections.AppearanceSettings
 import dev.jotalac.feature.settings.ui.settings_sections.LanguageSettings
 import dev.jotalac.feature.settings.ui.settings_sections.SyncSettings
+import git_writer.shared.BuildKonfig
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.app_version_display
 import git_writer.shared.generated.resources.arrow_right
@@ -29,7 +29,6 @@ import git_writer.shared.generated.resources.toggle_collapse
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import git_writer.shared.BuildKonfig
 
 @Composable
 fun SettingsContent(
@@ -54,8 +53,6 @@ fun SettingsContent(
                 onThemeChange = { onAction(SettingsViewModel.SettingsAction.ChangeThemeMode(it)) },
                 onThemeAccentColorChange = { onAction(SettingsViewModel.SettingsAction.ChangeThemeAccentColor(it)) },
                 onFontFamilyChange = { onAction(SettingsViewModel.SettingsAction.ChangeFont(it)) },
-                useDynamicColor = userSettingsState.useDynamicColor,
-                onDynamicColorToggle = { onAction(SettingsViewModel.SettingsAction.ChangeUseDynamicColor(it)) },
                 editorFullWidth = userSettingsState.editorFullWidth,
                 onEditorFullWidthChange = { onAction(SettingsViewModel.SettingsAction.ChangeEditorFullWidth(it)) }
             )
@@ -82,8 +79,8 @@ fun SettingsContent(
                 modifier = Modifier
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
+                style = AppTheme.typography.body,
+                color = AppTheme.colors.textMuted
             )
         }
 
@@ -108,14 +105,14 @@ fun SectionTitle(
         Icon(
             painter = painterResource(icon),
             contentDescription = title,
-            modifier = Modifier.size(MaterialTheme.dimensions.iconLarge),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            modifier = Modifier.size(AppTheme.dimensions.iconLarge),
+            tint = AppTheme.colors.textSecondary
         )
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = AppTheme.typography.title,
+            color = AppTheme.colors.textSecondary,
         )
 
     }
@@ -134,15 +131,15 @@ fun SettingsCollapsableSection(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        tonalElevation = 1.dp
+        shape = AppTheme.shapes.large,
+        color = AppTheme.colors.surface,
+        border = AppTheme.colors.border,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(AppTheme.shapes.large)
                     .clickable { isExpanded = !isExpanded }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -154,14 +151,14 @@ fun SettingsCollapsableSection(
                 ) {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = AppTheme.typography.heading.copy(fontWeight = FontWeight.SemiBold),
+                        color = AppTheme.colors.text,
                     )
                     if (subtitle != null) {
                         Text(
                             text = subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = AppTheme.typography.bodySmall,
+                            color = AppTheme.colors.textSecondary
                         )
                     }
                 }
@@ -170,9 +167,9 @@ fun SettingsCollapsableSection(
                     painter = painterResource(Res.drawable.arrow_right),
                     contentDescription = stringResource(Res.string.toggle_collapse),
                     modifier = Modifier
-                        .size(MaterialTheme.dimensions.iconSmall)
+                        .size(AppTheme.dimensions.iconSmall)
                         .graphicsLayer { rotationZ = rotation },
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = AppTheme.colors.textSecondary
                 )
             }
 
@@ -187,8 +184,8 @@ fun SettingsCollapsableSection(
                         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    Divider(
+                        color = AppTheme.colors.divider.copy(alpha = 0.5f)
                     )
                     content()
                 }

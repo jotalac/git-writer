@@ -4,13 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.IconButton
+import dev.jotalac.core.ui.design.Tooltip
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.ui.utils.*
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.DrawableResource
@@ -30,7 +32,7 @@ fun MarkdownKeyboardToolbar(
     Row(
         modifier = modifier
 //            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceBright)
+            .background(AppTheme.colors.surfaceRaised)
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -183,23 +185,11 @@ private fun ToolbarButton(
     contentDescription: StringResource,
     onClick: () -> Unit
 ) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-            TooltipAnchorPosition.Above,
-            10.dp
-        ),
-        tooltip = {
-            PlainTooltip { Text(stringResource(contentDescription)) }
-        },
-        state = rememberTooltipState()
-    ) {
-        IconButton(
-            onClick = onClick,
-            modifier = Modifier.defaultMinSize(minWidth = 40.dp, minHeight = 40.dp)
-        ) {
+    Tooltip(text = stringResource(contentDescription)) {
+        IconButton(onClick = onClick, size = 44.dp) {
             Icon(
                 painter = painterResource(icon),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = AppTheme.colors.textSecondary,
                 contentDescription = stringResource(contentDescription),
             )
         }

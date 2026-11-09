@@ -1,12 +1,19 @@
 package dev.jotalac.feature.notebooks_management.ui.edit_notebook
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.design.Button
+import dev.jotalac.core.ui.design.Divider
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.Switch
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.design.TextButton
+import dev.jotalac.core.ui.design.TextField
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.notebooks_management.ui.components.SubmittableTextField
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
@@ -32,7 +39,7 @@ internal fun EditNotebookContent(
             submit = onSubmit
         )
 
-        HorizontalDivider()
+        Divider()
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -41,8 +48,8 @@ internal fun EditNotebookContent(
         ) {
             Text(
                 text = stringResource(Res.string.remote_credentials_section_title),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.heading,
+                color = AppTheme.colors.textSecondary,
                 modifier = Modifier.weight(1f),
             )
 
@@ -59,7 +66,7 @@ internal fun EditNotebookContent(
 
         }
 
-        OutlinedTextField(
+        TextField(
             value = state.remoteUrl,
             onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.RemoteUrlChanged(it)) },
             label = { Text(stringResource(Res.string.git_repository_url_input_label)) },
@@ -75,7 +82,7 @@ internal fun EditNotebookContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedTextField(
+                    TextField(
                         value = state.remoteUsername,
                         onValueChange = {
                             onEvent(
@@ -88,7 +95,7 @@ internal fun EditNotebookContent(
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
-                    OutlinedTextField(
+                    TextField(
                         value = state.remotePassword,
                         onValueChange = {
                             onEvent(
@@ -108,7 +115,7 @@ internal fun EditNotebookContent(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedTextField(
+                    TextField(
                         value = state.remoteUsername,
                         onValueChange = {
                             onEvent(
@@ -121,7 +128,7 @@ internal fun EditNotebookContent(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    OutlinedTextField(
+                    TextField(
                         value = state.remotePassword,
                         onValueChange = {
                             onEvent(
@@ -144,8 +151,8 @@ internal fun EditNotebookContent(
         if (state.errorMessage != null) {
             Text(
                 text = state.errorMessage!!,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyLarge
+                color = AppTheme.colors.danger,
+                style = AppTheme.typography.bodyLarge
             )
         }
     }
@@ -156,40 +163,30 @@ internal fun SaveNotebookButton(state: EditNotebookState, onClick: () -> Unit, m
     Button(
         onClick = onClick,
         modifier = modifier,
-        enabled = state.notebookName.isNotBlank() && !state.isLoading
+        enabled = state.notebookName.isNotBlank(),
+        isLoading = state.isLoading,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            Text(stringResource(Res.string.save_button))
-        }
+        Text(stringResource(Res.string.save_button))
     }
 }
 
 @Composable
 private fun EncryptionSection(state: EditNotebookState, onEvent: (EditNotebookViewModel.EditNotebookEvent) -> Unit) {
-    HorizontalDivider()
+    Divider()
 
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(Res.string.encrypt_notebook_label),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.heading,
+                color = AppTheme.colors.textSecondary,
             )
             Text(
                 text = stringResource(
                     if (state.isEncrypted) Res.string.notebook_encrypted_info else Res.string.encrypt_notebook_subtitle
                 ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.bodySmall,
+                color = AppTheme.colors.textSecondary,
             )
         }
         // turning it off would need the notes moved to a readable remote again - not supported
@@ -209,7 +206,7 @@ private fun EncryptionSection(state: EditNotebookState, onEvent: (EditNotebookVi
     }
 
     if (state.encrypt && !state.isEncrypted) {
-        OutlinedTextField(
+        TextField(
             value = state.encryptionPassword,
             onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.EncryptionPasswordChanged(it)) },
             label = { Text(stringResource(Res.string.encryption_password_label)) },
@@ -217,7 +214,7 @@ private fun EncryptionSection(state: EditNotebookState, onEvent: (EditNotebookVi
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedTextField(
+        TextField(
             value = state.encryptionPasswordConfirm,
             onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.EncryptionPasswordConfirmChanged(it)) },
             label = { Text(stringResource(Res.string.encryption_password_confirm_label)) },

@@ -10,9 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +29,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.ui.components.onContextMenuOpen
-import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.sidebar.domain.FileNode
 import dev.jotalac.feature.sidebar.domain.FileType
 import dev.jotalac.feature.sidebar.domain.FlatFileNode
@@ -75,11 +73,11 @@ fun FileTree(
 
     val rootBorder = if (isRootTarget) Modifier.border(
         2.dp,
-        MaterialTheme.colorScheme.primary.copy(0.5f),
-        RoundedCornerShape(12.dp)
+        AppTheme.colors.accent.copy(0.5f),
+        AppTheme.shapes.large
     ) else Modifier
-    val highlightFill = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
-    val highlightStroke = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+    val highlightFill = AppTheme.colors.accentSoft.copy(alpha = 0.2f)
+    val highlightStroke = AppTheme.colors.accent.copy(alpha = 0.5f)
 
     var showContextMenu by remember { mutableStateOf(false) }
     var menuOffset by remember { mutableStateOf(DpOffset.Zero) }
@@ -99,13 +97,13 @@ fun FileTree(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(AppTheme.shapes.large)
                 .then(rootBorder)
-                .background(if (isRootTarget) highlightFill else MaterialTheme.colorScheme.surfaceContainerHigh)
+                .background(if (isRootTarget) highlightFill else AppTheme.colors.surfaceSunken)
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(12.dp)
+                    color = AppTheme.colors.divider.copy(alpha = 0.5f),
+                    shape = AppTheme.shapes.large
                 )
                 .padding(8.dp)
                 .onGloballyPositioned {
@@ -122,10 +120,10 @@ fun FileTree(
                 Text(
                     text = stringResource(Res.string.empty_notebook_label),
                     modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = MaterialTheme.dimensions.listItemTextSize
+                    style = AppTheme.typography.body.copy(
+                        fontSize = AppTheme.dimensions.listItemTextSize
                     ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    color = AppTheme.colors.textSecondary.copy(alpha = 0.5f),
                 )
             } else {
 
@@ -297,8 +295,8 @@ private fun DragShadow(
                     )
                 }
             }
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(6.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp)),
+            .background(AppTheme.colors.surfaceSunken, AppTheme.shapes.small)
+            .border(1.dp, AppTheme.colors.border, AppTheme.shapes.small),
         onClick = {}
     )
 }

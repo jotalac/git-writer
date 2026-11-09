@@ -5,13 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +28,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.onContextMenuOpen
-import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.sidebar.domain.FileNode
 import dev.jotalac.feature.sidebar.domain.FileType
@@ -90,16 +88,16 @@ fun FileTreeRow(
                 .then(dragModifier)
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp, vertical = 1.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .then(if (showMenu || isActive) Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest) else Modifier)
+                .clip(AppTheme.shapes.small)
+                .then(if (showMenu || isActive) Modifier.background(AppTheme.colors.surfaceSunken) else Modifier)
                 .clickable(
                     enabled = !isRenaming,
                     onClick = onClick
                 )
                 .padding(
-                    start = (MaterialTheme.dimensions.listItemIndentPerLevel * flatNode.depth) + 4.dp,
-                    top = MaterialTheme.dimensions.listItemPaddingVertical,
-                    bottom = MaterialTheme.dimensions.listItemPaddingVertical,
+                    start = (AppTheme.dimensions.listItemIndentPerLevel * flatNode.depth) + 4.dp,
+                    top = AppTheme.dimensions.listItemPaddingVertical,
+                    bottom = AppTheme.dimensions.listItemPaddingVertical,
                     end = 8.dp
                 )
                 .alpha(if (isDragged) 0.5f else 1f),
@@ -129,10 +127,10 @@ fun FileTreeRow(
             if (!isDesktopPlatform) {
                 Icon(
                     painter = painterResource(Res.drawable.more_vert),
-                    tint = MaterialTheme.colorScheme.outline,
+                    tint = AppTheme.colors.textMuted,
                     contentDescription = "open context menu",
                     modifier = Modifier
-                        .size(MaterialTheme.dimensions.iconMedium)
+                        .size(AppTheme.dimensions.iconMedium)
                         .clickable(
                             enabled = true,
                             onClick = { showMenu = true }
@@ -167,19 +165,19 @@ private fun RowScope.DirectoryContent(
         painter = painterResource(Res.drawable.arrow_right),
         contentDescription = null,
         modifier = Modifier
-            .size(MaterialTheme.dimensions.iconSmall)
+            .size(AppTheme.dimensions.iconSmall)
             .graphicsLayer { rotationZ = rotation },
-        tint = MaterialTheme.colorScheme.onSurfaceVariant
+        tint = AppTheme.colors.textSecondary
     )
     Spacer(modifier = Modifier.width(6.dp))
 
     if (isRenaming) {
         RenameTextField(
             initialText = baseName,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = MaterialTheme.dimensions.listItemTextSize,
+            textStyle = AppTheme.typography.body.copy(
+                fontSize = AppTheme.dimensions.listItemTextSize,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = AppTheme.colors.text
             ),
             onSubmit = { newName -> onAction(SidebarAction.RenameItem(newName, node.path)) },
             onCancel = { onAction(SidebarAction.SetRenameItem(null)) },
@@ -190,20 +188,20 @@ private fun RowScope.DirectoryContent(
         Icon(
             painter = painterResource(Res.drawable.folder),
             contentDescription = stringResource(Res.string.expand_folders),
-            modifier = Modifier.size(MaterialTheme.dimensions.iconLarge).padding(end = 8.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            modifier = Modifier.size(AppTheme.dimensions.iconLarge).padding(end = 8.dp),
+            tint = AppTheme.colors.textSecondary
         )
 
         // folder text
         Text(
             text = baseName,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = MaterialTheme.dimensions.listItemTextSize
+            style = AppTheme.typography.body.copy(
+                fontSize = AppTheme.dimensions.listItemTextSize
             ),
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = AppTheme.colors.textSecondary,
             modifier = Modifier.weight(1f)
         )
     }
@@ -221,9 +219,9 @@ private fun RowScope.FileContent(
     if (isRenaming) {
         RenameTextField(
             initialText = baseName,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = MaterialTheme.dimensions.listItemTextSize,
-                color = MaterialTheme.colorScheme.onSurface
+            textStyle = AppTheme.typography.body.copy(
+                fontSize = AppTheme.dimensions.listItemTextSize,
+                color = AppTheme.colors.text
             ),
             onSubmit = { newName -> onAction(SidebarAction.RenameItem(newName, node.path)) },
             onCancel = { onAction(SidebarAction.SetRenameItem(null)) },
@@ -234,10 +232,10 @@ private fun RowScope.FileContent(
             text = baseName,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = MaterialTheme.dimensions.listItemTextSize
+            style = AppTheme.typography.body.copy(
+                fontSize = AppTheme.dimensions.listItemTextSize
             ),
-            color = MaterialTheme.colorScheme.onSurface,
+            color = AppTheme.colors.text,
             modifier = Modifier.weight(1f)
         )
     }
@@ -246,10 +244,10 @@ private fun RowScope.FileContent(
     if (fileExtension.isNotEmpty() && fileExtension.lowercase() != "md") {
         Text(
             text = fileExtension.uppercase(),
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontSize = MaterialTheme.dimensions.badgeTextSize
+            style = AppTheme.typography.bodySmall.copy(
+                fontSize = AppTheme.dimensions.badgeTextSize
             ),
-            color = MaterialTheme.colorScheme.outline
+            color = AppTheme.colors.textMuted
         )
     }
 }
@@ -278,20 +276,20 @@ private fun RenameTextField(
         value = textFieldValue,
         onValueChange = { textFieldValue = it },
         textStyle = textStyle,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+        cursorBrush = SolidColor(AppTheme.colors.text),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = {
             onSubmit(textFieldValue.text)
             submitted = true
         }),
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            .background(AppTheme.colors.surfaceSunken)
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(6.dp)
+                color = AppTheme.colors.accent,
+                shape = AppTheme.shapes.small
             )
-            .clip(RoundedCornerShape(6.dp))
+            .clip(AppTheme.shapes.small)
             .padding(horizontal = 12.dp, vertical = 6.dp)
             .focusRequester(focusRequester)
             .onKeyEvent { event ->

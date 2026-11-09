@@ -1,9 +1,6 @@
 package dev.jotalac.core.ui.theme
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -23,6 +20,8 @@ data class AppDimensions(
     val listItemPaddingVertical: Dp,
     val listItemIndentPerLevel: Dp,
     val contextMenuItemHeight: Dp,
+    /** The height of a button, a field, a select. */
+    val controlHeight: Dp,
 )
 
 // Compact dimensions optimized for mouse pointer precision on Desktop
@@ -37,7 +36,8 @@ val DesktopDimensions = AppDimensions(
     badgeTextSize = 11.sp,
     listItemPaddingVertical = 6.dp,
     listItemIndentPerLevel = 12.dp,
-    contextMenuItemHeight = 32.dp,
+    contextMenuItemHeight = 30.dp,
+    controlHeight = 32.dp,
 )
 
 // Touch-friendly dimensions optimized for fingers and legibility on Mobile (Android/iOS)
@@ -53,11 +53,7 @@ val MobileDimensions = AppDimensions(
     listItemPaddingVertical = 12.dp,
     listItemIndentPerLevel = 16.dp,
     contextMenuItemHeight = 48.dp,
+    controlHeight = 44.dp,
 )
 
 val LocalAppDimensions = staticCompositionLocalOf { DesktopDimensions }
-
-val MaterialTheme.dimensions: AppDimensions
-    @Composable
-    @ReadOnlyComposable
-    get() = LocalAppDimensions.current

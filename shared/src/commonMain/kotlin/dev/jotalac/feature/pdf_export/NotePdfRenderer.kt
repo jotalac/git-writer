@@ -119,7 +119,7 @@ fun NotePdfRenderer(
     // no space in the layout and nothing drawn on screen - the content is only recorded into the layer
     Box(Modifier.size(0.dp).wrapContentSize(Alignment.TopStart, unbounded = true)) {
         CompositionLocalProvider(LocalDensity provides PageDensity) {
-            AppTheme(darkTheme = false, dynamicColor = false, accentColor = accentColor, fontFamily = fontFamily) {
+            AppTheme(darkTheme = false, accentColor = accentColor, fontFamily = fontFamily) {
                 Column(
                     Modifier
                         .requiredWidth(with(PageDensity) { (PageSize.width - 2 * PAGE_MARGIN_PX).toDp() })

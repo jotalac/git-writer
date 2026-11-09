@@ -8,10 +8,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,14 +15,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppHorizontalScrollbar
-import dev.jotalac.core.ui.theme.dimensions
-import dev.jotalac.core.utils.isDesktopPlatform
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.IconButton
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.domain.EditorTabItem
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-private val TabShape = RoundedCornerShape(8.dp)
+private val TabShape = RoundedCornerShape(6.dp)
 
 @Composable
 fun EditorTabsRow(
@@ -71,11 +69,11 @@ fun EditorTabsRow(
             }
 
             item {
-                IconButton(onClick = onNewTab, modifier = Modifier.size(MaterialTheme.dimensions.iconLarge)) {
+                IconButton(onClick = onNewTab, modifier = Modifier.size(AppTheme.dimensions.iconLarge)) {
                     Icon(
                         painter = painterResource(Res.drawable.plus),
                         contentDescription = stringResource(Res.string.new_tab),
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = AppTheme.colors.accent,
                     )
                 }
             }
@@ -107,14 +105,14 @@ private fun EditorTab(
             .border(
                 width = 1.dp,
                 color = if (isActive) {
-                    MaterialTheme.colorScheme.primary
+                    AppTheme.colors.accent
                 } else {
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    AppTheme.colors.divider.copy(alpha = 0.5f)
                 },
                 shape = TabShape
             )
             .clip(TabShape)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(AppTheme.colors.surface)
             .clickable(onClick = onClick)
             .padding(vertical = 4.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -125,22 +123,22 @@ private fun EditorTab(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = if (tab.notePath != null) {
-                MaterialTheme.colorScheme.onBackground
+                AppTheme.colors.text
             } else {
-                MaterialTheme.colorScheme.outline
+                AppTheme.colors.textMuted
             },
-            style = MaterialTheme.typography.bodyMedium
+            style = AppTheme.typography.body
         )
 
         IconButton(
             onClick = onClose,
-            modifier = Modifier.size(MaterialTheme.dimensions.iconLarge)
+            modifier = Modifier.size(AppTheme.dimensions.iconLarge)
         ) {
             Icon(
                 painter = painterResource(Res.drawable.x_icon),
                 contentDescription = stringResource(Res.string.close),
-                tint = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(MaterialTheme.dimensions.iconMedium),
+                tint = AppTheme.colors.textMuted,
+                modifier = Modifier.size(AppTheme.dimensions.iconMedium),
             )
         }
     }

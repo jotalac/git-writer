@@ -1,15 +1,9 @@
 package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.annotator.annotatorSettings
 import com.mikepenz.markdown.compose.components.MarkdownComponent
@@ -19,6 +13,9 @@ import com.mikepenz.markdown.compose.elements.MarkdownListItems
 import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.compose.elements.listDepth
 import com.mikepenz.markdown.model.MarkdownTypography
+import dev.jotalac.core.ui.design.Checkbox
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.findChildOfType
@@ -34,13 +31,11 @@ fun customCheckboxComponent(onCheckedChange: (Int, Boolean) -> Unit): MarkdownCo
     val text = model.node.getTextInNode(model.content).toString()
     val checked = text.contains("[x]", ignoreCase = true)
 
-    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = { onCheckedChange(model.node.startOffset, !checked) },
-            modifier = Modifier.padding(end = 16.dp)
-        )
-    }
+    Checkbox(
+        checked = checked,
+        onCheckedChange = { onCheckedChange(model.node.startOffset, !checked) },
+        modifier = Modifier.padding(end = 16.dp)
+    )
 }
 
 // a different bullet for every nesting level, the deepest one repeats
@@ -71,7 +66,7 @@ fun CustomOrderedListComponent(model: MarkdownComponentModel) {
         depth = model.listDepth,
         bullet = { index, _, _ ->
             val alpha = NUMBER_ALPHAS[model.listDepth % NUMBER_ALPHAS.size]
-            Text("${index + 1}. ", color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha))
+            Text("${index + 1}. ", color = AppTheme.colors.text.copy(alpha = alpha))
         }
     )
 }
@@ -86,7 +81,7 @@ fun customHeadingComponent(style: (MarkdownTypography) -> TextStyle): MarkdownCo
         Text(
             text = model.node.getTextInNode(model.content).toString().trim(),
             style = headingStyle,
-            color = MaterialTheme.colorScheme.outline,
+            color = AppTheme.colors.textMuted,
         )
     }
 }

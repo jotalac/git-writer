@@ -4,7 +4,6 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,7 +15,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.isDesktopPlatform
 
 @Composable
@@ -25,7 +24,7 @@ fun EditorSidebar(
     openSettingsOnMobile: () -> Unit,
     openEditNotebookOnMobile: (notebookId: Long) -> Unit,
 ) {
-    val initialWidth = MaterialTheme.dimensions.navDrawerWidth
+    val initialWidth = AppTheme.dimensions.navDrawerWidth
     var sidebarWidth by remember(initialWidth) { mutableStateOf(initialWidth) }
     // for converting drag pixels to dp
     val density = LocalDensity.current
@@ -44,7 +43,7 @@ fun EditorSidebar(
             modifier = Modifier
                 .width(sidebarWidth.coerceAtMost(maxSidebarWidth))
                 .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .background(AppTheme.colors.surface)
                 .padding(top = if (!isDesktopPlatform) 25.dp else 0.dp)
         ) {
 
@@ -76,8 +75,8 @@ private fun SidebarDraggableHandle(
     var isDragging by remember { mutableStateOf(false) }
     val lineColor by animateColorAsState(
         targetValue = if (isDragging) {
-            MaterialTheme.colorScheme.primary
-        } else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+            AppTheme.colors.accent
+        } else AppTheme.colors.text.copy(alpha = 0.2f),
         label = "dragHandleColor"
     )
 

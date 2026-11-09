@@ -120,7 +120,6 @@
     <string name="settings_auto_merge_preference_label">Předvolba automatického sloučení</string>
     <string name="settings_auto_accept_local">Vždy přijmout místní změny</string>
     <string name="settings_auto_accept_remote">Vždy přijmout vzdálené změny</string>
-    <string name="settings_use_dynamic_color">Použít Dynamic Color</string>
     <string name="new_tab">Nová karta</string>
     <string name="open_new_file_message">Otevřít nový soubor</string>
     <string name="find_placeholder">Najít</string>

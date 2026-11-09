@@ -43,9 +43,6 @@ class SettingsViewModel(
                 is SettingsAction.ChangeGitConflictStrategy ->
                     userSettingsManager.setGitConflictStrategy(action.strategy)
 
-                is SettingsAction.ChangeUseDynamicColor ->
-                    userSettingsManager.setUseDynamicColor(action.useDynamicColor)
-
                 is SettingsAction.ChangeAutoSync ->
                     userSettingsManager.setAutoSync(action.autoSync)
             }
@@ -61,7 +58,6 @@ class SettingsViewModel(
         data class ChangeLanguage(val language: AppLanguage) : SettingsAction
         data class ChangeSpellcheckLanguage(val language: SpellcheckLanguage) : SettingsAction
         data class ChangeGitConflictStrategy(val strategy: GitConflictResolutionStrategy) : SettingsAction
-        data class ChangeUseDynamicColor(val useDynamicColor: Boolean) : SettingsAction
         data class ChangeAutoSync(val autoSync: Boolean) : SettingsAction
     }
 }

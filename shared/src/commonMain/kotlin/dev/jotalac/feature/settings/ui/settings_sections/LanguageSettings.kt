@@ -1,23 +1,36 @@
 package dev.jotalac.feature.settings.ui.settings_sections
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.domain.AppLanguage
 import dev.jotalac.core.domain.SpellcheckLanguage
+import dev.jotalac.core.ui.design.*
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.settings.ui.SectionTitle
 import dev.jotalac.feature.settings.ui.SettingsCollapsableSection
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -80,8 +93,8 @@ private fun SpellcheckLanguageSelectBox(
 ) {
     val offTitle = stringResource(Res.string.no_spell_check)
     val sameAsAppTitle = stringResource(Res.string.settings_spellcheck_language_same_as_app)
-    val offColor = MaterialTheme.colorScheme.secondary
-    val sameAsAppColor = MaterialTheme.colorScheme.primary
+    val offColor = AppTheme.colors.textSecondary
+    val sameAsAppColor = AppTheme.colors.accent
 
     SettingsSelectBox(
         titleLabel = Res.string.settings_spellcheck_language_label,
@@ -102,9 +115,9 @@ private fun SpellcheckLanguageSelectBox(
         }
 
         SelectBoxItem(offTitle, offColor) { select(SpellcheckLanguage.Off) }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        MenuDivider()
         SelectBoxItem(sameAsAppTitle, sameAsAppColor) { select(SpellcheckLanguage.SameAsApp) }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        MenuDivider()
 
         AppLanguage.entries.filter { it.canSpellCheck }.forEach { language ->
             SelectBoxItem(language.title) { select(SpellcheckLanguage.Of(language)) }
@@ -112,8 +125,7 @@ private fun SpellcheckLanguageSelectBox(
     }
 }
 
-/** A dropdown showing [value] (in [valueColor], when specified) - [menuItems] get a function that closes it. */
-@OptIn(ExperimentalMaterial3Api::class)
+/** A field showing [value] (in [valueColor], when specified) - clicked it opens [menuItems], which get a function that closes it. */
 @Composable
 private fun SettingsSelectBox(
     titleLabel: StringResource,
@@ -122,54 +134,61 @@ private fun SettingsSelectBox(
     menuItems: @Composable (close: () -> Unit) -> Unit,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    var fieldWidth by remember { mutableIntStateOf(0) }
+    val chevronRotation by animateFloatAsState(if (isExpanded) 180f else 0f)
 
     Text(
         text = stringResource(titleLabel),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
+        style = AppTheme.typography.label,
+        color = AppTheme.colors.textSecondary
     )
 
-    ExposedDropdownMenuBox(
-        expanded = isExpanded,
-        onExpandedChange = { isExpanded = it },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-            },
-            colors = if (valueColor != Color.Unspecified) {
-                ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                    focusedTextColor = valueColor,
-                    unfocusedTextColor = valueColor
-                )
-            } else {
-                ExposedDropdownMenuDefaults.outlinedTextFieldColors()
-            },
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Surface(
+            onClick = { isExpanded = true },
+            shape = AppTheme.shapes.medium,
+            color = AppTheme.colors.field,
+            border = AppTheme.colors.border,
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp)
-        )
+                .fillMaxWidth()
+                .onSizeChanged { fieldWidth = it.width },
+        ) {
+            Row(
+                modifier = Modifier
+                    .defaultMinSize(minHeight = AppTheme.dimensions.controlHeight)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = value,
+                    color = valueColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Icon(
+                    painter = painterResource(Res.drawable.arrow_down),
+                    contentDescription = null,
+                    tint = AppTheme.colors.textSecondary,
+                    modifier = Modifier.size(18.dp).rotate(chevronRotation),
+                )
+            }
+        }
 
-        ExposedDropdownMenu(
+        DropdownMenu(
             expanded = isExpanded,
-            onDismissRequest = { isExpanded = false }
+            onDismissRequest = { isExpanded = false },
+            modifier = Modifier.width(with(LocalDensity.current) { fieldWidth.toDp() }),
         ) {
             menuItems { isExpanded = false }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SelectBoxItem(text: String, color: Color = Color.Unspecified, onClick: () -> Unit) {
-    DropdownMenuItem(
+    MenuItem(
         text = { Text(text = text, color = color) },
         onClick = onClick,
-        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
     )
 }

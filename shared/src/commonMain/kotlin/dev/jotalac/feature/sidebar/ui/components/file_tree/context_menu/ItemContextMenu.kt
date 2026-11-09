@@ -1,11 +1,11 @@
 package dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu
 
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.ContextMenuItem
+import dev.jotalac.core.ui.design.Divider
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.sidebar.domain.FileType
 import dev.jotalac.feature.sidebar.ui.SidebarAction
@@ -60,10 +60,10 @@ fun FileContextMenuContent(
         iconPainter = Res.drawable.delete,
         onClick = { onAction(SidebarAction.DeleteItem(itemPath)) },
         onDismissRequest = onDismissRequest,
-        itemColor = MaterialTheme.colorScheme.error
+        itemColor = AppTheme.colors.danger
     )
 
-    HorizontalDivider()
+    Divider()
 
     ContextMenuItem(
         text = stringResource(Res.string.duplicate_contect_menu_item),
@@ -124,12 +124,12 @@ fun FolderContextMenuContent(
             iconPainter = Res.drawable.delete,
             onClick = { onAction(SidebarAction.DeleteItem(itemPath)) },
             onDismissRequest = onDismissRequest,
-            itemColor = MaterialTheme.colorScheme.error
+            itemColor = AppTheme.colors.danger
         )
     }
 
     if (isDesktopPlatform) {
-        HorizontalDivider()
+        Divider()
 
         ContextMenuItem(
             text = stringResource(Res.string.copy_contect_menu_item),

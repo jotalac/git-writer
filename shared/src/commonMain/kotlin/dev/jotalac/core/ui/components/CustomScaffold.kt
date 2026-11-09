@@ -1,11 +1,11 @@
 package dev.jotalac.core.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import dev.jotalac.core.ui.design.Scaffold
+import dev.jotalac.core.ui.design.SnackbarHost
+import dev.jotalac.core.ui.design.SnackbarHostState
 
 @Composable
 fun CustomScaffold(
@@ -20,13 +20,8 @@ fun CustomScaffold(
         modifier = modifier,
         topBar = topAppBar,
         bottomBar = bottomAppBar,
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) { snackbarData ->
-                CustomSnackbar(snackbarData)
-            }
-        },
-        floatingActionButton = floatingActionButton,
-    ) { paddingValues ->
-        content(paddingValues)
-    }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingButton = floatingActionButton,
+        content = content,
+    )
 }

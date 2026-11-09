@@ -3,16 +3,15 @@ package dev.jotalac.feature.sidebar.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
@@ -31,13 +30,13 @@ fun ActiveNotebookMenu(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shape = RoundedCornerShape(12.dp)
+                color = AppTheme.colors.surfaceSunken,
+                shape = AppTheme.shapes.large
             )
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(12.dp)
+                color = AppTheme.colors.divider.copy(alpha = 0.5f),
+                shape = AppTheme.shapes.large
             )
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
@@ -66,9 +65,9 @@ private fun ActiveNotebookName(notebook: Notebook?) {
 
         Text(
             text = notebook?.name ?: stringResource(Res.string.no_active_notebook_label),
-            style = MaterialTheme.typography.titleMedium,
+            style = AppTheme.typography.heading,
             fontWeight = FontWeight.SemiBold,
-            color = if (notebook?.name != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+            color = if (notebook?.name != null) AppTheme.colors.text else AppTheme.colors.textMuted,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
@@ -81,7 +80,7 @@ private fun ActiveNotebookName(notebook: Notebook?) {
             if (notebook?.isEncrypted == true) {
                 Icon(
                     painter = painterResource(Res.drawable.shield_lock),
-                    tint = MaterialTheme.colorScheme.outline,
+                    tint = AppTheme.colors.textMuted,
                     contentDescription = stringResource(Res.string.notebook_encrypted_info),
                     modifier = Modifier.size(20.dp),
                 )
@@ -90,7 +89,7 @@ private fun ActiveNotebookName(notebook: Notebook?) {
             notebook?.remoteUrl?.let {
                 Icon(
                     painter = painterResource(Res.drawable.git_fork),
-                    tint = MaterialTheme.colorScheme.outline,
+                    tint = AppTheme.colors.textMuted,
                     contentDescription = stringResource(Res.string.git_merge_icon),
                     modifier = Modifier.size(20.dp),
                 )
@@ -121,14 +120,14 @@ private fun ActiveNotebookActions(
                 onClick = onAddNoteClick,
                 icon = Res.drawable.note_add,
                 contentDescription = stringResource(Res.string.create_new_file),
-                tint = MaterialTheme.colorScheme.secondary,
+                tint = AppTheme.colors.textSecondary,
                 enabled = !isNotebookNull
             )
             SidebarButtonWithTooltip(
                 onClick = onAddFolderClick,
                 icon = Res.drawable.folder_create,
                 contentDescription = stringResource(Res.string.create_new_folder),
-                tint = MaterialTheme.colorScheme.secondary,
+                tint = AppTheme.colors.textSecondary,
                 enabled = !isNotebookNull
             )
             SidebarButtonWithTooltip(
@@ -137,7 +136,7 @@ private fun ActiveNotebookActions(
                 contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(
                     Res.string.expand_folders
                 ),
-                tint = MaterialTheme.colorScheme.secondary,
+                tint = AppTheme.colors.textSecondary,
                 enabled = !isNotebookNull
             )
 
@@ -147,7 +146,7 @@ private fun ActiveNotebookActions(
             onClick = openEditNotebbokDialog,
             icon = Res.drawable.edit_pencil,
             contentDescription = stringResource(Res.string.edit_active_notebook),
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = AppTheme.colors.textSecondary,
             enabled = !isNotebookNull
         )
 

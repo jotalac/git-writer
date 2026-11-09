@@ -1,7 +1,6 @@
 package dev.jotalac.feature.sidebar.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -15,16 +14,17 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.jotalac.core.ui.design.Divider
 import dev.jotalac.core.utils.buildClipEntry
 import dev.jotalac.core.utils.isDesktopPlatform
-import dev.jotalac.feature.sidebar.ui.components.ActiveNotebookMenu
-import dev.jotalac.feature.sidebar.ui.components.SidebarGlobalActions
-import dev.jotalac.feature.sidebar.ui.components.file_tree.FileTree
 import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookDialog
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListDialog
 import dev.jotalac.feature.pdf_export.PdfExportDialog
 import dev.jotalac.feature.settings.ui.SettingsDialog
+import dev.jotalac.feature.sidebar.ui.components.ActiveNotebookMenu
+import dev.jotalac.feature.sidebar.ui.components.SidebarGlobalActions
+import dev.jotalac.feature.sidebar.ui.components.file_tree.FileTree
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -127,7 +127,7 @@ fun SidebarContent(
                 }
             },
         )
-        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+        Divider(modifier = Modifier.padding(vertical = 12.dp))
 
         ActiveNotebookMenu(
             notebook = state.activeNotebook,

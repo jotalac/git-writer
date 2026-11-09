@@ -6,7 +6,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.DisableSelection
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.key
@@ -32,6 +31,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.hrm.latex.renderer.Latex
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.ui.components.markdown_rendering.RenderedMarkdownBlock
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -218,8 +218,8 @@ internal fun widgetLineHeight(widget: Widget, source: String, knownHeights: Map<
 // the box of a task, drawn over the space the text keeps for it - a click checks it
 @Composable
 private fun TaskCheckboxBox(isChecked: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val boxColor = if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-    val checkColor = MaterialTheme.colorScheme.onPrimary
+    val boxColor = if (isChecked) AppTheme.colors.accent else AppTheme.colors.textMuted
+    val checkColor = AppTheme.colors.onAccent
 
     Canvas(modifier = modifier.clickable(interactionSource = null, indication = null, onClick = onClick)) {
         val side = minOf(size.width, size.height) * 0.75f

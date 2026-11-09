@@ -1,12 +1,12 @@
 package dev.jotalac.core.ui.window
 
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import dev.jotalac.core.ui.design.TopBar
 
 /*
 single topAppBar for all platforms
-- mobile renders the material3 TopAppBar
+- mobile renders the app's TopBar
 - desktop has custom top app
  */
 @Composable
@@ -21,9 +21,9 @@ internal fun TitleBar(
     if (chrome.isIntegrated && host != null) {
         SideEffect { host.publish(leading = leading, title = title, actions = actions) }
     } else {
-        TopAppBar(
-            navigationIcon = { leading?.invoke() },
-            title = { title() },
+        TopBar(
+            leading = leading,
+            title = title,
             actions = { actions?.invoke() },
         )
     }

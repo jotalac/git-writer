@@ -120,7 +120,6 @@
     <string name="settings_auto_merge_preference_label">Voreinstellung für automatischen Merge</string>
     <string name="settings_auto_accept_local">Lokale Änderungen immer übernehmen</string>
     <string name="settings_auto_accept_remote">Remote-Änderungen immer übernehmen</string>
-    <string name="settings_use_dynamic_color">Dynamic Color verwenden</string>
     <string name="new_tab">Neuer Tab</string>
     <string name="open_new_file_message">Neue Datei öffnen</string>
     <string name="find_placeholder">Suchen</string>

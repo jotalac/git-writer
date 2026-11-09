@@ -1,34 +1,34 @@
 package dev.jotalac.feature.editor.ui.utils
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import dev.jotalac.core.ui.theme.AppTheme
 
 @Composable
 fun getHeaderFontSize(headingLevel: Int): TextStyle = when (headingLevel) {
-    1 -> MaterialTheme.typography.displayMedium.copy(
+    1 -> AppTheme.typography.display.copy(
         fontWeight = FontWeight.Bold,
     )
 
-    2 -> MaterialTheme.typography.headlineLarge.copy(
+    2 -> AppTheme.typography.display.copy(
         fontWeight = FontWeight.Bold,
     )
 
-    3 -> MaterialTheme.typography.headlineMedium.copy(
+    3 -> AppTheme.typography.title.copy(
         fontWeight = FontWeight.Bold,
     )
 
-    4 -> MaterialTheme.typography.headlineSmall.copy(
+    4 -> AppTheme.typography.title.copy(
         fontWeight = FontWeight.SemiBold,
     )
 
-    5 -> MaterialTheme.typography.titleLarge.copy(
+    5 -> AppTheme.typography.title.copy(
         fontWeight = FontWeight.Medium,
     )
 
-    6 -> MaterialTheme.typography.titleMedium.copy()
-    else -> MaterialTheme.typography.bodyLarge.copy()
+    6 -> AppTheme.typography.heading.copy()
+    else -> AppTheme.typography.bodyLarge.copy()
 }
 
 fun getHeaderLevel(text: String): Int = when {

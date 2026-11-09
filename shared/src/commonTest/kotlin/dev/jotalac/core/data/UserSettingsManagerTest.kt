@@ -34,7 +34,6 @@ class UserSettingsManagerTest {
         settings.setFont(AppFontFamily.entries.last())
         settings.setLanguage(AppLanguage.GERMAN)
         settings.setGitConflictStrategy(GitConflictResolutionStrategy.REMOTE)
-        settings.setUseDynamicColor(true)
         settings.setSpellcheckLanguage(SpellcheckLanguage.Of(AppLanguage.CZECH))
         settings.setEditorFullWidth(true)
         settings.setAutoSync(true)
@@ -46,7 +45,6 @@ class UserSettingsManagerTest {
                 font = AppFontFamily.entries.last(),
                 language = AppLanguage.GERMAN,
                 gitConflictStrategy = GitConflictResolutionStrategy.REMOTE,
-                useDynamicColor = true,
                 spellcheckLanguage = SpellcheckLanguage.Of(AppLanguage.CZECH),
                 editorFullWidth = true,
                 autoSync = true,

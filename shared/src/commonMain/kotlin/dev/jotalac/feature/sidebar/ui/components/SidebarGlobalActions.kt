@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.theme.AppTheme
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.add_diamond
 import git_writer.shared.generated.resources.add_notebook
@@ -27,7 +28,7 @@ fun SidebarGlobalActions(
         modifier = Modifier
             .fillMaxWidth()
 //            .background(
-////                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+////                color = AppTheme.colors.surfaceSunken,
 ////                shape = RoundedCornerShape(8.dp)
 //
 //            )

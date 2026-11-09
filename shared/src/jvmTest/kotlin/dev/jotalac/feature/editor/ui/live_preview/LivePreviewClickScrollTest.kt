@@ -4,8 +4,6 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
@@ -14,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.unit.Density
+import dev.jotalac.core.ui.design.Surface
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.ui.EditorAction
 import dev.jotalac.feature.editor.ui.EditorHistoryManager
 import dev.jotalac.feature.editor.ui.MarkdownEditorState
@@ -39,7 +39,7 @@ class LivePreviewClickScrollTest {
     )
     private val scrollState = ScrollState(0)
     private val scene = ImageComposeScene(width = 700, height = 500, density = Density(1f)) {
-        MaterialTheme {
+        AppTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
                 Column(Modifier.fillMaxSize().verticalScroll(scrollState)) { LivePreviewField(editorState) }
             }

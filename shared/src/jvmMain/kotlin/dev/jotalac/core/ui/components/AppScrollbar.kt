@@ -4,10 +4,10 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.ui.theme.AppTheme
 
 @Composable
 actual fun AppVerticalScrollbar(
@@ -18,8 +18,8 @@ actual fun AppVerticalScrollbar(
         modifier = modifier.width(6.dp),
         adapter = rememberScrollbarAdapter(scrollState = listState),
         style = defaultScrollbarStyle().copy(
-            unhoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-            hoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            unhoverColor = AppTheme.colors.text.copy(alpha = 0.2f),
+            hoverColor = AppTheme.colors.text.copy(alpha = 0.7f)
         )
     )
 }
@@ -33,8 +33,8 @@ actual fun AppVerticalScrollbar(
         modifier = modifier.width(6.dp),
         adapter = rememberScrollbarAdapter(scrollState = listState),
         style = defaultScrollbarStyle().copy(
-            unhoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-            hoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            unhoverColor = AppTheme.colors.text.copy(alpha = 0.2f),
+            hoverColor = AppTheme.colors.text.copy(alpha = 0.7f)
         )
     )
 }
@@ -49,8 +49,8 @@ actual fun AppHorizontalScrollbar(
         modifier = modifier.height(4.dp),
         adapter = rememberScrollbarAdapter(scrollState = listState),
         style = defaultScrollbarStyle().copy(
-            unhoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-            hoverColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            unhoverColor = AppTheme.colors.text.copy(alpha = 0.2f),
+            hoverColor = AppTheme.colors.text.copy(alpha = 0.7f)
         )
     )
 }

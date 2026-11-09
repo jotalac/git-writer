@@ -5,8 +5,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +16,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
 import dev.jotalac.core.utils.requestFocusSafely
@@ -132,7 +132,7 @@ fun MarkdownEditor(
             ) {
                 // text when the editor is empty
                 if (editorState.value.text.trim().isEmpty() && !editorState.isFocused) {
-                    Text(text = stringResource(Res.string.empty_note_message), color = MaterialTheme.colorScheme.outline)
+                    Text(text = stringResource(Res.string.empty_note_message), color = AppTheme.colors.textMuted)
                 }
 
                 LivePreviewField(editorState = editorState)

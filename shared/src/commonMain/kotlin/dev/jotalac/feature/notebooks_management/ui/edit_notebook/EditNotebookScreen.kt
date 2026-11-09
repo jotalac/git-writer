@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,6 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.SnackbarHostState
+import dev.jotalac.core.ui.design.Text
 import dev.jotalac.core.ui.window.TitleBar
 import dev.jotalac.core.ui.window.WindowTitle
 import git_writer.shared.generated.resources.*

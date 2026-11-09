@@ -3,15 +3,14 @@ package dev.jotalac.feature.settings.ui.settings_sections
 import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.domain.GitConflictResolutionStrategy
+import dev.jotalac.core.ui.design.*
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.settings.ui.SectionTitle
 import dev.jotalac.feature.settings.ui.SettingsCollapsableSection
 import git_writer.shared.generated.resources.*
@@ -45,47 +44,26 @@ fun SyncSettings(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(Res.string.settings_conflict_strategy_label),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = AppTheme.typography.label,
+                        color = AppTheme.colors.textSecondary
                     )
 
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        SegmentedButton(
-                            selected = selectedStrategy == GitConflictResolutionStrategy.MANUAL,
-                            onClick = { onStrategyChange(GitConflictResolutionStrategy.MANUAL) },
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = 0,
-                                count = 2
-                            )
-                        ) {
-                            Text(
-                                stringResource(Res.string.settings_conflict_manual),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-
-                        SegmentedButton(
-                            selected = selectedStrategy == GitConflictResolutionStrategy.LOCAL || selectedStrategy == GitConflictResolutionStrategy.REMOTE,
-                            onClick = {
-                                if (selectedStrategy == GitConflictResolutionStrategy.MANUAL) {
+                    // manual, or automatic - which side wins is chosen below
+                    SegmentedControl(
+                        options = listOf(false, true),
+                        selected = selectedStrategy != GitConflictResolutionStrategy.MANUAL,
+                        onSelect = { isAutomatic ->
+                            when {
+                                !isAutomatic -> onStrategyChange(GitConflictResolutionStrategy.MANUAL)
+                                selectedStrategy == GitConflictResolutionStrategy.MANUAL ->
                                     onStrategyChange(GitConflictResolutionStrategy.LOCAL)
-                                }
-                            },
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = 1,
-                                count = 2
-                            )
-                        ) {
-                            Text(
-                                stringResource(Res.string.settings_conflict_auto),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
+                            }
+                        },
+                        label = { isAutomatic ->
+                            stringResource(if (isAutomatic) Res.string.settings_conflict_auto else Res.string.settings_conflict_manual)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
 
                 AnimatedVisibility(
@@ -94,15 +72,15 @@ fun SyncSettings(
                     exit = shrinkVertically() + fadeOut()
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        Divider(
+                            color = AppTheme.colors.divider.copy(alpha = 0.5f),
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
                         Text(
                             text = stringResource(Res.string.settings_auto_merge_preference_label),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = AppTheme.typography.label,
+                            color = AppTheme.colors.textSecondary
                         )
 
                         Column(
@@ -113,7 +91,7 @@ fun SyncSettings(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(AppTheme.shapes.small)
                                     .clickable { onStrategyChange(GitConflictResolutionStrategy.LOCAL) }
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -125,8 +103,8 @@ fun SyncSettings(
                                 )
                                 Text(
                                     text = stringResource(Res.string.settings_auto_accept_local),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    style = AppTheme.typography.body,
+                                    color = AppTheme.colors.text
                                 )
                             }
 
@@ -134,7 +112,7 @@ fun SyncSettings(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(AppTheme.shapes.small)
                                     .clickable { onStrategyChange(GitConflictResolutionStrategy.REMOTE) }
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -146,8 +124,8 @@ fun SyncSettings(
                                 )
                                 Text(
                                     text = stringResource(Res.string.settings_auto_accept_remote),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    style = AppTheme.typography.body,
+                                    color = AppTheme.colors.text
                                 )
                             }
                         }
@@ -175,7 +153,7 @@ private fun AutoSyncSettings(
         ) {
             Text(
                 text = stringResource(Res.string.settings_auto_sync_label),
-                style = MaterialTheme.typography.bodyLarge,
+                style = AppTheme.typography.bodyLarge,
                 modifier = Modifier.weight(1f)
             )
 

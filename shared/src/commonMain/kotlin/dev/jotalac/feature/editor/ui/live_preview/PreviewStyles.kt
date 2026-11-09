@@ -1,18 +1,16 @@
 package dev.jotalac.feature.editor.ui.live_preview
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -23,6 +21,7 @@ import com.hrm.latex.renderer.measure.LatexDimensions
 import com.hrm.latex.renderer.measure.rememberLatexMeasurer
 import com.hrm.latex.renderer.model.LatexConfig
 import com.hrm.latex.renderer.model.LatexTheme
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.feature.editor.ui.utils.getHeaderFontSize
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.BoldHighlight
@@ -65,14 +64,14 @@ internal data class FormulaStyle(
 /** The styles of the decorations in the app's theme, for text in [textStyle]. */
 @Composable
 internal fun rememberPreviewStyles(textStyle: TextStyle): PreviewStyles {
-    val colors = MaterialTheme.colorScheme
+    val colors = AppTheme.colors
     val headingStyles = (1..6).map { getHeaderFontSize(it) }
     // the highlighting theme follows the app's theme, not the system's
-    val isDarkTheme = colors.background.luminance() < 0.5f
+    val isDarkTheme = colors.isDark
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
     // the formulas in the text's size and color, on no background of their own (code, a highlight)
-    val formulaConfig = LatexConfig(fontSize = textStyle.fontSize, theme = LatexTheme.light(color = colors.onSurface))
+    val formulaConfig = LatexConfig(fontSize = textStyle.fontSize, theme = LatexTheme.light(color = colors.text))
     val latexMeasurer = rememberLatexMeasurer(formulaConfig)
 
     return remember(colors, headingStyles, isDarkTheme, textStyle, textMeasurer, density, formulaConfig, latexMeasurer) {
@@ -90,15 +89,15 @@ internal fun rememberPreviewStyles(textStyle: TextStyle): PreviewStyles {
                     TextLook.Bold -> SpanStyle(fontWeight = FontWeight.Bold)
                     TextLook.Italic -> SpanStyle(fontStyle = FontStyle.Italic)
                     TextLook.Strikethrough -> SpanStyle(textDecoration = TextDecoration.LineThrough)
-                    TextLook.Highlight -> SpanStyle(background = colors.primary.copy(alpha = 0.4f))
-                    TextLook.Code -> monospace.copy(background = colors.surfaceContainerHighest.copy(alpha = 0.8f))
-                    TextLook.Link -> SpanStyle(color = colors.primary, textDecoration = TextDecoration.Underline)
-                    TextLook.Syntax -> SpanStyle(color = colors.onSurface.copy(alpha = 0.35f))
+                    TextLook.Highlight -> SpanStyle(background = colors.accent.copy(alpha = 0.3f))
+                    TextLook.Code -> monospace.copy(background = colors.surfaceSunken)
+                    TextLook.Link -> SpanStyle(color = colors.accent, textDecoration = TextDecoration.Underline)
+                    TextLook.Syntax -> SpanStyle(color = colors.textMuted)
                     TextLook.DoneTask -> SpanStyle(
-                        color = colors.onSurface.copy(alpha = 0.5f),
+                        color = colors.textMuted,
                         textDecoration = TextDecoration.LineThrough,
                     )
-                    TextLook.Math -> monospace.copy(color = colors.tertiary)
+                    TextLook.Math -> monospace.copy(color = colors.highlight)
                     TextLook.Monospace -> monospace
                 }
             },
@@ -106,7 +105,7 @@ internal fun rememberPreviewStyles(textStyle: TextStyle): PreviewStyles {
                 val style = headingStyles[(level - 1).coerceIn(0, headingStyles.lastIndex)]
                 style.toSpanStyle() to ParagraphStyle(lineHeight = style.lineHeight)
             },
-            alertTitle = { kind -> SpanStyle(fontWeight = FontWeight.Bold, color = kind?.color ?: colors.primary) },
+            alertTitle = { kind -> SpanStyle(fontWeight = FontWeight.Bold, color = kind?.color ?: colors.accent) },
             codeHighlights = { code, language ->
                 if (highlightedCode.size > MAX_HIGHLIGHTED_CODE) highlightedCode.clear()
                 highlightedCode.getOrPut(code to language) { highlightCode(code, language, isDarkTheme) }

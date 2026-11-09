@@ -1,39 +1,48 @@
 package dev.jotalac.feature.editor.ui
 
-import dev.jotalac.core.utils.AppExitTasks
-import androidx.compose.runtime.DisposableEffect
-import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.lifecycle.Lifecycle
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.jotalac.feature.editor.ui.components.ZoomableImage
 import dev.jotalac.core.ui.components.CustomScaffold
 import dev.jotalac.core.ui.components.TopAppBarIcon
-import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.design.Drawer
+import dev.jotalac.core.ui.design.FloatingButton
+import dev.jotalac.core.ui.design.Icon
+import dev.jotalac.core.ui.design.SnackbarHostState
+import dev.jotalac.core.ui.design.Spinner
+import dev.jotalac.core.ui.design.Surface
+import dev.jotalac.core.ui.design.rememberDrawerState
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.ui.window.TitleBar
 import dev.jotalac.core.ui.window.WindowTitle
+import dev.jotalac.core.utils.AppExitTasks
 import dev.jotalac.core.utils.SnackbarManager
+import dev.jotalac.core.utils.SnackbarText
+import dev.jotalac.core.utils.asString
 import dev.jotalac.core.utils.isDesktopPlatform
+import dev.jotalac.core.utils.requestFocusSafely
 import dev.jotalac.feature.editor.ui.components.EditorTabsRow
 import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
 import dev.jotalac.feature.editor.ui.components.SyncFloatingButton
+import dev.jotalac.feature.editor.ui.components.ZoomableImage
 import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindState
-import dev.jotalac.feature.sidebar.ui.EditorSidebar
-import dev.jotalac.feature.sidebar.ui.SidebarContent
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
+import dev.jotalac.feature.sidebar.ui.EditorSidebar
+import dev.jotalac.feature.sidebar.ui.SidebarContent
 import git_writer.shared.generated.resources.*
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.launch
@@ -41,9 +50,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import dev.jotalac.core.utils.asString
-import dev.jotalac.core.utils.SnackbarText
-import dev.jotalac.core.utils.requestFocusSafely
 
 @Composable
 fun EditorScreen(
@@ -210,21 +216,19 @@ private fun CompactEditorLayout(
     onTabClose: (Long) -> Unit,
     onNewTab: () -> Unit,
 ) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val drawerState = rememberDrawerState()
     val scope = rememberCoroutineScope()
     val isDrawerOpen = remember { derivedStateOf { drawerState.isOpen } }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = true,
+    Drawer(
+        state = drawerState,
         drawerContent = {
-            ModalDrawerSheet(modifier = Modifier.width(MaterialTheme.dimensions.navDrawerWidth)) {
-                SidebarContent(
-                    onSidebarClose = { scope.launch { drawerState.close() } },
-                    onOpenSettingsOnMobile = openSettingsOnMobile,
-                    onOpenEditNotebookOnMobile = openEditNotebookOnMobile,
-                )
-            }
+            SidebarContent(
+                modifier = Modifier.systemBarsPadding(),
+                onSidebarClose = { scope.launch { drawerState.close() } },
+                onOpenSettingsOnMobile = openSettingsOnMobile,
+                onOpenEditNotebookOnMobile = openEditNotebookOnMobile,
+            )
         }
     ) {
         MainEditorScaffold(
@@ -371,7 +375,11 @@ private fun MainEditorScaffold(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 if (!isDesktopPlatform && findState.isEnabled) {
-                    FloatingActionButton(onClick = { findState.open() }) {
+                    FloatingButton(
+                        onClick = { findState.open() },
+                        containerColor = AppTheme.colors.accentSoft,
+                        shape = AppTheme.shapes.large,
+                    ) {
                         Icon(
                             painter = painterResource(Res.drawable.search),
                             contentDescription = stringResource(Res.string.find_button),
@@ -391,7 +399,7 @@ private fun MainEditorScaffold(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
-            color = MaterialTheme.colorScheme.background
+            color = AppTheme.colors.background
         ) {
             EditorContent(
                 isLoading = isLoading,
@@ -425,7 +433,7 @@ private fun EditorContent(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(modifier = Modifier.size(64.dp))
+            Spinner(size = 48.dp, strokeWidth = 3.dp)
         }
     } else if (filename == null) {
         NoFileOpenedMessage()

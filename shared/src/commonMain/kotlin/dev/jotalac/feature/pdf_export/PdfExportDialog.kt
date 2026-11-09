@@ -4,10 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,12 +19,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.jotalac.core.data.UserSettings
+import dev.jotalac.core.ui.design.Spinner
+import dev.jotalac.core.ui.design.Surface
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.suspendRunCatching
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.exporting_pdf
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openFileSaver
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.write
@@ -71,13 +70,13 @@ fun PdfExportDialog(request: PdfExportRequest, onFinished: (Result<String?>) -> 
         onDismissRequest = {},
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
     ) {
-        Surface(shape = MaterialTheme.shapes.large, tonalElevation = 6.dp) {
+        Surface(shape = AppTheme.shapes.large, color = AppTheme.colors.surfaceRaised, shadowElevation = 16.dp) {
             Row(
                 modifier = Modifier.padding(24.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
+                Spinner(size = 24.dp, strokeWidth = 3.dp)
                 Text(stringResource(Res.string.exporting_pdf, request.noteName))
             }
 

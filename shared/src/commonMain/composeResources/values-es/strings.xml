@@ -119,7 +119,6 @@
     <string name="settings_auto_merge_preference_label">Preferencia de fusión automática</string>
     <string name="settings_auto_accept_local">Aceptar siempre cambios locales</string>
     <string name="settings_auto_accept_remote">Aceptar siempre cambios remotos</string>
-    <string name="settings_use_dynamic_color">Usar Dynamic Color</string>
     <string name="new_tab">Nueva pestaña</string>
     <string name="open_new_file_message">Abrir nuevo archivo</string>
     <string name="find_placeholder">Encontrar</string>

@@ -1,8 +1,5 @@
 package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -10,15 +7,15 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
+import com.mikepenz.markdown.compose.Markdown
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
-import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.ReferenceLinkHandlerImpl
 import com.mikepenz.markdown.model.State
 import com.mikepenz.markdown.model.markdownPadding
 import com.mikepenz.markdown.model.parseMarkdown
-import dev.jotalac.feature.editor.ui.utils.getHeaderFontSize
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
@@ -31,7 +28,7 @@ internal fun RenderedMarkdownBlock(
     text: String,
     modifier: Modifier = Modifier,
     onTextChange: (String) -> Unit = {},
-    darkCodeTheme: Boolean = isSystemInDarkTheme(),
+    darkCodeTheme: Boolean = AppTheme.colors.isDark,
 ) {
     val highlightsBuilder = remember(darkCodeTheme) {
         Highlights.Builder().theme(SyntaxThemes.atom(darkMode = darkCodeTheme))
@@ -92,8 +89,8 @@ internal fun RenderedMarkdownBlock(
         Text(
             text = currentText,
             modifier = modifier,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.outline,
+            style = AppTheme.typography.bodyLarge,
+            color = AppTheme.colors.textMuted,
         )
         return
     }
@@ -103,14 +100,8 @@ internal fun RenderedMarkdownBlock(
         modifier = modifier,
         components = customMarkdownComponents,
         imageTransformer = Coil3ImageTransformerImpl,
-        typography = markdownTypography(
-            h1 = getHeaderFontSize(1),
-            h2 = getHeaderFontSize(2),
-            h3 = getHeaderFontSize(3),
-            h4 = getHeaderFontSize(4),
-            h5 = getHeaderFontSize(5),
-            h6 = getHeaderFontSize(6)
-        ),
+        colors = appMarkdownColors(),
+        typography = appMarkdownTypography(),
         padding = markdownPadding(
             listItemBottom = 2.dp,
         ),

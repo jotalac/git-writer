@@ -1,16 +1,18 @@
 package dev.jotalac.feature.notebooks_management.ui.create_notebook
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import dev.jotalac.core.ui.components.AlertDialogTitleWithIcon
-import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.ui.design.AppDialog
+import dev.jotalac.core.ui.design.Button
+import dev.jotalac.core.ui.design.SegmentedControl
+import dev.jotalac.core.ui.design.Text
+import dev.jotalac.core.ui.design.TextButton
+import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.notebooks_management.ui.components.SubmittableTextField
@@ -21,8 +23,6 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -97,206 +97,126 @@ fun CreateNotebookDialog(
 
 
 
-    AlertDialog(
-        onDismissRequest = { if (!state.isLoading) onDismiss() },
-        title = {
-            AlertDialogTitleWithIcon(
-                iconResource = Res.drawable.plus,
-                text = Res.string.create_notebook_title,
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                PrimaryTabRow(
-                    selectedTabIndex = state.selectedTabIndex,
-                    modifier = Modifier.fillMaxWidth(),
-                    containerColor = Color.Transparent,
-                    divider = @Composable { HorizontalDivider() }
-                ) {
-                    Tab(
-                        selected = state.selectedTabIndex == tabIndex(Tab.Init),
-                        onClick = {
-                            viewModel.onEvent(
-                                CreateNotebookViewModel.CreateNotebookEvent.TabSelected(tabIndex(Tab.Init))
-                            )
-                        },
-                        text = {
-                            TabText(
-                                text = Res.string.init_notebook,
-                                icon = Res.drawable.plus,
-                                contentDescription = Res.string.plus_icon
-                            )
-                        },
-                    )
-                    Tab(
-                        selected = state.selectedTabIndex == tabIndex(Tab.Clone),
-                        onClick = {
-                            viewModel.onEvent(
-                                CreateNotebookViewModel.CreateNotebookEvent.TabSelected(tabIndex(Tab.Clone))
-                            )
-                        },
-                        text = {
-                            TabText(
-                                text = Res.string.clone_notebook,
-                                icon = Res.drawable.git_merge,
-                                contentDescription = Res.string.git_merge_icon
-                            )
-                        }
-                    )
-                    if (isDesktopPlatform) {
-                        Tab(
-                            selected = state.selectedTabIndex == tabIndex(Tab.Open),
-                            onClick = {
-                                viewModel.onEvent(
-                                    CreateNotebookViewModel.CreateNotebookEvent.TabSelected(tabIndex(Tab.Open))
-                                )
-                            },
-                            text = {
-                                TabText(
-                                    text = Res.string.open_existing_notebook,
-                                    icon = Res.drawable.folder,
-                                    contentDescription = Res.string.open_existing_notebook
-                                )
-                            },
-                        )
-                    }
-                }
+    val selectedTab = visibleTabs.getOrElse(state.selectedTabIndex) { Tab.Init }
+    val canSubmit = when (selectedTab) {
+        Tab.Init -> state.notebookName.isNotBlank() && actualDirectory.isNotBlank()
+        Tab.Open -> !state.selectedDirectory.isNullOrEmpty()
+        Tab.Clone -> state.notebookName.isNotBlank() && state.remoteUrl.isNotBlank() &&
+            actualDirectory.isNotBlank() && state.username.isNotBlank() && state.password.isNotBlank()
+    }
 
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    when (state.selectedTabIndex) {
-                        tabIndex(Tab.Init) -> LocalNotebookForm(
-                            name = state.notebookName,
-                            onNameChange = {
-                                viewModel.onEvent(
-                                    CreateNotebookViewModel.CreateNotebookEvent.NotebookNameChanged(
-                                        it
-                                    )
-                                )
-                            },
-                            directory = actualDirectory,
-                            onBrowseClick = { browseForDirectory() },
-                            onSubmit = { submitForm() }
-                        )
-                        tabIndex(Tab.Open) -> OpenNotebookForm(
-                            directory = state.selectedDirectory,
-                            onBrowseClick = { browseForDirectory() }
-                        )
-
-                        tabIndex(Tab.Clone) -> CloneNotebookForm(
-                            name = state.notebookName,
-                            onNameChange = {
-                                viewModel.onEvent(
-                                    CreateNotebookViewModel.CreateNotebookEvent.NotebookNameChanged(
-                                        it
-                                    )
-                                )
-                            },
-                            url = state.remoteUrl,
-                            onUrlChange = {
-                                viewModel.onEvent(
-                                    CreateNotebookViewModel.CreateNotebookEvent.RemoteUrlChanged(
-                                        it
-                                    )
-                                )
-                            },
-                            username = state.username,
-                            onUsernameChange = {
-                                viewModel.onEvent(
-                                    CreateNotebookViewModel.CreateNotebookEvent.UsernameChanged(
-                                        it
-                                    )
-                                )
-                            },
-                            password = state.password,
-                            onPasswordChange = {
-                                viewModel.onEvent(
-                                    CreateNotebookViewModel.CreateNotebookEvent.PasswordChanged(
-                                        it
-                                    )
-                                )
-                            },
-                            encryptionPassword = state.encryptionPassword,
-                            onEncryptionPasswordChange = {
-                                viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.EncryptionPasswordChanged(it))
-                            },
-                            directory = actualDirectory,
-                            onBrowseClick = { browseForDirectory() },
-                            submitForm = { submitForm() }
-                        )
-                    }
-                }
-
-                if (state.errorMessage != null) {
-                    Text(
-                        text = state.errorMessage!!,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { submitForm() },
-                enabled = if (state.selectedTabIndex == tabIndex(Tab.Init)) {
-                    state.notebookName.isNotBlank() && actualDirectory.isNotBlank() && !state.isLoading
-                } else if (state.selectedTabIndex == tabIndex(Tab.Open)) {
-                    !state.selectedDirectory.isNullOrEmpty()
-                } else {
-                    state.notebookName.isNotBlank() && state.remoteUrl.isNotBlank() &&
-                            actualDirectory.isNotBlank() && state.username.isNotBlank() &&
-                            state.password.isNotBlank() && !state.isLoading
-                }
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Text(
-                        if (state.selectedTabIndex == tabIndex(Tab.Init)) stringResource(Res.string.create_notebook_title)
-                        else if (state.selectedTabIndex == tabIndex(Tab.Open)) stringResource(
-                            Res.string.open_notebook
-                        ) else stringResource(Res.string.clone_notebook)
-                    )
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !state.isLoading
-            ) {
+    AppDialog(
+        onDismissRequest = onDismiss,
+        title = stringResource(Res.string.create_notebook_title),
+        icon = painterResource(Res.drawable.plus),
+        dismissible = !state.isLoading,
+        scrollContent = true,
+        actions = {
+            TextButton(onClick = onDismiss, enabled = !state.isLoading) {
                 Text(stringResource(Res.string.cancel_button))
             }
-        }
-    )
-}
-
-@Composable
-private fun TabText(
-    text: StringResource,
-    icon: DrawableResource,
-    contentDescription: StringResource
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            painter = painterResource(icon),
-            contentDescription = stringResource(contentDescription),
-            modifier = Modifier.size(MaterialTheme.dimensions.iconMedium)
+            Button(onClick = { submitForm() }, enabled = canSubmit, isLoading = state.isLoading) {
+                Text(
+                    stringResource(
+                        when (selectedTab) {
+                            Tab.Init -> Res.string.create_notebook_title
+                            Tab.Open -> Res.string.open_notebook
+                            Tab.Clone -> Res.string.clone_notebook
+                        }
+                    )
+                )
+            }
+        },
+    ) {
+        SegmentedControl(
+            options = visibleTabs,
+            selected = selectedTab,
+            onSelect = { tab -> viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.TabSelected(tabIndex(tab))) },
+            label = { tab ->
+                stringResource(
+                    when (tab) {
+                        Tab.Init -> Res.string.init_notebook
+                        Tab.Clone -> Res.string.clone_notebook
+                        Tab.Open -> Res.string.open_existing_notebook
+                    }
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(stringResource(text))
+
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            when (state.selectedTabIndex) {
+                tabIndex(Tab.Init) -> LocalNotebookForm(
+                    name = state.notebookName,
+                    onNameChange = {
+                        viewModel.onEvent(
+                            CreateNotebookViewModel.CreateNotebookEvent.NotebookNameChanged(
+                                it
+                            )
+                        )
+                    },
+                    directory = actualDirectory,
+                    onBrowseClick = { browseForDirectory() },
+                    onSubmit = { submitForm() }
+                )
+                tabIndex(Tab.Open) -> OpenNotebookForm(
+                    directory = state.selectedDirectory,
+                    onBrowseClick = { browseForDirectory() }
+                )
+
+                tabIndex(Tab.Clone) -> CloneNotebookForm(
+                    name = state.notebookName,
+                    onNameChange = {
+                        viewModel.onEvent(
+                            CreateNotebookViewModel.CreateNotebookEvent.NotebookNameChanged(
+                                it
+                            )
+                        )
+                    },
+                    url = state.remoteUrl,
+                    onUrlChange = {
+                        viewModel.onEvent(
+                            CreateNotebookViewModel.CreateNotebookEvent.RemoteUrlChanged(
+                                it
+                            )
+                        )
+                    },
+                    username = state.username,
+                    onUsernameChange = {
+                        viewModel.onEvent(
+                            CreateNotebookViewModel.CreateNotebookEvent.UsernameChanged(
+                                it
+                            )
+                        )
+                    },
+                    password = state.password,
+                    onPasswordChange = {
+                        viewModel.onEvent(
+                            CreateNotebookViewModel.CreateNotebookEvent.PasswordChanged(
+                                it
+                            )
+                        )
+                    },
+                    encryptionPassword = state.encryptionPassword,
+                    onEncryptionPasswordChange = {
+                        viewModel.onEvent(CreateNotebookViewModel.CreateNotebookEvent.EncryptionPasswordChanged(it))
+                    },
+                    directory = actualDirectory,
+                    onBrowseClick = { browseForDirectory() },
+                    submitForm = { submitForm() }
+                )
+            }
+        }
+
+        if (state.errorMessage != null) {
+            Text(
+                text = state.errorMessage!!,
+                color = AppTheme.colors.danger,
+                style = AppTheme.typography.bodyLarge
+            )
+        }
     }
 }
 
@@ -417,7 +337,7 @@ fun DirectoryPickerRow(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = if (isCreating) stringResource(Res.string.destination_directory_label) else stringResource(Res.string.open_notebook_directory),
-            style = MaterialTheme.typography.labelMedium
+            style = AppTheme.typography.labelSmall
         )
 
         Row(
@@ -427,8 +347,8 @@ fun DirectoryPickerRow(
         ) {
             Text(
                 text = if (!directory.isNullOrBlank()) directory else "No directory selected",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (directory.isNullOrBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = AppTheme.typography.bodySmall,
+                color = if (directory.isNullOrBlank()) AppTheme.colors.danger else AppTheme.colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier

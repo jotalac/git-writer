@@ -15,7 +15,6 @@ data class UserSettingsState(
     val font: AppFontFamily = AppFontFamily.DEFAULT,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val gitConflictStrategy: GitConflictResolutionStrategy = GitConflictResolutionStrategy.MANUAL,
-    val useDynamicColor: Boolean = false,
     val spellcheckLanguage: SpellcheckLanguage = SpellcheckLanguage.SameAsApp,
     val editorFullWidth: Boolean = false,
     val autoSync: Boolean = true,
@@ -30,7 +29,6 @@ class UserSettingsManager(
         private val FONT_FAMILY_KEY = stringPreferencesKey("font_family")
         private val LANGUAGE_KEY = stringPreferencesKey("language")
         private val CONFLICT_STRATEGY_KEY = stringPreferencesKey("conflict_strategy")
-        private val USE_DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color")
         private val SPELLCHECK_LANGUAGE_KEY = stringPreferencesKey("spellcheck_language")
         private val EDITOR_FULL_WIDTH_KEY = booleanPreferencesKey("editor_full_width")
         private val AUTO_SYNC_KEY = booleanPreferencesKey("auto_sync")
@@ -57,7 +55,6 @@ class UserSettingsManager(
                 gitConflictStrategy = preferences[CONFLICT_STRATEGY_KEY]?.let { name ->
                     GitConflictResolutionStrategy.entries.find { it.name == name }
                 } ?: GitConflictResolutionStrategy.MANUAL,
-                useDynamicColor = preferences[USE_DYNAMIC_COLOR_KEY] ?: false,
                 spellcheckLanguage = when (val name = preferences[SPELLCHECK_LANGUAGE_KEY]) {
                     SPELLCHECK_OFF -> SpellcheckLanguage.Off
                     else -> AppLanguage.entries.find { it.name == name }?.let { SpellcheckLanguage.Of(it) }
@@ -98,11 +95,6 @@ class UserSettingsManager(
         }
     }
 
-    override suspend fun setUseDynamicColor(useDynamicColor: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[USE_DYNAMIC_COLOR_KEY] = useDynamicColor
-        }
-    }
 
     override suspend fun setSpellcheckLanguage(language: SpellcheckLanguage) {
         dataStore.edit { preferences ->
@@ -136,7 +128,6 @@ class UserSettingsManager(
             preferences.remove(SPELLCHECK_LANGUAGE_KEY)
             preferences.remove(EDITOR_FULL_WIDTH_KEY)
             preferences.remove(AUTO_SYNC_KEY)
-            preferences.remove(USE_DYNAMIC_COLOR_KEY)
         }
     }
 }
