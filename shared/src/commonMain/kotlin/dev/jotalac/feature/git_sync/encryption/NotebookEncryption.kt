@@ -52,11 +52,10 @@ class NotebookKey(internal val bytes: ByteArray) {
     val encoded: String get() = Base64.encode(bytes)
 
     companion object {
-        fun fromEncoded(encoded: String) = NotebookKey(Base64.decode(encoded))
+        fun fromEncoded(encoded: String): NotebookKey = NotebookKey(Base64.decode(encoded))
     }
 }
 
-/** The password does not unlock the notebook. */
 class WrongPasswordException : IllegalStateException("Wrong password for the encrypted notebook")
 
 /** A file that is not encrypted with the notebook's key, or was changed - it cannot be decrypted. */

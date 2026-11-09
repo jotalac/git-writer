@@ -15,30 +15,14 @@ import kotlinx.io.readString
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/** The remote of a notebook that is being encrypted already has commits - readable ones would stay in its history. */
 class RemoteNotEmptyException : IllegalStateException("The remote repository has to be empty to encrypt a notebook")
 
-/** The remote is an encrypted notebook, opening it needs its password. */
 class PasswordRequiredException : IllegalStateException("This notebook is encrypted - enter its password")
 
-/** The remote is not one of an encrypted notebook. */
 class NotEncryptedRemoteException : IllegalStateException("The remote repository is not an encrypted notebook")
 
 /**
- * Sync of an encrypted notebook. The notebook stays a plain git repository - commits, merges and conflicts work as for
- * any other notebook - and its remote, the mailbox, only gets encrypted bundles: files with the commits of one upload
- * each. This class is the only one that sees both sides - it encrypts and decrypts between them.
- *
- * Per notebook, inside its `.git`:
- * - `gitwriter/mirror.git` ([MirrorRepository]) - what has been published, decrypted. It is the notebook's origin, so
- *   the plain sync ([GitSyncRepository]) runs against it unchanged.
- * - `gitwriter/mailbox` ([MailboxRepository]) - the copy of the mailbox: [ENCRYPTION_CONFIG_FILE] and
- *   `bundles/000001.bundle.enc`, ... - never anything readable.
- *
- * A sync downloads the bundles other devices published into the mirror, runs the plain sync against the mirror and
- * uploads what it pushed there as the next bundle. Bundles are numbered, each builds on the one before: when two
- * devices upload the same number, the second push is rejected - that device takes over the other's bundle and tries
- * again.
+ * Sync of and encrypted notebook
  */
 class EncryptedGitSync(
     private val gitSync: GitSyncRepository,
@@ -139,7 +123,6 @@ class EncryptedGitSync(
         error("Other devices kept publishing at the same time - sync again")
     }
 
-    // --- steps
 
     /** Brings the mailbox copy up to date and imports the bundles the mirror does not have yet, in their order. */
     private suspend fun download(paths: NotebookPaths, key: NotebookKey, tokenOrPassword: String, username: String?) {
