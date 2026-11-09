@@ -1,0 +1,156 @@
+package dev.jotalac.feature.sidebar.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import dev.jotalac.feature.notebooks_management.domain.Notebook
+import git_writer.shared.generated.resources.*
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun ActiveNotebookMenu(
+    notebook: Notebook?,
+    anyFolderExpanded: Boolean,
+    onCollapseToggled: () -> Unit,
+    onAddNoteClick: () -> Unit,
+    onAddFolderClick: () -> Unit,
+    openEditNotebookDialog: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ActiveNotebookName(notebook)
+        Spacer(Modifier.height(12.dp))
+        ActiveNotebookActions(
+            anyFolderExpanded,
+            notebook == null,
+            onCollapseToggled,
+            onAddNoteClick,
+            onAddFolderClick,
+            openEditNotebookDialog,
+        )
+    }
+}
+
+@Composable
+private fun ActiveNotebookName(notebook: Notebook?) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Text(
+            text = notebook?.name ?: stringResource(Res.string.no_active_notebook_label),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = if (notebook?.name != null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+
+        Row(
+            modifier = Modifier.offset(x = (-4).dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (notebook?.isEncrypted == true) {
+                Icon(
+                    painter = painterResource(Res.drawable.shield_lock),
+                    tint = MaterialTheme.colorScheme.outline,
+                    contentDescription = stringResource(Res.string.notebook_encrypted_info),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+
+            notebook?.remoteUrl?.let {
+                Icon(
+                    painter = painterResource(Res.drawable.git_fork),
+                    tint = MaterialTheme.colorScheme.outline,
+                    contentDescription = stringResource(Res.string.git_merge_icon),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActiveNotebookActions(
+    anyFolderExpanded: Boolean,
+    isNotebookNull: Boolean,
+    onCollapseToggled: () -> Unit,
+    onAddNoteClick: () -> Unit,
+    onAddFolderClick: () -> Unit,
+    openEditNotebbokDialog: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().offset(x = (-4).dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            SidebarButtonWithTooltip(
+                onClick = onAddNoteClick,
+                icon = Res.drawable.note_add,
+                contentDescription = stringResource(Res.string.create_new_file),
+                tint = MaterialTheme.colorScheme.secondary,
+                enabled = !isNotebookNull
+            )
+            SidebarButtonWithTooltip(
+                onClick = onAddFolderClick,
+                icon = Res.drawable.folder_create,
+                contentDescription = stringResource(Res.string.create_new_folder),
+                tint = MaterialTheme.colorScheme.secondary,
+                enabled = !isNotebookNull
+            )
+            SidebarButtonWithTooltip(
+                onClick = onCollapseToggled,
+                icon = if (anyFolderExpanded) Res.drawable.collapse_all else Res.drawable.expand_all,
+                contentDescription = if (anyFolderExpanded) stringResource(Res.string.collapse_folders) else stringResource(
+                    Res.string.expand_folders
+                ),
+                tint = MaterialTheme.colorScheme.secondary,
+                enabled = !isNotebookNull
+            )
+
+        }
+
+        SidebarButtonWithTooltip(
+            onClick = openEditNotebbokDialog,
+            icon = Res.drawable.edit_pencil,
+            contentDescription = stringResource(Res.string.edit_active_notebook),
+            tint = MaterialTheme.colorScheme.secondary,
+            enabled = !isNotebookNull
+        )
+
+
+    }
+}

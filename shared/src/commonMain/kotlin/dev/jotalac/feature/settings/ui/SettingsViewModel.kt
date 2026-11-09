@@ -59,7 +59,7 @@ class SettingsViewModel(
         data class ChangeFont(val font: AppFontFamily) : SettingsAction
         data class ChangeEditorFullWidth(val editorFullWidth: Boolean) : SettingsAction
         data class ChangeLanguage(val language: AppLanguage) : SettingsAction
-        data class ChangeSpellcheckLanguage(val language: AppLanguage?) : SettingsAction
+        data class ChangeSpellcheckLanguage(val language: SpellcheckLanguage) : SettingsAction
         data class ChangeGitConflictStrategy(val strategy: GitConflictResolutionStrategy) : SettingsAction
         data class ChangeUseDynamicColor(val useDynamicColor: Boolean) : SettingsAction
         data class ChangeAutoSync(val autoSync: Boolean) : SettingsAction

@@ -9,4 +9,7 @@ sealed interface Route {
 
     @Serializable
     data object MainApp : Route
+
+    @Serializable
+    data class EditNotebook(val notebookId: Long) : Route
 }

@@ -52,6 +52,6 @@ internal fun keepMathSourceSettings(): AnnotatorSettings {
     )
 }
 
-// the latex source of an expression, without the `$` delimiters markdown wraps it in
-private fun ASTNode.latexSource(content: String): String =
+/** The latex source of an expression, without the `$` delimiters markdown wraps it in. */
+internal fun ASTNode.latexSource(content: String): String =
     getTextInNode(content).toString().removeSurrounding("$$").removeSurrounding("$").trim()

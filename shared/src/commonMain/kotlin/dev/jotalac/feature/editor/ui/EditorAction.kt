@@ -1,28 +1,13 @@
 package dev.jotalac.feature.editor.ui
 
 sealed interface EditorAction {
-    data class AddBlock(val index: Int? = null) : EditorAction
-    data class UpdateBlock(val index: Int, val newText: String) : EditorAction
-    data class RemoveBlock(val index: Int) : EditorAction
-    data class AddBlocks(val index: Int, val newBlocks: List<String>) : EditorAction
-    data class SetBlocks(val blocks: List<String>) : EditorAction
-    data class SplitBlock(val index: Int, val cursorStart: Int, val onFocusCalculated: (newFocusIndex: Int) -> Unit) :
-        EditorAction
+    /** The note's whole text after an edit. */
+    data class UpdateText(val text: String) : EditorAction
 
-    data class SwapBlocks(val fromIndex: Int, val toIndex: Int) : EditorAction
-
-    data class BlockTurnedIntoMoreBlocks(val index: Int, val newBlocks: List<String>) : EditorAction
-    data class EvaluateBlockOnFocusLost(
-        val index: Int,
-        val currentFocusedIndex: Int?,
-        val onFocusAdjusted: (newFocus: Int?) -> Unit
-    ) : EditorAction
-
-    data class MergeWithPrevBlock(val index: Int) : EditorAction
+    /** Saves the images into the notebook, then hands their markdown to [onImagesSaved] to put into the note. */
     data class PasteImages(
         val imageBytesList: List<ByteArray>,
-        val focusedIndex: Int,
-        val onFocusCalculated: (newFocusIndex: Int) -> Unit
+        val onImagesSaved: (imageMarkdown: List<String>) -> Unit,
     ) : EditorAction
 
     data object SyncNotes : EditorAction
@@ -44,19 +29,5 @@ sealed interface EditorAction {
     data object NewNote : EditorAction
 }
 
-/** True for actions that change block content, which is what autosave listens to. */
-fun EditorAction.isBlockEditing(): Boolean = when (this) {
-    is EditorAction.AddBlock,
-    is EditorAction.UpdateBlock,
-    is EditorAction.RemoveBlock,
-    is EditorAction.AddBlocks,
-    is EditorAction.SetBlocks,
-    is EditorAction.SplitBlock,
-    is EditorAction.SwapBlocks,
-    is EditorAction.BlockTurnedIntoMoreBlocks,
-    is EditorAction.EvaluateBlockOnFocusLost,
-    is EditorAction.MergeWithPrevBlock,
-    is EditorAction.PasteImages -> true
-
-    else -> false
-}
+/** True for actions that change the note's content, which is what autosave listens to. */
+fun EditorAction.isNoteEditing(): Boolean = this is EditorAction.UpdateText

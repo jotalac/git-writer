@@ -51,6 +51,23 @@ class EditNotebookViewModelTest {
         assertFalse(dialogClosed)
     }
 
+    // --- loading
+
+    @Test
+    fun `the screen fills the form from the stored notebook`() = viewModelTest {
+        notebooks.notebooks.value = listOf(Notebook(3, "Work", "/nb/Work", validUrl, "me", "token", isEncrypted = true))
+        val screen = EditNotebookViewModel(notebooks, snackbar)
+
+        screen.loadNotebook(3)
+        advanceUntilIdle()
+
+        val state = screen.uiState.value
+        assertEquals("Work", state.notebookName)
+        assertEquals(validUrl, state.remoteUrl)
+        assertEquals("me", state.remoteUsername)
+        assertTrue(state.isEncrypted)
+    }
+
     // --- validation
 
     @Test

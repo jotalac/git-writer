@@ -112,14 +112,27 @@ class EditorScreenViewModelTest {
 
     @Test
     fun `the active note is loaded into the editor`() = viewModelTest {
-        editor.blocksResult = Result.success(listOf("first", "second"))
+        editor.readResult = Result.success("first\n\nsecond")
         editor.existingPaths += notePath
-        createViewModel()
+        val viewModel = createViewModel()
 
         notebooks.activeNote.value = notePath
         advanceUntilIdle()
 
-        assertEquals(listOf(notePath), editor.loadedPaths)
+        assertEquals(listOf(notePath), editor.readPaths)
+        assertEquals("first\n\nsecond", viewModel.noteText.value)
+    }
+
+    @Test
+    fun `a note written on Windows is edited with plain line breaks`() = viewModelTest {
+        editor.readResult = Result.success("first\r\nsecond\r\n")
+        editor.existingPaths += notePath
+        val viewModel = createViewModel()
+
+        notebooks.activeNote.value = notePath
+        advanceUntilIdle()
+
+        assertEquals("first\nsecond\n", viewModel.noteText.value)
     }
 
     @Test
@@ -131,7 +144,7 @@ class EditorScreenViewModelTest {
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.isImage)
-        assertTrue(editor.loadedPaths.isEmpty())
+        assertTrue(editor.readPaths.isEmpty())
     }
 
     @Test
@@ -144,7 +157,7 @@ class EditorScreenViewModelTest {
         notebooks.activeNote.value = "/notebook/second.md"
         advanceUntilIdle()
 
-        assertEquals(listOf("/notebook/first.md", "/notebook/second.md"), editor.loadedPaths)
+        assertEquals(listOf("/notebook/first.md", "/notebook/second.md"), editor.readPaths)
     }
 
     @Test
@@ -156,33 +169,39 @@ class EditorScreenViewModelTest {
 
         assertEquals("Error loading file - $notePath", viewModel.uiState.value.error)
         assertFalse(viewModel.uiState.value.isLoading)
-        assertTrue(editor.loadedPaths.isEmpty())
+        assertTrue(editor.readPaths.isEmpty())
     }
 
     @Test
-    fun `a failed load leaves the editor empty rather than half loaded`() = viewModelTest {
+    fun `a failed load leaves the editor empty and never saves over the note`() = viewModelTest {
         editor.existingPaths += notePath
-        editor.blocksResult = Result.failure(IllegalStateException("unreadable"))
+        editor.readResult = Result.failure(IllegalStateException("unreadable"))
         val viewModel = createViewModel()
 
         notebooks.activeNote.value = notePath
         advanceUntilIdle()
 
-        assertTrue(viewModel.markdownBlocks.isEmpty())
+        assertEquals("", viewModel.noteText.value)
         assertFalse(viewModel.uiState.value.isLoading)
+        assertEquals("Error loading file - $notePath", viewModel.uiState.value.error)
+
+        viewModel.onAction(EditorAction.UpdateText("typed"))
+        advanceTimeBy(5_000.milliseconds)
+        advanceUntilIdle()
+        assertTrue(editor.savedFiles.isEmpty())
     }
 
     // --- autosave ---
 
     @Test
-    fun `autosave waits for the debounce and then saves the blocks`() = viewModelTest {
+    fun `autosave waits for the debounce and then saves the text`() = viewModelTest {
         editor.existingPaths += notePath
-        editor.blocksResult = Result.success(listOf("first", "second"))
+        editor.readResult = Result.success("first\n\nsecond")
         val viewModel = createViewModel()
         notebooks.activeNote.value = notePath
         advanceUntilIdle()
 
-        viewModel.onAction(EditorAction.UpdateBlock(index = 0, newText = "changed"))
+        viewModel.onAction(EditorAction.UpdateText("changed\n\nsecond"))
 
         advanceTimeBy(500.milliseconds)
         assertTrue(editor.savedFiles.isEmpty(), "saved before the debounce elapsed")
@@ -202,7 +221,7 @@ class EditorScreenViewModelTest {
         notebooks.activeNote.value = imagePath
         advanceUntilIdle()
 
-        viewModel.onAction(EditorAction.UpdateBlock(index = 0, newText = "changed"))
+        viewModel.onAction(EditorAction.UpdateText("changed"))
         advanceTimeBy(5_000.milliseconds)
         advanceUntilIdle()
 
@@ -213,7 +232,7 @@ class EditorScreenViewModelTest {
     fun `editing is not saved before a note is open`() = viewModelTest {
         val viewModel = createViewModel()
 
-        viewModel.onAction(EditorAction.UpdateBlock(index = 0, newText = "changed"))
+        viewModel.onAction(EditorAction.UpdateText("changed"))
         advanceTimeBy(5_000.milliseconds)
         advanceUntilIdle()
 
@@ -268,7 +287,7 @@ class EditorScreenViewModelTest {
         )
         editor.createNoteResult = Result.success("/notebook/untitled.md")
         editor.existingPaths += "/notebook/untitled.md"
-        editor.blocksResult = Result.success(listOf("created"))
+        editor.readResult = Result.success("created")
         val viewModel = createViewModel()
 
         viewModel.onAction(EditorAction.NewNote)
@@ -276,7 +295,7 @@ class EditorScreenViewModelTest {
 
         assertEquals("/notebook", editor.createdNotes.single().directoryPath)
         assertEquals(listOf("/notebook/untitled.md"), notebooks.activatedNotes)
-        assertEquals(listOf("/notebook/untitled.md"), editor.loadedPaths)
+        assertEquals(listOf("/notebook/untitled.md"), editor.readPaths)
     }
 
     // --- pasting ---
@@ -289,14 +308,41 @@ class EditorScreenViewModelTest {
         viewModel.onAction(
             EditorAction.PasteImages(
                 imageBytesList = listOf(byteArrayOf(1, 2, 3)),
-                focusedIndex = 0,
-                onFocusCalculated = {},
+                onImagesSaved = { error("nothing was saved") },
             )
         )
         advanceUntilIdle()
 
         assertEquals(listOf<SnackbarText>(SnackbarText.resource(Res.string.err_paste_image_no_notebook)), messages)
         assertTrue(editor.pastedImages.isEmpty())
+    }
+
+    @Test
+    fun `pasted images are saved in the notebook and handed back as markdown`() = viewModelTest {
+        notebooks.activeNotebook.value = Notebook(
+            id = 1,
+            name = "notebook",
+            directoryPath = "/notebook",
+            remoteUrl = null,
+            remoteUsername = null,
+            remotePassword = null,
+        )
+        val viewModel = createViewModel()
+        var imageMarkdown = emptyList<String>()
+
+        viewModel.onAction(
+            EditorAction.PasteImages(
+                imageBytesList = listOf(byteArrayOf(1, 2, 3), byteArrayOf(4, 5)),
+                onImagesSaved = { imageMarkdown = it },
+            )
+        )
+        advanceUntilIdle()
+
+        assertEquals(2, editor.pastedImages.size)
+        assertEquals(
+            editor.pastedImages.map { "![pasted image](images/${it.filename})" },
+            imageMarkdown,
+        )
     }
 
     // --- tabs ---

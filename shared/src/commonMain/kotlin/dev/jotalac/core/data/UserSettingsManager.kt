@@ -16,7 +16,7 @@ data class UserSettingsState(
     val language: AppLanguage = AppLanguage.ENGLISH,
     val gitConflictStrategy: GitConflictResolutionStrategy = GitConflictResolutionStrategy.MANUAL,
     val useDynamicColor: Boolean = false,
-    val spellcheckLanguage: AppLanguage? = null,
+    val spellcheckLanguage: SpellcheckLanguage = SpellcheckLanguage.SameAsApp,
     val editorFullWidth: Boolean = false,
     val autoSync: Boolean = true,
 )
@@ -34,6 +34,9 @@ class UserSettingsManager(
         private val SPELLCHECK_LANGUAGE_KEY = stringPreferencesKey("spellcheck_language")
         private val EDITOR_FULL_WIDTH_KEY = booleanPreferencesKey("editor_full_width")
         private val AUTO_SYNC_KEY = booleanPreferencesKey("auto_sync")
+
+        // saved in the spellcheck language key instead of a language
+        private const val SPELLCHECK_OFF = "OFF"
     }
 
     override val userSettingsStateFlow: Flow<UserSettingsState> = dataStore.data
@@ -55,8 +58,10 @@ class UserSettingsManager(
                     GitConflictResolutionStrategy.entries.find { it.name == name }
                 } ?: GitConflictResolutionStrategy.MANUAL,
                 useDynamicColor = preferences[USE_DYNAMIC_COLOR_KEY] ?: false,
-                spellcheckLanguage = preferences[SPELLCHECK_LANGUAGE_KEY]?.let { name ->
-                    AppLanguage.entries.find { it.name == name }
+                spellcheckLanguage = when (val name = preferences[SPELLCHECK_LANGUAGE_KEY]) {
+                    SPELLCHECK_OFF -> SpellcheckLanguage.Off
+                    else -> AppLanguage.entries.find { it.name == name }?.let { SpellcheckLanguage.Of(it) }
+                        ?: SpellcheckLanguage.SameAsApp
                 },
                 editorFullWidth = preferences[EDITOR_FULL_WIDTH_KEY] ?: false,
                 autoSync = preferences[AUTO_SYNC_KEY] ?: true,
@@ -99,12 +104,12 @@ class UserSettingsManager(
         }
     }
 
-    override suspend fun setSpellcheckLanguage(language: AppLanguage?) {
+    override suspend fun setSpellcheckLanguage(language: SpellcheckLanguage) {
         dataStore.edit { preferences ->
-            if (language == null) {
-                preferences.remove(SPELLCHECK_LANGUAGE_KEY)
-            } else {
-                preferences[SPELLCHECK_LANGUAGE_KEY] = language.name
+            when (language) {
+                SpellcheckLanguage.SameAsApp -> preferences.remove(SPELLCHECK_LANGUAGE_KEY)
+                SpellcheckLanguage.Off -> preferences[SPELLCHECK_LANGUAGE_KEY] = SPELLCHECK_OFF
+                is SpellcheckLanguage.Of -> preferences[SPELLCHECK_LANGUAGE_KEY] = language.language.name
             }
         }
     }

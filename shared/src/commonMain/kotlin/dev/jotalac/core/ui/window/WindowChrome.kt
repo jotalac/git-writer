@@ -2,6 +2,7 @@ package dev.jotalac.core.ui.window
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -25,6 +26,12 @@ interface WindowChrome {
      * sets the tile bar to dark on windows
      */
     fun setTitleBarDark(isDark: Boolean)
+
+    /**
+     * the color of the window itself - shown where the app hasn't drawn yet,
+     * e.g. the new area while the window is being resized
+     */
+    fun setBackground(color: Color)
 }
 
 private object InactiveWindowChrome : WindowChrome {
@@ -34,6 +41,7 @@ private object InactiveWindowChrome : WindowChrome {
 
     override fun setTitle(title: String) = Unit
     override fun setTitleBarDark(isDark: Boolean) = Unit
+    override fun setBackground(color: Color) = Unit
 }
 
 val LocalWindowChrome = staticCompositionLocalOf<WindowChrome> { InactiveWindowChrome }

@@ -30,8 +30,8 @@ import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
 import dev.jotalac.feature.editor.ui.components.SyncFloatingButton
 import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindState
-import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
-import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
+import dev.jotalac.feature.sidebar.ui.EditorSidebar
+import dev.jotalac.feature.sidebar.ui.SidebarContent
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
 import git_writer.shared.generated.resources.*
@@ -43,13 +43,15 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import dev.jotalac.core.utils.asString
 import dev.jotalac.core.utils.SnackbarText
+import dev.jotalac.core.utils.requestFocusSafely
 
 @Composable
 fun EditorScreen(
     openSettingsOnMobile: () -> Unit,
+    openEditNotebookOnMobile: (notebookId: Long) -> Unit,
     viewModel: EditorViewModel = koinViewModel()
 ) {
-    val blocks = viewModel.markdownBlocks
+    val noteText = viewModel.noteText
     val editorUiState = viewModel.uiState.collectAsStateWithLifecycle()
     val state = editorUiState.value
 
@@ -82,12 +84,7 @@ fun EditorScreen(
     // when there is no note open - focus the root
     LaunchedEffect(state.activeNotePath, state.isImage) {
         val hasEditor = state.activeNotePath != null && !state.isImage
-        if (!hasEditor) {
-            try {
-                rootFocusRequester.requestFocus()
-            } catch (_: Exception) {
-            }
-        }
+        if (!hasEditor) rootFocusRequester.requestFocusSafely()
     }
 
     if (state.conflictedFiles.isNotEmpty()) {
@@ -159,7 +156,7 @@ fun EditorScreen(
 
             if (isCompactScreen) {
                 CompactEditorLayout(
-                    markdownBlocks = blocks,
+                    noteText = noteText,
                     scrollPositions = viewModel.noteScrollPositions,
                     filename = state.activeFilename,
                     activeNotePath = state.activeNotePath,
@@ -168,6 +165,7 @@ fun EditorScreen(
                     onAction = viewModel::onAction,
                     gitSyncStatus = state.syncButtonStatus(remoteStatus),
                     openSettingsOnMobile = openSettingsOnMobile,
+                    openEditNotebookOnMobile = openEditNotebookOnMobile,
                     uiState = editorUiState,
                     onTabClick = viewModel::openTab,
                     onTabClose = viewModel::closeTab,
@@ -175,7 +173,7 @@ fun EditorScreen(
                 )
             } else {
                 ExpandedEditorLayout(
-                    markdownBlocks = blocks,
+                    noteText = noteText,
                     scrollPositions = viewModel.noteScrollPositions,
                     filename = state.activeFilename,
                     activeNotePath = state.activeNotePath,
@@ -184,6 +182,7 @@ fun EditorScreen(
                     onAction = viewModel::onAction,
                     gitSyncStatus = state.syncButtonStatus(remoteStatus),
                     openSettingsOnMobile = openSettingsOnMobile,
+                    openEditNotebookOnMobile = openEditNotebookOnMobile,
                     uiState = editorUiState,
                     onTabClick = viewModel::openTab,
                     onTabClose = viewModel::closeTab,
@@ -196,7 +195,7 @@ fun EditorScreen(
 
 @Composable
 private fun CompactEditorLayout(
-    markdownBlocks: List<String>,
+    noteText: State<String>,
     scrollPositions: MutableMap<String, Int>,
     filename: String?,
     activeNotePath: String?,
@@ -205,6 +204,7 @@ private fun CompactEditorLayout(
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
     openSettingsOnMobile: () -> Unit,
+    openEditNotebookOnMobile: (notebookId: Long) -> Unit,
     uiState: State<EditorScreenState>,
     onTabClick: (Long) -> Unit,
     onTabClose: (Long) -> Unit,
@@ -221,7 +221,8 @@ private fun CompactEditorLayout(
             ModalDrawerSheet(modifier = Modifier.width(MaterialTheme.dimensions.navDrawerWidth)) {
                 SidebarContent(
                     onSidebarClose = { scope.launch { drawerState.close() } },
-                    onOpenSettingsOnMobile = openSettingsOnMobile
+                    onOpenSettingsOnMobile = openSettingsOnMobile,
+                    onOpenEditNotebookOnMobile = openEditNotebookOnMobile,
                 )
             }
         }
@@ -237,7 +238,7 @@ private fun CompactEditorLayout(
                 }
             },
             isLoading = isLoading,
-            markdownBlocks = markdownBlocks,
+            noteText = noteText,
             scrollPositions = scrollPositions,
             onAction = onAction,
             gitSyncStatus = gitSyncStatus,
@@ -251,7 +252,7 @@ private fun CompactEditorLayout(
 
 @Composable
 private fun ExpandedEditorLayout(
-    markdownBlocks: List<String>,
+    noteText: State<String>,
     scrollPositions: MutableMap<String, Int>,
     filename: String?,
     activeNotePath: String?,
@@ -260,6 +261,7 @@ private fun ExpandedEditorLayout(
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
     openSettingsOnMobile: () -> Unit = {},
+    openEditNotebookOnMobile: (notebookId: Long) -> Unit = {},
     uiState: State<EditorScreenState>,
     onTabClick: (Long) -> Unit,
     onTabClose: (Long) -> Unit,
@@ -271,6 +273,7 @@ private fun ExpandedEditorLayout(
         EditorSidebar(
             isVisible = sidebarVisibility.value,
             openSettingsOnMobile = openSettingsOnMobile,
+            openEditNotebookOnMobile = openEditNotebookOnMobile,
         )
 
         MainEditorScaffold(
@@ -283,7 +286,7 @@ private fun ExpandedEditorLayout(
                 sidebarVisibility.value = !sidebarVisibility.value
             },
             isLoading = isLoading,
-            markdownBlocks = markdownBlocks,
+            noteText = noteText,
             scrollPositions = scrollPositions,
             onAction = onAction,
             gitSyncStatus = gitSyncStatus,
@@ -304,7 +307,7 @@ private fun MainEditorScaffold(
     isSidebarOpen: State<Boolean>,
     onToggleSidebar: () -> Unit,
     isLoading: Boolean,
-    markdownBlocks: List<String>,
+    noteText: State<String>,
     scrollPositions: MutableMap<String, Int>,
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
@@ -395,7 +398,7 @@ private fun MainEditorScaffold(
                 filename = filename,
                 isImage = isImage,
                 activeNotePath = activeNotePath,
-                markdownBlocks = markdownBlocks,
+                noteText = noteText,
                 scrollPositions = scrollPositions,
                 onAction = onAction,
                 findState = findState,
@@ -410,7 +413,7 @@ private fun EditorContent(
     filename: String?,
     isImage: Boolean,
     activeNotePath: String?,
-    markdownBlocks: List<String>,
+    noteText: State<String>,
     scrollPositions: MutableMap<String, Int>,
     onAction: (EditorAction) -> Unit,
     findState: MarkdownFindState,
@@ -437,7 +440,7 @@ private fun EditorContent(
         key(notePath) { // for undo/redo logic to reset
             findState.isEnabled = true
             MarkdownEditor(
-                markdownBlocks = markdownBlocks,
+                noteText = noteText.value,
                 onAction = onAction,
                 modifier = Modifier.fillMaxSize(),
                 initialScroll = scrollPositions[notePath] ?: 0,

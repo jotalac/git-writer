@@ -10,7 +10,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import dev.jotalac.core.domain.AppThemeMode
+import dev.jotalac.core.domain.SpellcheckLanguage
 import dev.jotalac.core.navigation.Route
 import dev.jotalac.core.ui.theme.AppTheme
 import dev.jotalac.core.ui.window.AppWindowLayout
@@ -19,10 +21,12 @@ import dev.jotalac.core.ui.window.TitleBarHost
 import dev.jotalac.core.ui.window.WindowTitleBarTheme
 import dev.jotalac.core.utils.ConfigureAppImageLoader
 import dev.jotalac.core.utils.applyAppLanguage
+import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckEnabled
 import dev.jotalac.feature.editor.ui.spellcheck.LocalSpellcheckLanguage
 import dev.jotalac.feature.editor.ui.components.LocalEditorFullWidth
 import dev.jotalac.feature.editor.ui.EditorScreen
 import dev.jotalac.feature.settings.ui.SettingsScreen
+import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookScreen
 import org.koin.compose.koinInject
 
 @Composable
@@ -54,7 +58,8 @@ fun App(
 
             CompositionLocalProvider(
                 LocalTitleBarHost provides titleBarHost,
-                LocalSpellcheckLanguage provides settingsState.spellcheckLanguage?.code,
+                LocalSpellcheckLanguage provides (settingsState.spellcheckLanguage as? SpellcheckLanguage.Of)?.language?.code,
+                LocalSpellcheckEnabled provides (settingsState.spellcheckLanguage != SpellcheckLanguage.Off),
                 LocalEditorFullWidth provides settingsState.editorFullWidth,
             ) {
                 AppWindowLayout(titleBarHost) {
@@ -62,12 +67,20 @@ fun App(
                     NavHost(navController = navController, startDestination = Route.MainApp) {
                         composable<Route.MainApp> {
                             EditorScreen(
-                                openSettingsOnMobile = { navController.navigate(Route.Settings) }
+                                openSettingsOnMobile = { navController.navigate(Route.Settings) },
+                                openEditNotebookOnMobile = { notebookId -> navController.navigate(Route.EditNotebook(notebookId)) },
                             )
                         }
 
                         composable<Route.Settings> {
                             SettingsScreen(onNavigateBack = { navController.popBackStack() })
+                        }
+
+                        composable<Route.EditNotebook> { entry ->
+                            EditNotebookScreen(
+                                notebookId = entry.toRoute<Route.EditNotebook>().notebookId,
+                                onNavigateBack = { navController.popBackStack() },
+                            )
                         }
                     }
                 }
