@@ -30,8 +30,8 @@ import dev.jotalac.feature.editor.ui.components.MarkdownEditor
 import dev.jotalac.feature.editor.ui.components.NoFileOpenedMessage
 import dev.jotalac.feature.editor.ui.components.SyncFloatingButton
 import dev.jotalac.feature.editor.ui.components.editor_find.MarkdownFindState
-import dev.jotalac.feature.editor_sidebar.ui.EditorSidebar
-import dev.jotalac.feature.editor_sidebar.ui.SidebarContent
+import dev.jotalac.feature.sidebar.ui.EditorSidebar
+import dev.jotalac.feature.sidebar.ui.SidebarContent
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.git_sync.ui.GitConflictResolveDialog
 import git_writer.shared.generated.resources.*
@@ -48,6 +48,7 @@ import dev.jotalac.core.utils.requestFocusSafely
 @Composable
 fun EditorScreen(
     openSettingsOnMobile: () -> Unit,
+    openEditNotebookOnMobile: (notebookId: Long) -> Unit,
     viewModel: EditorViewModel = koinViewModel()
 ) {
     val noteText = viewModel.noteText
@@ -164,6 +165,7 @@ fun EditorScreen(
                     onAction = viewModel::onAction,
                     gitSyncStatus = state.syncButtonStatus(remoteStatus),
                     openSettingsOnMobile = openSettingsOnMobile,
+                    openEditNotebookOnMobile = openEditNotebookOnMobile,
                     uiState = editorUiState,
                     onTabClick = viewModel::openTab,
                     onTabClose = viewModel::closeTab,
@@ -180,6 +182,7 @@ fun EditorScreen(
                     onAction = viewModel::onAction,
                     gitSyncStatus = state.syncButtonStatus(remoteStatus),
                     openSettingsOnMobile = openSettingsOnMobile,
+                    openEditNotebookOnMobile = openEditNotebookOnMobile,
                     uiState = editorUiState,
                     onTabClick = viewModel::openTab,
                     onTabClose = viewModel::closeTab,
@@ -201,6 +204,7 @@ private fun CompactEditorLayout(
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
     openSettingsOnMobile: () -> Unit,
+    openEditNotebookOnMobile: (notebookId: Long) -> Unit,
     uiState: State<EditorScreenState>,
     onTabClick: (Long) -> Unit,
     onTabClose: (Long) -> Unit,
@@ -217,7 +221,8 @@ private fun CompactEditorLayout(
             ModalDrawerSheet(modifier = Modifier.width(MaterialTheme.dimensions.navDrawerWidth)) {
                 SidebarContent(
                     onSidebarClose = { scope.launch { drawerState.close() } },
-                    onOpenSettingsOnMobile = openSettingsOnMobile
+                    onOpenSettingsOnMobile = openSettingsOnMobile,
+                    onOpenEditNotebookOnMobile = openEditNotebookOnMobile,
                 )
             }
         }
@@ -256,6 +261,7 @@ private fun ExpandedEditorLayout(
     onAction: (EditorAction) -> Unit,
     gitSyncStatus: GitSyncStatus,
     openSettingsOnMobile: () -> Unit = {},
+    openEditNotebookOnMobile: (notebookId: Long) -> Unit = {},
     uiState: State<EditorScreenState>,
     onTabClick: (Long) -> Unit,
     onTabClose: (Long) -> Unit,
@@ -267,6 +273,7 @@ private fun ExpandedEditorLayout(
         EditorSidebar(
             isVisible = sidebarVisibility.value,
             openSettingsOnMobile = openSettingsOnMobile,
+            openEditNotebookOnMobile = openEditNotebookOnMobile,
         )
 
         MainEditorScaffold(

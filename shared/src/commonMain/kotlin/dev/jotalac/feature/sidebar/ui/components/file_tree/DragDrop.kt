@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree
+package dev.jotalac.feature.sidebar.ui.components.file_tree
 
 import androidx.compose.foundation.gestures.*
 import androidx.compose.runtime.*
@@ -13,7 +13,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
-import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
+import dev.jotalac.feature.sidebar.domain.FlatFileNode
 
 class DragDropState {
     var isDragging by mutableStateOf(false)

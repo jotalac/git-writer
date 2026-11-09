@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu
+package dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,8 +10,8 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.jotalac.feature.editor_sidebar.domain.FileType
-import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
+import dev.jotalac.feature.sidebar.domain.FileType
+import dev.jotalac.feature.sidebar.ui.SidebarAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

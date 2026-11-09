@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui
+package dev.jotalac.feature.sidebar.ui
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -23,6 +23,7 @@ import dev.jotalac.core.utils.isDesktopPlatform
 fun EditorSidebar(
     isVisible: Boolean,
     openSettingsOnMobile: () -> Unit,
+    openEditNotebookOnMobile: (notebookId: Long) -> Unit,
 ) {
     val initialWidth = MaterialTheme.dimensions.navDrawerWidth
     var sidebarWidth by remember(initialWidth) { mutableStateOf(initialWidth) }
@@ -50,7 +51,8 @@ fun EditorSidebar(
             Row {
                 SidebarContent(
                     modifier = Modifier.weight(1f),
-                    onOpenSettingsOnMobile = openSettingsOnMobile
+                    onOpenSettingsOnMobile = openSettingsOnMobile,
+                    onOpenEditNotebookOnMobile = openEditNotebookOnMobile,
                 )
 
                 SidebarDraggableHandle(

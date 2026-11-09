@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu
+package dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu
 
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -7,8 +7,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.ContextMenuItem
 import dev.jotalac.core.utils.isDesktopPlatform
-import dev.jotalac.feature.editor_sidebar.domain.FileType
-import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
+import dev.jotalac.feature.sidebar.domain.FileType
+import dev.jotalac.feature.sidebar.ui.SidebarAction
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 

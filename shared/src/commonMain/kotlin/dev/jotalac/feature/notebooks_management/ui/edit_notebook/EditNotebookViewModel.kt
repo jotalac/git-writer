@@ -9,6 +9,7 @@ import dev.jotalac.feature.notebooks_management.ui.validateRemoteUrl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import git_writer.shared.generated.resources.Res
@@ -57,6 +58,21 @@ class EditNotebookViewModel(
             remotePassword = remotePassword ?: "",
             isEncrypted = isEncrypted,
         )
+    }
+
+    /** Fills the form with the stored notebook - for the screen, which only gets its id. */
+    fun loadNotebook(id: Long) {
+        viewModelScope.launch {
+            val notebook = notebookRepository.getNotebookByIdAsFlow(id).first() ?: return@launch
+            initWithNotebook(
+                id = notebook.id,
+                name = notebook.name,
+                remoteUrl = notebook.remoteUrl,
+                remoteUsername = notebook.remoteUsername,
+                remotePassword = notebook.remotePassword,
+                isEncrypted = notebook.isEncrypted,
+            )
+        }
     }
 
     fun onEvent(event: EditNotebookEvent) {

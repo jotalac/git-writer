@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui
+package dev.jotalac.feature.sidebar.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,8 +7,8 @@ import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.core.utils.buildFileTree
 import dev.jotalac.core.utils.toSafeFileName
 import dev.jotalac.feature.editor.domain.EditorRepository
-import dev.jotalac.feature.editor_sidebar.domain.FileNode
-import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
+import dev.jotalac.feature.sidebar.domain.FileNode
+import dev.jotalac.feature.sidebar.domain.FlatFileNode
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.Notebook

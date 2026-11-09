@@ -1,11 +1,10 @@
-package dev.jotalac.feature.editor_sidebar.ui.components
+package dev.jotalac.feature.sidebar.ui.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.DelayedTooltip
 import dev.jotalac.core.ui.theme.dimensions
 import org.jetbrains.compose.resources.DrawableResource

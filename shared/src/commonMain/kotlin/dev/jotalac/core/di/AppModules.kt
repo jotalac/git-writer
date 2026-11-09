@@ -16,7 +16,7 @@ import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.feature.editor.data.EditorRepositoryImpl
 import dev.jotalac.feature.editor.domain.EditorRepository
 import dev.jotalac.feature.editor.ui.EditorViewModel
-import dev.jotalac.feature.editor_sidebar.ui.EditorSidebarViewModel
+import dev.jotalac.feature.sidebar.ui.EditorSidebarViewModel
 import dev.jotalac.feature.notebooks_management.data.NotebookRepositoryImpl
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNotebookViewModel

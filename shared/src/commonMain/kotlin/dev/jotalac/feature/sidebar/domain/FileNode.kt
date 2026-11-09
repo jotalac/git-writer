@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.domain
+package dev.jotalac.feature.sidebar.domain
 
 
 sealed class FileNode {

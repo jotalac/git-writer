@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components
+package dev.jotalac.feature.sidebar.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree
+package dev.jotalac.feature.sidebar.ui.components.file_tree
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -34,11 +34,11 @@ import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.onContextMenuOpen
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
-import dev.jotalac.feature.editor_sidebar.domain.FileNode
-import dev.jotalac.feature.editor_sidebar.domain.FileType
-import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
-import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
-import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
+import dev.jotalac.feature.sidebar.domain.FileNode
+import dev.jotalac.feature.sidebar.domain.FileType
+import dev.jotalac.feature.sidebar.domain.FlatFileNode
+import dev.jotalac.feature.sidebar.ui.SidebarAction
+import dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.arrow_right
 import git_writer.shared.generated.resources.expand_folders
