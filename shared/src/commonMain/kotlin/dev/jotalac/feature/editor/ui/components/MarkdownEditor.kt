@@ -14,7 +14,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -58,7 +57,6 @@ fun MarkdownEditor(
     val editorState = rememberMarkdownEditorState(noteText, onAction)
 
     var isDraggingImageOver by remember { mutableStateOf(false) }
-    val focusManager = LocalFocusManager.current
 
     val surfaceFocusRequester = remember { FocusRequester() }
     val findQueryFocusRequester = remember { FocusRequester() }
@@ -77,16 +75,6 @@ fun MarkdownEditor(
     val scope = rememberCoroutineScope()
 
     val isKeyboardOpen = isKeyboardVisible()
-
-    DisposableEffect(editorState, surfaceFocusRequester) {
-        editorState.requestRootFocus = {
-            focusManager.clearFocus()
-            surfaceFocusRequester.requestFocusSafely()
-        }
-        onDispose {
-            editorState.requestRootFocus = null
-        }
-    }
 
     LaunchedEffect(Unit) {
         if (isDesktopPlatform) surfaceFocusRequester.requestFocusSafely()

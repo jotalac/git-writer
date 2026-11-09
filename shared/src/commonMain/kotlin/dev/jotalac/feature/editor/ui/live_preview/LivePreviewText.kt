@@ -153,9 +153,12 @@ private fun lineBreakReplacements(source: String, lines: Collection<ParagraphLin
     lines.flatMap { line ->
         listOfNotNull(
             Replacement(line.start - 1, line.start, ZERO_WIDTH_SPACE).takeIf { line.start > 0 },
-            Replacement(line.end, line.end + 1, ZERO_WIDTH_SPACE).takeIf { line.end < source.length },
+            Replacement(line.end, line.end + 1, lineBreakAfter(line, source)).takeIf { line.end < source.length },
         )
     }
+
+private fun lineBreakAfter(line: ParagraphLine, source: String): String =
+    if (line.end + 1 == source.length) ZERO_WIDTH_SPACE + ZERO_WIDTH_SPACE else ZERO_WIDTH_SPACE
 
 private fun AnnotatedString.Builder.addSpanStyles(
     source: String,
@@ -199,7 +202,12 @@ private fun AnnotatedString.Builder.addParagraphStyles(
 ) {
     for (line in lines) {
         val start = mapping.originalToTransformed(line.start)
-        val end = mapping.originalToTransformed(if (line.end + 1 < source.length) line.end + 1 else line.end)
+        // with the zero width space of the line break after it - only the first one of the note's last line break
+        val end = when {
+            line.end + 1 < source.length -> mapping.originalToTransformed(line.end + 1)
+            line.end < source.length -> mapping.originalToTransformed(line.end) + 1
+            else -> mapping.originalToTransformed(line.end)
+        }
         if (end > start) addStyle(line.style, start, end)
     }
 }
