@@ -149,9 +149,6 @@ private fun widgetParagraphStyle(lineHeight: TextUnit) = ParagraphStyle(
     lineHeightStyle = LineHeightStyle(alignment = LineHeightStyle.Alignment.Top, trim = LineHeightStyle.Trim.None),
 )
 
-// A paragraph style makes its range a paragraph of its own, and a line break right next to it would add an empty
-// line - so the line breaks around those lines are shown as zero width spaces (one character for one), inside the
-// paragraph before them: the paragraphs break the lines there. The cursor at the end of a line stays on that line.
 private fun lineBreakReplacements(source: String, lines: Collection<ParagraphLine>): List<Replacement> =
     lines.flatMap { line ->
         listOfNotNull(
@@ -202,8 +199,6 @@ private fun AnnotatedString.Builder.addParagraphStyles(
 ) {
     for (line in lines) {
         val start = mapping.originalToTransformed(line.start)
-        // with the zero width space of the line break after it - unless the note ends with that line break: the
-        // space then is the empty last line, where the cursor goes after it
         val end = mapping.originalToTransformed(if (line.end + 1 < source.length) line.end + 1 else line.end)
         if (end > start) addStyle(line.style, start, end)
     }
