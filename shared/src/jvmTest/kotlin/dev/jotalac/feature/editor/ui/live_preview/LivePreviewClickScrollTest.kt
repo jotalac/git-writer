@@ -55,23 +55,45 @@ class LivePreviewClickScrollTest {
         time += 16_000_000
     }
 
-    @Test
-    fun `a click below the cursor puts the cursor there without scrolling`() {
+    // clicks the last line, near the bottom of the window, of the note scrolled to its end
+    private fun assertClickKeepsScroll(framesWhilePressed: Int) {
         frames(10)
         runBlocking { scrollState.scrollTo(scrollState.maxValue) }
         frames(5)
         val scrolled = scrollState.value
         assertTrue(scrolled > 0)
 
-        // the last line, near the bottom of the window
         val position = Offset(60f, 480f)
         scene.sendPointerEvent(PointerEventType.Move, position)
         scene.sendPointerEvent(PointerEventType.Press, position)
-        frames(5)
+        frames(framesWhilePressed)
         scene.sendPointerEvent(PointerEventType.Release, position)
         frames(10)
 
         assertEquals(scrolled, scrollState.value, "scrolled away")
         assertTrue(editorState.value.selection.start > text.length - 30, "cursor at ${editorState.value.selection}")
+    }
+
+    @Test
+    fun `a click below the cursor puts the cursor there without scrolling`() = assertClickKeepsScroll(framesWhilePressed = 5)
+
+    // the press and the release handled before the focus change's own work runs
+    @Test
+    fun `a quick click does not scroll either`() = assertClickKeepsScroll(framesWhilePressed = 0)
+
+    // a click on an image, a formula or the space under the note focuses the field from the code
+    @Test
+    fun `focusing at an offset in view does not scroll`() {
+        frames(10)
+        runBlocking { scrollState.scrollTo(scrollState.maxValue) }
+        frames(5)
+        val scrolled = scrollState.value
+
+        editorState.focusAt(text.length - 5)
+        repeat(10) {
+            frames(1)
+            assertEquals(scrolled, scrollState.value, "scrolled away in frame $it")
+        }
+        assertTrue(editorState.isFocused)
     }
 }
