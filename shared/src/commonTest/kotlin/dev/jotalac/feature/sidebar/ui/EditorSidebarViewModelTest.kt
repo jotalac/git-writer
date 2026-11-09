@@ -1,11 +1,11 @@
-package dev.jotalac.feature.editor_sidebar.ui
+package dev.jotalac.feature.sidebar.ui
 
 import androidx.lifecycle.viewModelScope
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.core.utils.deleteRecursively
-import dev.jotalac.feature.editor_sidebar.domain.FileNode
-import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
+import dev.jotalac.feature.sidebar.domain.FileNode
+import dev.jotalac.feature.sidebar.domain.FlatFileNode
 import dev.jotalac.feature.git_sync.domain.GitSyncStatus
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.pdf_export.PdfExportRequest

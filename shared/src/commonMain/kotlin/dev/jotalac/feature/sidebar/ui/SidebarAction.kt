@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui
+package dev.jotalac.feature.sidebar.ui
 
 sealed interface SidebarAction {
     data class OpenNote(val notePath: String) : SidebarAction

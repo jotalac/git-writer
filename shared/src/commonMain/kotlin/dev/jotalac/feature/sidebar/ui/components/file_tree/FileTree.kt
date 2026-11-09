@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree
+package dev.jotalac.feature.sidebar.ui.components.file_tree
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -33,11 +33,11 @@ import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.ui.components.onContextMenuOpen
 import dev.jotalac.core.ui.theme.dimensions
-import dev.jotalac.feature.editor_sidebar.domain.FileNode
-import dev.jotalac.feature.editor_sidebar.domain.FileType
-import dev.jotalac.feature.editor_sidebar.domain.FlatFileNode
-import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
-import dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
+import dev.jotalac.feature.sidebar.domain.FileNode
+import dev.jotalac.feature.sidebar.domain.FileType
+import dev.jotalac.feature.sidebar.domain.FlatFileNode
+import dev.jotalac.feature.sidebar.ui.SidebarAction
+import dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.empty_notebook_label
 import kotlinx.coroutines.delay

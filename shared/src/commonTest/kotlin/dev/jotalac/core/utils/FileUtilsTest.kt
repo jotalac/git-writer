@@ -1,6 +1,6 @@
 package dev.jotalac.core.utils
 
-import dev.jotalac.feature.editor_sidebar.domain.FileNode
+import dev.jotalac.feature.sidebar.domain.FileNode
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem

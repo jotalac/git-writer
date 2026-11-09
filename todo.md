@@ -3,8 +3,6 @@
 > high priority
 
 - edit notebook dialog, should be a screen on mobile devices (like settings on mobile vs desktop)
-- when a notebook have active encryption, add possiblity to disable it again -> it would remove the .git, and just create a new local repo, and then force push to the remote to overwrite the encrypted bundles?
-- when typing pair markdown signs like `, *, _, ... - on the first sign press, write on already the full pair
 
 > medium priority
 
@@ -26,7 +24,8 @@
 
 > other ideas - lower priority
 
-- add support for mermaid diagrams
+- when a notebook have active encryption, add possiblity to disable it again -> it would remove the .git, and just create a new local repo, and then force push to the remote to overwrite the encrypted bundles? - probably doesnt make sence - user would have to manually disble it on each device, that would brake a lot of things
+- add support for mermaid diagrams - probably not
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename
 - when there is a merge conflict, add preview on the conflicted files and content
 - when note is opened and image is clicked from the sidebar, make the image appear on new tab

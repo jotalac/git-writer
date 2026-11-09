@@ -1,10 +1,10 @@
-package dev.jotalac.feature.editor_sidebar.ui.components.file_tree.context_menu
+package dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpOffset
 import dev.jotalac.core.ui.components.DesktopContextMenu
-import dev.jotalac.feature.editor_sidebar.domain.FileType
-import dev.jotalac.feature.editor_sidebar.ui.SidebarAction
+import dev.jotalac.feature.sidebar.domain.FileType
+import dev.jotalac.feature.sidebar.ui.SidebarAction
 
 @Composable
 fun FileTreeContextMenu(

@@ -1,4 +1,4 @@
-package dev.jotalac.feature.editor_sidebar.ui.components
+package dev.jotalac.feature.sidebar.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
