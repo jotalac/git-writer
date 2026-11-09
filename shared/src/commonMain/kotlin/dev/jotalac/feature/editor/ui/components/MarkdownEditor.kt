@@ -14,6 +14,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -75,6 +77,9 @@ fun MarkdownEditor(
     val scope = rememberCoroutineScope()
 
     val isKeyboardOpen = isKeyboardVisible()
+    val isToolbarShown = !isDesktopPlatform && editorState.isFocused && isKeyboardOpen
+    var toolbarHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
 
     LaunchedEffect(Unit) {
         if (isDesktopPlatform) surfaceFocusRequester.requestFocusSafely()
@@ -117,11 +122,9 @@ fun MarkdownEditor(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(bottom = if (isToolbarShown) toolbarHeight else 0.dp)
                 .verticalScroll(scrollState)
-                .padding(
-                    bottom = if (isKeyboardOpen) 75.dp else 0.dp,
-                    top = if (findState.isOpen) 50.dp else 0.dp
-                ), // see what is currently being edited
+                .padding(top = if (findState.isOpen) 50.dp else 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
@@ -175,11 +178,12 @@ fun MarkdownEditor(
         }
 
         // show the action bar for phones while the note is being edited
-        if (!isDesktopPlatform && editorState.isFocused && isKeyboardOpen) {
+        if (isToolbarShown) {
             MarkdownKeyboardToolbar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .onSizeChanged { toolbarHeight = with(density) { it.height.toDp() } },
                 textFieldValue = editorState.value,
                 onValueChange = { editorState.updateValue(it, isSeparateEdit = true) },
                 onImageAdd = {
