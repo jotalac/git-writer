@@ -2,6 +2,8 @@
 
 > high priority
 
+- long press on image on mobile will show the resize menu (in modal bottom sheet)
+- on mobile the editor input is focused even after keyboard is hidden
 
 > medium priority
 

@@ -244,10 +244,12 @@ class LivePreviewTextTest {
     }
 
     @Test
-    fun `code keeps its lines - the fence lines are hidden away from the cursor`() {
+    fun `code keeps its lines - the fence lines are empty lines away from the cursor`() {
         val text = "text\n\n```kotlin\nval x = 1\n```\n\nmore"
 
-        assertEquals("text\n\nval x = 1\n\nmore", preview(text).shown)
+        // each fence line stays as an empty line - the space around the code on its background
+        assertEquals("text\n\n\nval x = 1\n\n\nmore", preview(text).shown)
+        assertEquals(2, preview(text).transformed.text.paragraphStyles.size)
         assertEquals(text, preview(text, cursor = 20).shown)
         assertEquals(1, preview(text).codeBackgrounds.size)
     }

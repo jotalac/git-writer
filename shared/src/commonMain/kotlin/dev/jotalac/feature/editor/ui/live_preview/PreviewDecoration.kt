@@ -97,6 +97,9 @@ internal data class LinkTarget(
 /** The code of a code block, in [language] as written after its fence - highlighted like the rendered notes. */
 internal data class CodeContent(override val start: Int, override val end: Int, val language: String?) : PreviewDecoration
 
+/** A hidden fence line of a code block - a low line, the space between the code and the edge of its background. */
+internal data class CodeFenceSpace(override val start: Int, override val end: Int) : PreviewDecoration
+
 /** Code lines, drawn on a background. */
 internal data class CodeBackground(override val start: Int, override val end: Int) : PreviewDecoration
 

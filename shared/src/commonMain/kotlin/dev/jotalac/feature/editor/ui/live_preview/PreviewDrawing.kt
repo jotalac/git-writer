@@ -12,18 +12,16 @@ import androidx.compose.ui.unit.dp
 * What is drawn behind the text - placed with its layout.
 * */
 
-// the background of code, across the whole width of its lines - and a bit above and below them, over the space
-// between the lines around it
+// the background of code, across the whole width of its lines
 internal fun DrawScope.drawCodeBackgrounds(
     layout: TextLayoutResult,
     backgrounds: List<PlacedDecoration<CodeBackground>>,
     color: Color,
 ) {
     val radius = CornerRadius(6.dp.toPx())
-    val padding = 12.dp.toPx()
     for (background in backgrounds) {
-        val top = layout.getLineTop(layout.getLineForOffset(background.start)) - padding
-        val bottom = layout.getLineBottom(layout.getLineForOffset(background.end.coerceAtLeast(background.start))) + padding
+        val top = layout.getLineTop(layout.getLineForOffset(background.start))
+        val bottom = layout.getLineBottom(layout.getLineForOffset(background.end.coerceAtLeast(background.start)))
         drawRoundRect(
             color = color,
             topLeft = Offset(-4.dp.toPx(), top),

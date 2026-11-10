@@ -152,12 +152,16 @@ private class DecorationCollector(private val text: String, private val selectio
             add(CodeBackground(node.startOffset, node.endOffset))
             node.children.filter { it.type in FENCE_SYNTAX }.forEach { look(it, TextLook.Syntax) }
         } else {
-            // the fence lines with their line breaks
-
-            add(CodeBackground(codeStart, codeEnd))
-            add(Replacement(node.startOffset, codeStart, ""))
-            if (closing != null) add(Replacement(codeEnd, node.endOffset, ""))
+            // the fence lines stay as low empty lines - the space of the background above and below the code
+            add(CodeBackground(node.startOffset, node.endOffset))
+            hiddenFenceLine(node.startOffset, codeStart - 1)
+            if (closing != null) hiddenFenceLine(closing.startOffset, node.endOffset)
         }
+    }
+
+    private fun hiddenFenceLine(start: Int, end: Int) {
+        add(Replacement(start, end, ""))
+        add(CodeFenceSpace(start, end))
     }
 
     private fun atxHeading(node: ASTNode, level: Int) {
