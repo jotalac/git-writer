@@ -6,6 +6,9 @@
 name: Verify
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
@@ -66,6 +69,16 @@ jobs:
         run: |
           command -v ninja >/dev/null || brew install ninja
           tools/build-libgit2.sh
+
+      # The Kotlin/Native compiler and the libraries it has compiled to machine code - without them every run
+      # downloads the compiler and spends minutes linking the test binary. Stored by version inside, so it cannot
+      # go stale; a changed dependency starts from the last cache and saves a new one.
+      - name: Restore Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
 
       # run the tests on ios simulator
       - name: Tests
