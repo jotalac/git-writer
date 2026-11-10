@@ -171,6 +171,7 @@
     <string name="settings_spellcheck_language_label">Spell check language</string>
     <string name="settings_spellcheck_language_same_as_app">Same as app language</string>
     <string name="image_size_header">Image size</string>
+    <string name="image_remove">Remove</string>
     <string name="image_size_original">Original size</string>
     <string name="image_size_reset">Reset size</string>
     <string name="export_pdf_context_menu_item">Export to PDF</string>

@@ -1,10 +1,18 @@
 package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +33,8 @@ import dev.jotalac.core.ui.components.DesktopContextMenu
 import dev.jotalac.core.ui.components.onContextMenuOpen
 import dev.jotalac.core.utils.isDesktopPlatform
 import git_writer.shared.generated.resources.Res
+import git_writer.shared.generated.resources.delete
+import git_writer.shared.generated.resources.image_remove
 import git_writer.shared.generated.resources.image_size_header
 import git_writer.shared.generated.resources.image_size_original
 import org.intellij.markdown.MarkdownElementTypes
@@ -48,9 +58,16 @@ fun CustomImageComponent(
     // the size of the loaded picture, unspecified until it has loaded
     val pictureSize = imageTransformer.intrinsicSize(imageData.painter)
 
-    // the scales need the picture's size, known once it has loaded
-    val canResize = onTextChange != null && isDesktopPlatform && pictureSize.hasArea()
     var menuPosition by remember { mutableStateOf<DpOffset?>(null) }
+    val haptic = LocalHapticFeedback.current
+    val menuModifier = when {
+        onTextChange == null -> Modifier
+        isDesktopPlatform -> Modifier.onContextMenuOpen { menuPosition = it }
+        else -> Modifier.onLongPress {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            menuPosition = DpOffset.Zero
+        }
+    }
 
     Box {
         Image(
@@ -59,7 +76,7 @@ fun CustomImageComponent(
             modifier = imageData.modifier
                 .imageSize(alt, pictureSize)
                 .clip(RoundedCornerShape(8.dp))
-                .then(if (canResize) Modifier.onContextMenuOpen { menuPosition = it } else Modifier),
+                .then(menuModifier),
             alignment = imageData.alignment,
             contentScale = if (alt.isStretched) ContentScale.FillBounds else imageData.contentScale,
             alpha = imageData.alpha,
@@ -69,33 +86,72 @@ fun CustomImageComponent(
         menuPosition?.let { position ->
             // anchored at the click, so the menu opens there however tall the image is
             Box(Modifier.offset(position.x, position.y)) {
-                ImageSizeMenu(
+                ImageContextMenu(
                     onDismissRequest = { menuPosition = null },
                     onSizeSelected = { width ->
                         model.node.resizedIn(model.content, width)?.let { onTextChange?.invoke(it) }
                     },
-                    pictureWidth = pictureSize.width,
+                    onImageDeleted = { onTextChange?.invoke("") },
+                    // the scales need the picture's size, known once it has loaded
+                    pictureWidth = pictureSize.takeIf { it.hasArea() }?.width,
                 )
             }
         }
     }
 }
 
+// a menu at the pointer on desktop, a sheet from the bottom on a phone
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ImageSizeMenu(
+private fun ImageContextMenu(
     onDismissRequest: () -> Unit,
     onSizeSelected: (width: Int?) -> Unit,
-    pictureWidth: Float,
+    onImageDeleted: () -> Unit,
+    pictureWidth: Float?,
 ) {
-    DesktopContextMenu(expanded = true, onDismissRequest = onDismissRequest, offset = DpOffset.Zero) {
-        ContextMenuHeader(stringResource(Res.string.image_size_header))
-
-        IMAGE_SCALES.forEach { scale ->
-            ContextMenuItem(
-                text = scale.scaleLabel(),
-                onClick = { onSizeSelected(scaledImageWidth(pictureWidth, scale)) },
-                onDismissRequest = onDismissRequest,
+    val items: @Composable () -> Unit = {
+        if (pictureWidth != null) {
+            ContextMenuHeader(stringResource(Res.string.image_size_header))
+            IMAGE_SCALES.forEach { scale ->
+                ContextMenuItem(
+                    text = scale.scaleLabel(),
+                    onClick = { onSizeSelected(scaledImageWidth(pictureWidth, scale)) },
+                    onDismissRequest = onDismissRequest,
+                )
+            }
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier.padding(horizontal = 3.dp, vertical = 4.dp),
             )
+        }
+        ContextMenuItem(
+            text = stringResource(Res.string.image_remove),
+            iconPainter = Res.drawable.delete,
+            onClick = onImageDeleted,
+            onDismissRequest = onDismissRequest,
+            itemColor = MaterialTheme.colorScheme.error,
+        )
+    }
+
+    if (isDesktopPlatform) {
+        DesktopContextMenu(expanded = true, onDismissRequest = onDismissRequest, offset = DpOffset.Zero, content = items)
+    } else {
+        ModalBottomSheet(onDismissRequest = onDismissRequest) {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).padding(bottom = 24.dp)) { items() }
+        }
+    }
+}
+
+// a long press on image on phone
+private fun Modifier.onLongPress(onLongPress: () -> Unit): Modifier = pointerInput(Unit) {
+    awaitEachGesture {
+        val down = awaitFirstDown(requireUnconsumed = false)
+        if (awaitLongPressOrCancellation(down.id) != null) {
+            onLongPress()
+            do {
+                val event = awaitPointerEvent()
+                event.changes.forEach { it.consume() }
+            } while (event.changes.any { it.pressed })
         }
     }
 }

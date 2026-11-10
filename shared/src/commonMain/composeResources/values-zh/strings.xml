@@ -173,6 +173,7 @@
     <string name="settings_spellcheck_language_same_as_app">与应用语言相同</string>
     <string name="no_spell_check">不检查拼写</string>
     <string name="image_size_header">图片大小</string>
+    <string name="image_remove">移除</string>
     <string name="image_size_original">原始大小</string>
     <string name="image_size_reset">重置大小</string>
     <string name="export_pdf_context_menu_item">导出为 PDF</string>

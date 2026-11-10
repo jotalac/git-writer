@@ -172,6 +172,7 @@
     <string name="settings_spellcheck_language_same_as_app">Igual que el idioma de la aplicación</string>
     <string name="no_spell_check">Sin corrector ortográfico</string>
     <string name="image_size_header">Tamaño de la imagen</string>
+    <string name="image_remove">Quitar</string>
     <string name="image_size_original">Tamaño original</string>
     <string name="image_size_reset">Restablecer tamaño</string>
     <string name="export_pdf_context_menu_item">Exportar a PDF</string>

@@ -206,7 +206,11 @@ fun LivePreviewField(
                 items = rememberOverlayItems(preview),
                 onWidgetHeight = widgetHeights::record,
                 onWidgetClick = { widget -> editorState.focusAt(widget.start) },
-                onWidgetSourceChange = { widget, newSource -> editorState.replaceRange(widget.start, widget.end, newSource) },
+                onWidgetSourceChange = { widget, newSource ->
+                    // a widget without a source is deleted - with its line, not leaving an empty one
+                    val end = if (newSource.isEmpty()) (widget.end + 1).coerceAtMost(text.length) else widget.end
+                    editorState.replaceRange(widget.start, end, newSource)
+                },
                 onFormulaClick = { math -> editorState.focusAt(math.start) },
                 onCheckboxClick = { checkbox ->
                     editorState.replaceRange(checkbox.start + 1, checkbox.start + 2, if (checkbox.isChecked) " " else "x")
