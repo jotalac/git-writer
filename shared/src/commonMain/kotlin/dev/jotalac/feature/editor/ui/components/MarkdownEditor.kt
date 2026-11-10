@@ -16,10 +16,13 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import dev.jotalac.core.ui.components.LocalEditorUnfocus
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
+import dev.jotalac.core.ui.components.unfocusEditorOnPress
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.core.utils.onExternalImageDrop
 import dev.jotalac.core.utils.requestFocusSafely
@@ -85,6 +88,26 @@ fun MarkdownEditor(
         if (isDesktopPlatform) surfaceFocusRequester.requestFocusSafely()
     }
 
+    // click outside the editor text field unfocuses the editor
+    val focusManager = LocalFocusManager.current
+    val editorUnfocus = LocalEditorUnfocus.current
+    DisposableEffect(editorUnfocus) {
+        val onOutsidePress = {
+            if (editorState.isFocused) {
+                if (isDesktopPlatform) surfaceFocusRequester.requestFocusSafely() else focusManager.clearFocus()
+            }
+        }
+        editorUnfocus.onOutsidePress = onOutsidePress
+        onDispose { if (editorUnfocus.onOutsidePress === onOutsidePress) editorUnfocus.onOutsidePress = null }
+    }
+
+    // on a phone, hiding the keyboard ends the editing too - no cursor without a keyboard
+    var wasKeyboardOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(isKeyboardOpen) {
+        if (wasKeyboardOpen && !isKeyboardOpen && !isDesktopPlatform) focusManager.clearFocus()
+        wasKeyboardOpen = isKeyboardOpen
+    }
+
     fun selectMatch(match: FindMatch?) {
         match?.let { editorState.select(TextRange(it.start, it.end)) }
     }
@@ -124,6 +147,7 @@ fun MarkdownEditor(
                 .fillMaxSize()
                 .padding(bottom = if (isToolbarShown) toolbarHeight else 0.dp)
                 .verticalScroll(scrollState)
+                .unfocusEditorOnPress()
                 .padding(top = if (findState.isOpen) 50.dp else 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
