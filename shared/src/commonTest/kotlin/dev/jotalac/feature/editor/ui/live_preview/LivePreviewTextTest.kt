@@ -254,6 +254,28 @@ class LivePreviewTextTest {
         assertEquals(1, preview(text).codeBackgrounds.size)
     }
 
+    @Test
+    fun `text with dashes or equals signs under it is not a heading`() {
+        val dashes = preview("title\n---\n\nmore")
+        assertEquals("title\n$WIDGET_PLACEHOLDER\n\nmore", dashes.shown)
+        assertEquals(listOf(WidgetKind.Rule), dashes.widgets.map { it.decoration.kind })
+        // only the rule's line is a paragraph of its own, the text above it has no heading style
+        assertEquals(1, dashes.transformed.text.paragraphStyles.size)
+
+        val equals = preview("title\n===\n\nmore")
+        assertEquals("title\n===\n\nmore", equals.shown)
+        assertTrue(equals.transformed.text.paragraphStyles.isEmpty())
+    }
+
+    @Test
+    fun `a heading with dashes under it stays the heading of its hashes`() {
+        val preview = preview("# header\n--")
+
+        assertEquals("header\n--", preview.shown)
+        assertEquals(1, preview.transformed.text.paragraphStyles.size)
+        assertTrue(preview.widgets.isEmpty())
+    }
+
     // --- widgets ---
 
     @Test

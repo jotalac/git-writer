@@ -33,11 +33,8 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
 /**
- * A markdown image - like the library's MarkdownImage, which has no way to set a size, plus the
- * Obsidian style size in the alt text: `![photo|300](images/photo.png)`, see [ImageAlt].
- *
- * With [onTextChange] (the block can be edited) a right click on desktop offers sizes relative to the
- * picture, and the block's text is changed to the chosen one.
+ * An image drawn in markdown note
+ * Using obsidian-like image sizes - ![alttext|WidthxHeight](source)
  */
 @Composable
 fun CustomImageComponent(

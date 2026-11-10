@@ -38,9 +38,10 @@ private val HEADINGS = mapOf(
 )
 
 // i dont know if anybody actually uses this settext markdown syntax????
-private val SETEXT_HEADINGS = mapOf(MarkdownElementTypes.SETEXT_1 to 1, MarkdownElementTypes.SETEXT_2 to 2)
+// the hashes of a `# heading`, with the space after them
+private val ATX_HASHES = Regex("(#{1,6})[ \\t]+(?=\\S)")
+private val SETEXT_HEADINGS = setOf<IElementType>(MarkdownElementTypes.SETEXT_1, MarkdownElementTypes.SETEXT_2)
 
-private val SETEXT_UNDERLINES = setOf<IElementType>(MarkdownTokenTypes.SETEXT_1, MarkdownTokenTypes.SETEXT_2)
 
 private val LIST_MARKERS = setOf<IElementType>(MarkdownTokenTypes.LIST_BULLET, MarkdownTokenTypes.LIST_NUMBER)
 
@@ -90,7 +91,7 @@ private class DecorationCollector(private val text: String, private val selectio
     private fun block(node: ASTNode, isTopLevel: Boolean, listDepth: Int) {
         // if a block is heading
         HEADINGS[node.type]?.let { return atxHeading(node, it) }
-        SETEXT_HEADINGS[node.type]?.let { return setextHeading(node, it) }
+        if (node.type in SETEXT_HEADINGS) return textWithUnderline(node, isTopLevel)
 
         // get the block type and render it
         when (node.type) {
@@ -175,13 +176,24 @@ private class DecorationCollector(private val text: String, private val selectio
         content?.let { inline(it.children) }
     }
 
-    private fun setextHeading(node: ASTNode, level: Int) {
-        val underline = node.children.lastOrNull { it.type in SETEXT_UNDERLINES }
-        val contentEnd = underline?.let { text.lastIndexOf('\n', it.startOffset).coerceAtLeast(node.startOffset) }
-            ?: node.endOffset
-        add(HeadingLine(node.startOffset, contentEnd, level))
-        underline?.let { look(it, TextLook.Syntax) }
-        node.children.filter { it.type == MarkdownTokenTypes.SETEXT_CONTENT }.forEach { inline(it.children) }
+    // text with a line of `---` or `===` under it is a heading in markdown - here the underline makes no heading:
+    // the text stays what it is without it, and a line of three or more dashes is the rule the user means by it
+    private fun textWithUnderline(node: ASTNode, isTopLevel: Boolean) {
+        val content = node.children.filter { it.type == MarkdownTokenTypes.SETEXT_CONTENT }
+        val hashes = content.singleOrNull()?.let { ATX_HASHES.matchAt(text, it.startOffset) }
+        if (hashes != null) {
+            // `# heading` with dashes under it - still the heading of its hashes
+            val heading = content.single()
+            add(HeadingLine(heading.startOffset, heading.endOffset, level = hashes.groupValues[1].length))
+            syntax(hashes.range.first, hashes.range.last + 1, heading)
+        }
+        content.forEach { inline(it.children) }
+
+        val dashes = node.children.lastOrNull { it.type == MarkdownTokenTypes.SETEXT_2 } ?: return
+        val isRule = text.substring(dashes.startOffset, dashes.endOffset).count { it == '-' } >= 3
+        if (isRule) {
+            if (isTopLevel && !isEdited(dashes)) addWidget(dashes, WidgetKind.Rule) else look(dashes, TextLook.Syntax)
+        }
     }
 
     private fun list(node: ASTNode, depth: Int) {
