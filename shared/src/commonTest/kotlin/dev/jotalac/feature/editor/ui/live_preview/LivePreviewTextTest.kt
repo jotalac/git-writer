@@ -137,14 +137,16 @@ class LivePreviewTextTest {
     }
 
     @Test
-    fun `list bullets become dots - a different one for every level`() {
-        assertEquals("• one\n  ◦ two", preview("- one\n  - two").shown)
+    fun `list bullets keep their space - a different one is drawn for every level`() {
+        assertEquals("• one\n  • two", preview("- one\n  - two").shown)
+        // the bullets are drawn over their space - a different shape for every level
+        assertEquals(listOf(0, 1), preview("- one\n  - two").bullets.map { it.decoration.depth })
     }
 
     @Test
     fun `an item indented by four spaces keeps its indentation and only its bullet changes`() {
         // the parser gives the nested item's bullet token as "  - ", the first spaces are the parent's indentation
-        assertEquals("• parent\n    ◦ child", preview("- parent\n    - child").shown)
+        assertEquals("• parent\n    • child", preview("- parent\n    - child").shown)
         assertEquals("• parent\n    $CHECKBOX_PLACEHOLDER task", preview("- parent\n    - [ ] task").shown)
         // a number is dimmed without the indentation in front of it
         assertEquals(listOf("1. "), preview("- parent\n    1. number").withLook("Syntax"))
@@ -159,7 +161,7 @@ class LivePreviewTextTest {
         val preview = buildLivePreviewText(text, previewDecorations(text, parseNoteMarkdown(text), null), measuring) { 20.sp }
 
         // measured as shown: the bullets as dots, the task's brackets as its box
-        assertEquals(listOf("• ", "    ◦ ", "$CHECKBOX_PLACEHOLDER ", "1. "), prefixes)
+        assertEquals(listOf("• ", "    • ", "$CHECKBOX_PLACEHOLDER ", "1. "), prefixes)
         assertEquals(
             listOf(2.sp, 6.sp, 2.sp, 3.sp),
             preview.transformed.text.paragraphStyles.map { it.item.textIndent?.restLine },

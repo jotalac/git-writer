@@ -52,6 +52,13 @@ internal data class TaskCheckbox(override val start: Int, override val end: Int,
     override val replacement: String get() = CHECKBOX_PLACEHOLDER
 }
 
+/**
+ * The bullet list item, with some depth indent
+ */
+internal data class ListBullet(override val start: Int, override val end: Int, val depth: Int) : ReplacingDecoration {
+    override val replacement: String get() = BULLET_PLACEHOLDER
+}
+
 /** Maths inside text (`$x^2$`), drawn as a formula over the space kept for it - [latex] is without the `$`. */
 internal data class InlineMath(override val start: Int, override val end: Int, val latex: String) : ReplacingDecoration {
     override val replacement: String get() = MATH_PLACEHOLDER
@@ -115,5 +122,6 @@ internal const val MATH_PLACEHOLDER = "\u00A0"
 // a `>` and its space become an em space, which leaves room for the quote's bar
 internal const val QUOTE_PLACEHOLDER = " "
 
-// a different bullet for every nesting level, the deepest one repeats - like the rendered lists
-internal val LIST_BULLETS = listOf("•", "◦", "▪", "▫")
+
+// the space of a list bullet - the bullet itself is drawn over it, see [ListBullet]
+internal const val BULLET_PLACEHOLDER = "•"

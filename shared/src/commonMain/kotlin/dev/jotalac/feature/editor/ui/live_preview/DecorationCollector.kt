@@ -256,7 +256,7 @@ private class DecorationCollector(private val text: String, private val selectio
     // the same length, so the text does not move when the cursor comes to it
     private fun bullet(bullet: Int, depth: Int) {
         if (isEdited(bullet, bullet + 1)) add(Look(bullet, bullet + 1, TextLook.Syntax))
-        else add(Replacement(bullet, bullet + 1, LIST_BULLETS[depth % LIST_BULLETS.size]))
+        else add(ListBullet(bullet, bullet + 1, depth))
     }
 
     // "- [ ] " - the bullet and the brackets become one box

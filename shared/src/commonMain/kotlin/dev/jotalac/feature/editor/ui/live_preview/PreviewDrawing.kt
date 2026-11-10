@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 
@@ -28,6 +29,26 @@ internal fun DrawScope.drawCodeBackgrounds(
             size = Size(size.width + 8.dp.toPx(), bottom - top),
             cornerRadius = radius,
         )
+    }
+}
+
+// the bullets of the list items - a dot, a ring and a square, taking turns with every nesting level
+internal fun DrawScope.drawListBullets(
+    layout: TextLayoutResult,
+    bullets: List<PlacedDecoration<ListBullet>>,
+    color: Color,
+    fontSize: Float,
+) {
+    val radius = fontSize * 0.2f
+    for (bullet in bullets) {
+        val box = layout.getBoundingBox(bullet.start)
+        // the middle of the small letters of the line
+        val center = Offset(box.center.x, layout.getLineBaseline(layout.getLineForOffset(bullet.start)) - fontSize * 0.28f)
+        when (bullet.decoration.depth % 3) {
+            0 -> drawCircle(color, radius, center)
+            1 -> drawCircle(color, radius - 0.5.dp.toPx(), center, style = Stroke(width = 1.dp.toPx()))
+            else -> drawRect(color, topLeft = center - Offset(radius, radius) * 0.9f, size = Size(radius, radius) * 1.8f)
+        }
     }
 }
 

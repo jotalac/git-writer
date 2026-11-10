@@ -178,6 +178,7 @@ fun LivePreviewField(
                             val drawnLayout = shownLayout.forText(preview) ?: return@drawBehind
                             drawCodeBackgrounds(drawnLayout, preview.codeBackgrounds, colors.surfaceContainerHigh)
                             drawQuoteBars(drawnLayout, preview.quoteBars, colors.outlineVariant)
+                            drawListBullets(drawnLayout, preview.bullets, colors.onSurface.copy(alpha = 0.7f), textStyle.fontSize.toPx())
                         }
                         .drawWithContent {
                             drawContent()
@@ -189,8 +190,6 @@ fun LivePreviewField(
                             }
                         }
                         .bringIntoViewRequester(bringIntoViewRequester)
-                        // The text field scrolls itself when it gets focus - to all of itself, taller than the window,
-                        // and to its cursor from before the click. Only the cursor following above scrolls it.
                         .dropScrollRequests()
                         .focusRequester(focusRequester)
                         .onFocusChanged { editorState.isFocused = it.isFocused }

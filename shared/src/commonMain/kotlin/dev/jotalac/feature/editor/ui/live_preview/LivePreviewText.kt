@@ -1,5 +1,6 @@
 package dev.jotalac.feature.editor.ui.live_preview
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
@@ -33,6 +34,7 @@ internal class LivePreviewText(
     val transformed: TransformedText,
     val widgets: List<PlacedDecoration<Widget>>,
     val checkboxes: List<PlacedDecoration<TaskCheckbox>>,
+    val bullets: List<PlacedDecoration<ListBullet>>,
     val quoteBars: List<PlacedDecoration<QuoteBar>>,
     val codeBackgrounds: List<PlacedDecoration<CodeBackground>>,
     val links: List<PlacedDecoration<LinkTarget>>,
@@ -80,6 +82,7 @@ internal fun buildLivePreviewText(
         transformed = TransformedText(text, mapping),
         widgets = replacements.placed(mapping),
         checkboxes = replacements.placed(mapping),
+        bullets = replacements.placed(mapping),
         quoteBars = decorations.filterIsInstance<QuoteBar>().map {
             PlacedDecoration(
                 it,
@@ -185,6 +188,8 @@ private fun AnnotatedString.Builder.addSpanStyles(
             is Look -> addSourceStyle(styles.look(decoration.look), decoration.start, decoration.end)
             is HeadingLine -> addSourceStyle(styles.heading(decoration.level).first, decoration.start, decoration.end)
             is AlertTitle -> addSourceStyle(styles.alertTitle(decoration.kind), decoration.start, decoration.end)
+            // only its space is kept, the bullet is drawn
+            is ListBullet -> addSourceStyle(SpanStyle(color = Color.Transparent), decoration.start, decoration.end)
             // the placeholder stretched to the formula's width
             is InlineMath -> formulas[decoration]?.let { addSourceStyle(it.placeholder, decoration.start, decoration.end) }
             // nothing in the code is replaced, its highlighting maps over as it is
