@@ -172,6 +172,7 @@
     <string name="settings_spellcheck_language_same_as_app">Stejné jako jazyk aplikace</string>
     <string name="no_spell_check">Bez kontroly pravopisu</string>
     <string name="image_size_header">Velikost obrázku</string>
+    <string name="image_remove">Odebrat</string>
     <string name="image_size_original">Původní velikost</string>
     <string name="image_size_reset">Obnovit velikost</string>
     <string name="export_pdf_context_menu_item">Exportovat do PDF</string>

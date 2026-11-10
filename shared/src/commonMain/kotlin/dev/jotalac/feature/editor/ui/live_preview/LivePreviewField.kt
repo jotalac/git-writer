@@ -33,6 +33,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
@@ -140,6 +141,8 @@ fun LivePreviewField(
     }
 
     val colors = MaterialTheme.colorScheme
+    val textMeasurer = rememberTextMeasurer()
+    val codeLabelStyle = MaterialTheme.typography.labelMedium.copy(color = colors.onSurfaceVariant)
 
     Layout(
         modifier = modifier,
@@ -176,8 +179,11 @@ fun LivePreviewField(
                         .pointerHoverIcon(if (isOverLink) PointerIcon.Hand else PointerIcon.Text, overrideDescendants = true)
                         .drawBehind {
                             val drawnLayout = shownLayout.forText(preview) ?: return@drawBehind
-                            drawCodeBackgrounds(drawnLayout, preview.codeBackgrounds, colors.surfaceContainerHigh)
+                            drawCodeBackgrounds(
+                                drawnLayout, preview.codeBackgrounds, colors.surfaceContainerHigh, textMeasurer, codeLabelStyle,
+                            )
                             drawQuoteBars(drawnLayout, preview.quoteBars, colors.outlineVariant)
+                            drawListBullets(drawnLayout, preview.bullets, colors.onSurface.copy(alpha = 0.7f), textStyle.fontSize.toPx())
                         }
                         .drawWithContent {
                             drawContent()
@@ -189,8 +195,6 @@ fun LivePreviewField(
                             }
                         }
                         .bringIntoViewRequester(bringIntoViewRequester)
-                        // The text field scrolls itself when it gets focus - to all of itself, taller than the window,
-                        // and to its cursor from before the click. Only the cursor following above scrolls it.
                         .dropScrollRequests()
                         .focusRequester(focusRequester)
                         .onFocusChanged { editorState.isFocused = it.isFocused }
@@ -202,7 +206,11 @@ fun LivePreviewField(
                 items = rememberOverlayItems(preview),
                 onWidgetHeight = widgetHeights::record,
                 onWidgetClick = { widget -> editorState.focusAt(widget.start) },
-                onWidgetSourceChange = { widget, newSource -> editorState.replaceRange(widget.start, widget.end, newSource) },
+                onWidgetSourceChange = { widget, newSource ->
+                    // a widget without a source is deleted - with its line, not leaving an empty one
+                    val end = if (newSource.isEmpty()) (widget.end + 1).coerceAtMost(text.length) else widget.end
+                    editorState.replaceRange(widget.start, end, newSource)
+                },
                 onFormulaClick = { math -> editorState.focusAt(math.start) },
                 onCheckboxClick = { checkbox ->
                     editorState.replaceRange(checkbox.start + 1, checkbox.start + 2, if (checkbox.isChecked) " " else "x")

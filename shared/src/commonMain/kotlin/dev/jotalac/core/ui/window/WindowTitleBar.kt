@@ -1,5 +1,6 @@
 package dev.jotalac.core.ui.window
 
+import dev.jotalac.core.ui.components.unfocusEditorOnPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,7 +28,8 @@ internal fun WindowTitleBar(host: TitleBarHost) {
         contentColor = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             .fillMaxWidth()
-            .draggableWindow(),
+            .draggableWindow()
+            .unfocusEditorOnPress(),
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(

@@ -87,7 +87,7 @@ internal fun PreviewSpellcheck.underlines(
         }
 }
 
-private val UNCHECKED_LOOKS = setOf(TextLook.Code, TextLook.Monospace, TextLook.Math, TextLook.Link, TextLook.Syntax)
+private val UNCHECKED_LOOKS = setOf(TextLook.Code, TextLook.Monospace, TextLook.Math, TextLook.Link, TextLook.Syntax, TextLook.Hidden)
 
 private fun PreviewDecoration.isUnchecked(): Boolean =
     this is CodeBackground || this is Widget || this is InlineMath || this is Look && look in UNCHECKED_LOOKS

@@ -6,7 +6,7 @@ package dev.jotalac.feature.editor.ui.live_preview
 * */
 
 /** How a part of the text looks. */
-internal enum class TextLook { Bold, Italic, Strikethrough, Highlight, Code, Link, Syntax, DoneTask, Math, Monospace }
+internal enum class TextLook { Bold, Italic, Strikethrough, Highlight, Code, Link, Syntax, Hidden, DoneTask, Math, Monospace }
 
 /** The GitHub alerts (`> [!TIP]`) - shown with an emoji and the type's color, like GitHub shows them. */
 internal enum class AlertKind(val emoji: String) {
@@ -50,6 +50,13 @@ internal data class Widget(override val start: Int, override val end: Int, val k
 internal data class TaskCheckbox(override val start: Int, override val end: Int, val isChecked: Boolean) :
     ReplacingDecoration {
     override val replacement: String get() = CHECKBOX_PLACEHOLDER
+}
+
+/**
+ * The bullet list item, with some depth indent
+ */
+internal data class ListBullet(override val start: Int, override val end: Int, val depth: Int) : ReplacingDecoration {
+    override val replacement: String get() = BULLET_PLACEHOLDER
 }
 
 /** Maths inside text (`$x^2$`), drawn as a formula over the space kept for it - [latex] is without the `$`. */
@@ -97,8 +104,9 @@ internal data class LinkTarget(
 /** The code of a code block, in [language] as written after its fence - highlighted like the rendered notes. */
 internal data class CodeContent(override val start: Int, override val end: Int, val language: String?) : PreviewDecoration
 
-/** Code lines, drawn on a background. */
-internal data class CodeBackground(override val start: Int, override val end: Int) : PreviewDecoration
+/** Code lines, drawn on a background - with [label], the language of a code block, in its corner. */
+internal data class CodeBackground(override val start: Int, override val end: Int, val label: String? = null) :
+    PreviewDecoration
 
 // one character - the line of a widget gets the composable's height
 internal const val WIDGET_PLACEHOLDER = " "
@@ -112,5 +120,6 @@ internal const val MATH_PLACEHOLDER = "\u00A0"
 // a `>` and its space become an em space, which leaves room for the quote's bar
 internal const val QUOTE_PLACEHOLDER = " "
 
-// a different bullet for every nesting level, the deepest one repeats - like the rendered lists
-internal val LIST_BULLETS = listOf("•", "◦", "▪", "▫")
+
+// the space of a list bullet - the bullet itself is drawn over it, see [ListBullet]
+internal const val BULLET_PLACEHOLDER = "•"

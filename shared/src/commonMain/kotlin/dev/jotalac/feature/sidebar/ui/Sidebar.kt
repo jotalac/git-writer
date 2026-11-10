@@ -1,5 +1,6 @@
 package dev.jotalac.feature.sidebar.ui
 
+import dev.jotalac.core.ui.components.unfocusEditorOnPress
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -45,6 +46,7 @@ fun EditorSidebar(
                 .width(sidebarWidth.coerceAtMost(maxSidebarWidth))
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surfaceContainer)
+                .unfocusEditorOnPress()
                 .padding(top = if (!isDesktopPlatform) 25.dp else 0.dp)
         ) {
 
