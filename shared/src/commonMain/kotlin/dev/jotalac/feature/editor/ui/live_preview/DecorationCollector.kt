@@ -143,26 +143,16 @@ private class DecorationCollector(private val text: String, private val selectio
         val closing = node.children.lastOrNull { it.type == MarkdownTokenTypes.CODE_FENCE_END }
         val codeEnd = closing?.let { it.startOffset - 1 } ?: node.endOffset
         val hasCode = codeStart in 1..codeEnd
-        if (hasCode) {
-            val language = node.children.firstOrNull { it.type == MarkdownTokenTypes.FENCE_LANG }
-                ?.let { text.substring(it.startOffset, it.endOffset).trim() }
-            add(CodeContent(codeStart, codeEnd, language))
-        }
+        val language = node.children.firstOrNull { it.type == MarkdownTokenTypes.FENCE_LANG }
+            ?.let { text.substring(it.startOffset, it.endOffset).trim() }
+        if (hasCode) add(CodeContent(codeStart, codeEnd, language))
 
-        if (isEdited(node) || !hasCode) {
-            add(CodeBackground(node.startOffset, node.endOffset))
-            node.children.filter { it.type in FENCE_SYNTAX }.forEach { look(it, TextLook.Syntax) }
-        } else {
-            // the fence lines stay as low empty lines - the space of the background above and below the code
-            add(CodeBackground(node.startOffset, node.endOffset))
-            hiddenFenceLine(node.startOffset, codeStart - 1)
-            if (closing != null) hiddenFenceLine(closing.startOffset, node.endOffset)
-        }
-    }
-
-    private fun hiddenFenceLine(start: Int, end: Int) {
-        add(Replacement(start, end, ""))
-        add(CodeFenceSpace(start, end))
+        // the fence lines keep their place while the cursor is away, only what is written on them is not shown -
+        // the block is as tall as while it is edited, and the text around it does not move
+        val isShown = isEdited(node) || !hasCode
+        add(CodeBackground(node.startOffset, node.endOffset, label = language?.takeIf { !isShown && it.isNotEmpty() }))
+        node.children.filter { it.type in FENCE_SYNTAX }
+            .forEach { look(it, if (isShown) TextLook.Syntax else TextLook.Hidden) }
     }
 
     private fun atxHeading(node: ASTNode, level: Int) {

@@ -125,7 +125,6 @@ private fun paragraphLines(
         when (decoration) {
             is HeadingLine -> add(decoration, styles.heading(decoration.level).second)
             is QuoteLine -> add(decoration, ParagraphStyle(textIndent = TextIndent(restLine = decoration.depth.em)))
-            is CodeFenceSpace -> add(decoration, CODE_FENCE_SPACE_STYLE)
             is Widget -> if (decoration in replacements) add(decoration, widgetParagraphStyle(widgetLineHeight(decoration)))
             else -> Unit
         }
@@ -146,11 +145,6 @@ private fun paragraphLines(
     }
     return lines.values
 }
-
-private val CODE_FENCE_SPACE_STYLE = ParagraphStyle(
-    lineHeight = 0.75.em,
-    lineHeightStyle = LineHeightStyle(alignment = LineHeightStyle.Alignment.Center, trim = LineHeightStyle.Trim.None),
-)
 
 // the line keeps the widget's height, the composable is drawn from its top
 private fun widgetParagraphStyle(lineHeight: TextUnit) = ParagraphStyle(

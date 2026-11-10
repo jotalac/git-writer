@@ -33,6 +33,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
@@ -140,6 +141,8 @@ fun LivePreviewField(
     }
 
     val colors = MaterialTheme.colorScheme
+    val textMeasurer = rememberTextMeasurer()
+    val codeLabelStyle = MaterialTheme.typography.labelMedium.copy(color = colors.onSurfaceVariant)
 
     Layout(
         modifier = modifier,
@@ -176,7 +179,9 @@ fun LivePreviewField(
                         .pointerHoverIcon(if (isOverLink) PointerIcon.Hand else PointerIcon.Text, overrideDescendants = true)
                         .drawBehind {
                             val drawnLayout = shownLayout.forText(preview) ?: return@drawBehind
-                            drawCodeBackgrounds(drawnLayout, preview.codeBackgrounds, colors.surfaceContainerHigh)
+                            drawCodeBackgrounds(
+                                drawnLayout, preview.codeBackgrounds, colors.surfaceContainerHigh, textMeasurer, codeLabelStyle,
+                            )
                             drawQuoteBars(drawnLayout, preview.quoteBars, colors.outlineVariant)
                             drawListBullets(drawnLayout, preview.bullets, colors.onSurface.copy(alpha = 0.7f), textStyle.fontSize.toPx())
                         }

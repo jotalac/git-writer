@@ -6,7 +6,7 @@ package dev.jotalac.feature.editor.ui.live_preview
 * */
 
 /** How a part of the text looks. */
-internal enum class TextLook { Bold, Italic, Strikethrough, Highlight, Code, Link, Syntax, DoneTask, Math, Monospace }
+internal enum class TextLook { Bold, Italic, Strikethrough, Highlight, Code, Link, Syntax, Hidden, DoneTask, Math, Monospace }
 
 /** The GitHub alerts (`> [!TIP]`) - shown with an emoji and the type's color, like GitHub shows them. */
 internal enum class AlertKind(val emoji: String) {
@@ -104,11 +104,9 @@ internal data class LinkTarget(
 /** The code of a code block, in [language] as written after its fence - highlighted like the rendered notes. */
 internal data class CodeContent(override val start: Int, override val end: Int, val language: String?) : PreviewDecoration
 
-/** A hidden fence line of a code block - a low line, the space between the code and the edge of its background. */
-internal data class CodeFenceSpace(override val start: Int, override val end: Int) : PreviewDecoration
-
-/** Code lines, drawn on a background. */
-internal data class CodeBackground(override val start: Int, override val end: Int) : PreviewDecoration
+/** Code lines, drawn on a background - with [label], the language of a code block, in its corner. */
+internal data class CodeBackground(override val start: Int, override val end: Int, val label: String? = null) :
+    PreviewDecoration
 
 // one character - the line of a widget gets the composable's height
 internal const val WIDGET_PLACEHOLDER = " "

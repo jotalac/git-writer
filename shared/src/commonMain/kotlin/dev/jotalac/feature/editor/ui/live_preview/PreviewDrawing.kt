@@ -7,17 +7,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.dp
 
 /*
 * What is drawn behind the text - placed with its layout.
 * */
 
-// the background of code, across the whole width of its lines
+// the background of code, across the whole width of its lines - with the language of a code block in its corner,
+// on the line of the hidden fence
 internal fun DrawScope.drawCodeBackgrounds(
     layout: TextLayoutResult,
     backgrounds: List<PlacedDecoration<CodeBackground>>,
     color: Color,
+    textMeasurer: TextMeasurer,
+    labelStyle: TextStyle,
 ) {
     val radius = CornerRadius(6.dp.toPx())
     for (background in backgrounds) {
@@ -28,6 +34,16 @@ internal fun DrawScope.drawCodeBackgrounds(
             topLeft = Offset(-4.dp.toPx(), top),
             size = Size(size.width + 8.dp.toPx(), bottom - top),
             cornerRadius = radius,
+        )
+
+        // display the codeblock language
+        val label = background.decoration.label ?: continue
+        val measured = textMeasurer.measure(label.replaceFirstChar { it.uppercase() }, labelStyle, maxLines = 1)
+        val firstLine = layout.getLineForOffset(background.start)
+        val lineHeight = layout.getLineBottom(firstLine) - layout.getLineTop(firstLine)
+        drawText(
+            measured,
+            topLeft = Offset(size.width - measured.size.width - 8.dp.toPx(), top + (lineHeight - measured.size.height) / 2),
         )
     }
 }

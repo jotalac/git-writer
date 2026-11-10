@@ -94,6 +94,8 @@ internal fun rememberPreviewStyles(textStyle: TextStyle): PreviewStyles {
                     TextLook.Code -> monospace.copy(background = colors.surfaceContainerHighest.copy(alpha = 0.8f))
                     TextLook.Link -> SpanStyle(color = colors.primary, textDecoration = TextDecoration.Underline)
                     TextLook.Syntax -> SpanStyle(color = colors.onSurface.copy(alpha = 0.35f))
+                    // keeps its place, e.g. the fence lines of a code block
+                    TextLook.Hidden -> SpanStyle(color = Color.Transparent)
                     TextLook.DoneTask -> SpanStyle(
                         color = colors.onSurface.copy(alpha = 0.5f),
                         textDecoration = TextDecoration.LineThrough,
