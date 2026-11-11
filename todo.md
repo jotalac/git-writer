@@ -2,8 +2,9 @@
 
 > high priority
 
-- long press on image on mobile will show the resize menu (in modal bottom sheet)
-- on mobile the editor input is focused even after keyboard is hidden
+- context menu on words with spellchecks are appearing very off
+- support users custom certificates for desktop (Android and iOS already works)
+- better padding to the code blocks + border
 
 > medium priority
 
@@ -21,7 +22,7 @@
 - store the repository access tokens and the encryption derived keys in a encrypted store on device eg: Android KeyStore, EncryptedSharedPreferences, iOS/macOS keychain, windows credentials manager, linux secret service
 - make section collapsible, like in obsidian, eg. everything under h1 can be collased
 
-> other ideas - lower priority
+> other ideas - lower priority  
 
 - add support for mermaid diagrams - probably not
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename - probably not
