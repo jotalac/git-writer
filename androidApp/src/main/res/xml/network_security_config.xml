@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config>
+        <trust-anchors>
+            <!-- the certificate authorities that ship with Android -->
+            <certificates src="system" />
+            <!-- the ones the user installed on the phone, e.g. for a self-hosted Git server -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
