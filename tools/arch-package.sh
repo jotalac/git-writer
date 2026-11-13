@@ -18,7 +18,7 @@ uid="$(stat -c %u /src)"
 useradd --create-home --uid "$uid" builder
 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 runuser -u builder -- env JAVA_HOME="$JAVA_HOME" \
-  bash -c './gradlew :desktopApp:createReleaseDistributable --no-daemon -Papp.version.number="'"$version"'"'
+  ./gradlew :desktopApp:createReleaseDistributable --no-daemon "-Papp.version.number=$version"
 
 launcher="$(find desktopApp/build/compose/binaries -type f -path '*/app/*/bin/GitWriter' -print -quit)"
 test -n "$launcher" || { echo "Could not find Compose GitWriter app-image launcher" >&2; exit 1; }
@@ -64,7 +64,7 @@ PKGBUILD
 
 sed -i "s/^pkgver=.*/pkgver=$pkgver/" _archpkg/PKGBUILD
 chown -R builder:builder _archpkg
-runuser -u builder -- env APP_IMAGE="/src/$image_dir" \
+runuser -u builder -- env APP_IMAGE="$image_dir" \
   bash -c 'cd /src/_archpkg && makepkg --force --noconfirm --nodeps'
 
 cp _archpkg/*.pkg.tar.zst dist/
