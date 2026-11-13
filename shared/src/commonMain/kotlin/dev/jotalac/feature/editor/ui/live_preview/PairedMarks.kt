@@ -16,7 +16,7 @@ import dev.jotalac.feature.editor.ui.MarkdownEditorState
 * types its closing one too.
 * */
 
-private val PairedMarks = setOf('`', '*', '_')
+private val PairedMarks = setOf('`', '*', '_', '~')
 
 /**
  * typing a character like *, `, or _ types automatically its pair (when not in the middle of the work)

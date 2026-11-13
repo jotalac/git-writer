@@ -3,11 +3,13 @@
 > high priority
 
 - context menu on words with spellchecks are appearing very off
-- support users custom certificates for desktop (Android and iOS already works)
 - better padding to the code blocks + border
+- add ssh support
+- add the github link inside the app
 
 > medium priority
 
+- support users custom certificates for desktop (Android and iOS already works) - can be easily fixed by configuring the global gitconfig with sslVerify to false for specified domain
 - add something like quick note, which it be deleted after the application exit (for some quick test notes)
 - add note linking
 - save the expanded folder to database (so that the file tree looks the same on app open)+ save all tabs that were opened
