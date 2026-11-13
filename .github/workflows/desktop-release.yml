@@ -136,8 +136,33 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
+  arch:
+    needs: [verify, plan]
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'linux' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build and package an Arch-native application image with bundled JRE.
+      - name: Build Arch Linux package
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" -w /src \
+            archlinux:latest bash tools/arch-package.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-arch-x86_64
+          path: dist/*.zst
+          if-no-files-found: error
+          compression-level: 0
+
   draft-release:
-    needs: [desktop, plan]
+    needs: [desktop, plan, arch]
+    # The Arch job is skipped on Windows/macOS-only runs.
+    if: ${{ always() && needs.desktop.result == 'success' && needs.plan.result == 'success' && (needs.arch.result == 'success' || needs.arch.result == 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
