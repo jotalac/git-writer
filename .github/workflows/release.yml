@@ -142,6 +142,23 @@ jobs:
           done
           ls -lh dist
 
+      # plain app without any installer wrapper, runs on every linux with glibc
+      # wrapper can be create for example for arch linux in aur.archlinux.org
+      - name: Pack the portable Linux build
+        if: startsWith(matrix.os, 'ubuntu')
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+          LABEL: ${{ matrix.label }}
+        run: |
+          set -euo pipefail
+          # already built for the installers - this only makes sure the folder is there
+          ./gradlew :desktopApp:createReleaseDistributable -Papp.version.number="$VERSION"
+          app=desktopApp/build/compose/binaries/main-release/app
+          test -x "$app/GitWriter/bin/GitWriter" || { echo "::error::No app folder at $app/GitWriter"; exit 1; }
+          # owned by root in the archive, not by the runner's user - like files a package installs
+          tar --owner=0 --group=0 --numeric-owner -czf "dist/GitWriter-${VERSION}-${LABEL}.tar.gz" -C "$app" GitWriter
+          ls -lh dist
+
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.label }}
