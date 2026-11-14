@@ -128,6 +128,8 @@
     <string name="find_next">Nächster Treffer</string>
     <string name="find_button">In Notiz suchen</string>
     <string name="app_version_display">App-Version: </string>
+    <string name="settings_github_link">Quellcode auf GitHub</string>
+    <string name="settings_docs_link">Dokumentation</string>
     <string name="open_existing_notebook">Vorhandenes importieren</string>
 
 

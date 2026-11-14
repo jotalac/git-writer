@@ -128,6 +128,8 @@
     <string name="find_next">Další shoda</string>
     <string name="find_button">Najít v poznámce</string>
     <string name="app_version_display">Verze aplikace: </string>
+    <string name="settings_github_link">Zdrojový kód na GitHubu</string>
+    <string name="settings_docs_link">Dokumentace</string>
     <string name="open_existing_notebook">Importovat existující</string>
 
     <!-- snackbar / status messages -->

@@ -13,11 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.data.UserSettingsState
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
+import dev.jotalac.core.ui.components.DelayedTooltip
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.feature.settings.ui.settings_sections.AppearanceSettings
 import dev.jotalac.feature.settings.ui.settings_sections.LanguageSettings
@@ -25,6 +27,10 @@ import dev.jotalac.feature.settings.ui.settings_sections.SyncSettings
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.app_version_display
 import git_writer.shared.generated.resources.arrow_right
+import git_writer.shared.generated.resources.github
+import git_writer.shared.generated.resources.opened_book
+import git_writer.shared.generated.resources.settings_docs_link
+import git_writer.shared.generated.resources.settings_github_link
 import git_writer.shared.generated.resources.toggle_collapse
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -76,15 +82,23 @@ fun SettingsContent(
                 onAutoSyncChange = { onAction(SettingsViewModel.SettingsAction.ChangeAutoSync(it)) },
             )
 
-            // show current app version
-            Text(
-                text = stringResource(Res.string.app_version_display) + BuildKonfig.APP_VERSION,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                ProjectLinks()
+
+                // show current app version
+                Text(
+                    text = stringResource(Res.string.app_version_display) + BuildKonfig.APP_VERSION,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
         }
 
         AppVerticalScrollbar(
@@ -93,6 +107,33 @@ fun SettingsContent(
                 .align(Alignment.CenterEnd)
                 .fillMaxHeight()
         )
+    }
+}
+
+private const val GITHUB_URL = "https://github.com/jotalac/git-writer"
+private const val DOCS_URL = "https://jotalac.github.io/git-writer-docs/"
+
+// links to the project's repository and its documentation, opened in the browser
+@Composable
+private fun ProjectLinks() {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        ProjectLink(Res.drawable.github, stringResource(Res.string.settings_github_link), GITHUB_URL)
+        ProjectLink(Res.drawable.opened_book, stringResource(Res.string.settings_docs_link), DOCS_URL)
+    }
+}
+
+@Composable
+private fun ProjectLink(icon: DrawableResource, label: String, url: String) {
+    val uriHandler = LocalUriHandler.current
+    DelayedTooltip(text = label) {
+        IconButton(onClick = { uriHandler.openUri(url) }) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = label,
+                modifier = Modifier.size(MaterialTheme.dimensions.iconLarge),
+                tint = MaterialTheme.colorScheme.outline,
+            )
+        }
     }
 }
 
