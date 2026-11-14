@@ -125,6 +125,8 @@ private fun paragraphLines(
         when (decoration) {
             is HeadingLine -> add(decoration, styles.heading(decoration.level).second)
             is QuoteLine -> add(decoration, ParagraphStyle(textIndent = TextIndent(restLine = decoration.depth.em)))
+            // the code keeps a space from the edge of its background - wrapped lines too
+            is CodeBackground -> add(decoration, ParagraphStyle(textIndent = TextIndent(CODE_INDENT, CODE_INDENT)))
             is Widget -> if (decoration in replacements) add(decoration, widgetParagraphStyle(widgetLineHeight(decoration)))
             else -> Unit
         }
@@ -145,6 +147,9 @@ private fun paragraphLines(
     }
     return lines.values
 }
+
+// how far a code block's text starts inside its background, which stays where the text of the note starts
+private val CODE_INDENT = 0.5.em
 
 // the line keeps the widget's height, the composable is drawn from its top
 private fun widgetParagraphStyle(lineHeight: TextUnit) = ParagraphStyle(
