@@ -2,6 +2,7 @@
 
 > high priority
 
+- when creating new release - test that the .tar.gz actually works
 - context menu on words with spellchecks are appearing very off
 - better padding to the code blocks + border
 - add ssh support
