@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.msg_notebook_updated
+import dev.jotalac.feature.git_sync.domain.hasRemoteCredentials
 
 data class EditNotebookState(
     val notebookName: String = "",
@@ -137,7 +138,7 @@ class EditNotebookViewModel(
             if (!hasRemoteUrl) {
                 return "Please fill in repository URL"
             }
-            if (!hasUsername || !hasPassword) {
+            if (!hasRemoteCredentials(state.remoteUrl, state.remoteUsername, state.remotePassword)) {
                 return "Please fill in all remote credential fields"
             }
             val urlError = validateRemoteUrl(state.remoteUrl.trim())

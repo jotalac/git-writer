@@ -11,6 +11,7 @@
     <string name="create_notebook_button">Erstellen</string>
     <string name="clone_notebook_button">Klonen</string>
     <string name="username_placeholder">Benutzername</string>
+    <string name="ssh_key_passphrase_label">Schlüssel-Passphrase (optional)</string>
     <string name="git_auth_placeholder">Passwort/Token</string>
     <string name="cancel_button">Abbrechen</string>
     <string name="open_notebook">Notizbuch öffnen</string>

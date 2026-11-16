@@ -11,6 +11,7 @@
     <string name="create_notebook_button">Vytvořit</string>
     <string name="clone_notebook_button">Klonovat</string>
     <string name="username_placeholder">Uživatelské jméno</string>
+    <string name="ssh_key_passphrase_label">Heslo ke klíči (nepovinné)</string>
     <string name="git_auth_placeholder">Heslo/Token</string>
     <string name="cancel_button">Zrušit</string>
     <string name="open_notebook">Otevřít zápisník</string>

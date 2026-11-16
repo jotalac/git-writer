@@ -11,6 +11,7 @@
     <string name="create_notebook_button">创建</string>
     <string name="clone_notebook_button">克隆</string>
     <string name="username_placeholder">用户名</string>
+    <string name="ssh_key_passphrase_label">密钥口令（可选）</string>
     <string name="git_auth_placeholder">密码/令牌</string>
     <string name="cancel_button">取消</string>
     <string name="open_notebook">打开笔记本</string>

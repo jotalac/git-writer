@@ -4,9 +4,8 @@
 
 - when creating new release - test that the .tar.gz actually works
 
-- better padding to the code blocks + border
 - add ssh support
-- add the github link inside the app
+- make the spellcheck underlines more muted
 
 > medium priority
 

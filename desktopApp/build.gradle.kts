@@ -59,7 +59,9 @@ compose.desktop {
                 "java.desktop",
                 "java.management",
                 "java.security.jgss",
-                "jdk.security.auth"
+                "jdk.security.auth",
+                "java.rmi",
+                "jdk.crypto.ec",
             )
 
             buildTypes.release.proguard {
