@@ -4,11 +4,11 @@
 
 - when creating new release - test that the .tar.gz actually works
 
-- add ssh support
 - make the spellcheck underlines more muted
 
 > medium priority
 
+- add real check for ssh urls to see if they are reachable - something simillar like the http reachability but for ssh
 - support users custom certificates for desktop (Android and iOS already works) - can be easily fixed by configuring the global gitconfig with sslVerify to false for specified domain
 - add something like quick note, which it be deleted after the application exit (for some quick test notes)
 - add note linking

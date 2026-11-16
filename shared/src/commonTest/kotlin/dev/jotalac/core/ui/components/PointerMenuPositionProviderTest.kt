@@ -20,7 +20,7 @@ class PointerMenuPositionProviderTest {
             .calculatePosition(anchor, window, LayoutDirection.Ltr, menuSize)
 
     @Test
-    fun `the menu opens at the point, counted from the anchor's top - not its bottom`() {
+    fun `the menu opens at the point counted from the anchor's top - not its bottom`() {
         assertEquals(IntOffset(400, 100), position(IntOffset(100, 2100)))
     }
 

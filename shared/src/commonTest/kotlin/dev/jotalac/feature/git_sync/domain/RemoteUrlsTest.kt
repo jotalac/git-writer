@@ -20,7 +20,7 @@ class RemoteUrlsTest {
     }
 
     @Test
-    fun `http remotes, local paths and other text are not ssh`() {
+    fun `http remotes and local paths and other text are not ssh`() {
         assertFalse(isSshRemote(https))
         assertFalse(isSshRemote("https://user@github.com/me/notes.git"))
         assertFalse(isSshRemote("/Users/me/notes.git"))
@@ -35,7 +35,7 @@ class RemoteUrlsTest {
     }
 
     @Test
-    fun `an http remote needs a username and a token, an ssh one neither`() {
+    fun `an http remote needs a username and a token - an ssh one neither`() {
         assertTrue(hasRemoteCredentials(https, "me", "token"))
         assertFalse(hasRemoteCredentials(https, "me", ""))
         assertFalse(hasRemoteCredentials(https, null, "token"))
@@ -43,7 +43,7 @@ class RemoteUrlsTest {
     }
 
     @Test
-    fun `an http remote syncs with its token, an ssh one only where ssh is supported`() {
+    fun `an http remote syncs with its token - an ssh one only where ssh is supported`() {
         assertTrue(canSync(https, "token"))
         assertFalse(canSync(https, ""))
         assertEquals(isSshSupported, canSync(ssh, null))
