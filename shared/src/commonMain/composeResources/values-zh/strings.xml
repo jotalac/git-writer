@@ -20,7 +20,7 @@
     <string name="plus_icon">加号图标</string>
     <string name="delete_icon">删除图标</string>
     <string name="git_merge_icon">Git 合并图标</string>
-    <string name="git_repository_url_input_label">仓库 URL</string>
+    <string name="git_repository_url_input_label">仓库 URL (HTTP/SSH)</string>
     <string name="destination_directory_label">目标目录</string>
     <string name="open_notebook_directory">笔记本目录</string>
     <string name="browse_destination_button">浏览</string>

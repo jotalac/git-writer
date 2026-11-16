@@ -20,7 +20,7 @@
     <string name="plus_icon">Plus-Symbol</string>
     <string name="delete_icon">Löschsymbol</string>
     <string name="git_merge_icon">Git-Merge-Symbol</string>
-    <string name="git_repository_url_input_label">Repository-URL</string>
+    <string name="git_repository_url_input_label">Repository-URL (HTTP/SSH)</string>
     <string name="destination_directory_label">Zielverzeichnis</string>
     <string name="open_notebook_directory">Notizbuchverzeichnis</string>
     <string name="browse_destination_button">Durchsuchen</string>
