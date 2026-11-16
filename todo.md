@@ -2,11 +2,14 @@
 
 > high priority
 
-- long press on image on mobile will show the resize menu (in modal bottom sheet)
-- on mobile the editor input is focused even after keyboard is hidden
+- when creating new release - test that the .tar.gz actually works
+
+- make the spellcheck underlines more muted
 
 > medium priority
 
+- add real check for ssh urls to see if they are reachable - something simillar like the http reachability but for ssh
+- support users custom certificates for desktop (Android and iOS already works) - can be easily fixed by configuring the global gitconfig with sslVerify to false for specified domain
 - add something like quick note, which it be deleted after the application exit (for some quick test notes)
 - add note linking
 - save the expanded folder to database (so that the file tree looks the same on app open)+ save all tabs that were opened
@@ -21,7 +24,7 @@
 - store the repository access tokens and the encryption derived keys in a encrypted store on device eg: Android KeyStore, EncryptedSharedPreferences, iOS/macOS keychain, windows credentials manager, linux secret service
 - make section collapsible, like in obsidian, eg. everything under h1 can be collased
 
-> other ideas - lower priority
+> other ideas - lower priority  
 
 - add support for mermaid diagrams - probably not
 - make file header like in obsidian - the file heading will show the file name changing the header will change the filename - probably not

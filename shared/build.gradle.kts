@@ -66,6 +66,10 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.jgit.latest)
+            // ssh remotes - with the user's keys, config, known hosts and ssh-agent
+            implementation(libs.jgit.ssh)
+            implementation(libs.jgit.ssh.agent)
+            implementation(libs.bouncycastle.provider)
             implementation(libs.nucleus.spell.check)
         }
         iosMain.dependencies {
@@ -125,6 +129,8 @@ kotlin {
         jvmTest.dependencies {
             // Skia's native library, for tests that render Compose offscreen (the PDF export)
             implementation(compose.desktop.currentOs)
+            // a local ssh git server, for the ssh remotes on desktop
+            implementation(libs.jgit.ssh.test.server)
         }
 
         //shared platform for android and jvm (both running on JVM)

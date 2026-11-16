@@ -14,13 +14,13 @@ import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.lib.RepositoryState
 import org.eclipse.jgit.transport.RemoteRefUpdate
 import org.eclipse.jgit.transport.URIish
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import org.eclipse.jgit.transport.CredentialsProvider
 import java.io.File
 
 class JGitSyncRepositoryImpl : GitSyncRepository {
 
-    private fun getCredentials(username: String?, tokenOrPassword: String): UsernamePasswordCredentialsProvider =
-        credentialsProvider(username, tokenOrPassword)
+    private fun getCredentials(username: String?, tokenOrPassword: String): CredentialsProvider =
+        GitCredentials(username, tokenOrPassword)
 
     override suspend fun validateCredentials(
         repoUrl: String,
@@ -144,7 +144,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         }
     }
 
-    private fun pullChanges(git: Git, credentials: UsernamePasswordCredentialsProvider): PullResult? {
+    private fun pullChanges(git: Git, credentials: CredentialsProvider): PullResult? {
         // handle the case where the repo is empty (no remote refs)
         return try {
             git.pull().setCredentialsProvider(credentials).call()
@@ -157,7 +157,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
         }
     }
 
-    private fun pushChanges(git: Git, credentials: UsernamePasswordCredentialsProvider) {
+    private fun pushChanges(git: Git, credentials: CredentialsProvider) {
         // a notebook without any commit yet (no notes) has no branch to push
         if (git.repository.resolve(Constants.HEAD) == null) return
 
@@ -173,7 +173,7 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
 
     // JGit only throws when it cannot reach the remote (its exception keeps the real cause) - a push the
     // remote refuses (it has newer commits, protected branch, server hook) comes back as a status
-    private fun pushOrThrow(git: Git, credentials: UsernamePasswordCredentialsProvider) {
+    private fun pushOrThrow(git: Git, credentials: CredentialsProvider) {
         val rejected = git.push().setCredentialsProvider(credentials).call()
             .flatMap { it.remoteUpdates }
             .filter { it.status != RemoteRefUpdate.Status.OK && it.status != RemoteRefUpdate.Status.UP_TO_DATE }
@@ -352,7 +352,3 @@ class JGitSyncRepositoryImpl : GitSyncRepository {
     override val gitSyncStatus: Flow<GitSyncStatus> = _syncStatus.asSharedFlow()
 
 }
-
-/** Without a username the token is sent as the username too - git hosts accept a token in either field. */
-internal fun credentialsProvider(username: String?, tokenOrPassword: String): UsernamePasswordCredentialsProvider =
-    UsernamePasswordCredentialsProvider(if (username.isNullOrBlank()) tokenOrPassword else username, tokenOrPassword)

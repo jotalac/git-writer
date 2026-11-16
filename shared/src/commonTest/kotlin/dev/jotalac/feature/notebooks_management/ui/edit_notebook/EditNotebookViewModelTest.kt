@@ -2,6 +2,7 @@ package dev.jotalac.feature.notebooks_management.ui.edit_notebook
 
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookViewModel.EditNotebookEvent
 import dev.jotalac.testing.fakes.FakeNotebookRepository
@@ -105,16 +106,19 @@ class EditNotebookViewModelTest {
     }
 
     @Test
-    fun `an ssh remote url is rejected because only http is supported`() = viewModelTest {
+    fun `an ssh remote url needs no credentials on desktop and is rejected on mobile`() = viewModelTest {
         val dialog = editDialog()
         dialog.onEvent(EditNotebookEvent.RemoteUrlChanged("git@github.com:me/notes.git"))
-        dialog.onEvent(EditNotebookEvent.UsernameChanged("me"))
-        dialog.onEvent(EditNotebookEvent.PasswordChanged("token"))
 
         dialog.save()
         advanceUntilIdle()
 
-        dialog.assertRejected("Remote URL must be over HTTP")
+        if (isDesktopPlatform) {
+            // passed the form's checks, on to the repository
+            assertEquals("git@github.com:me/notes.git", notebooks.notebookUpdates.single().remoteUrl)
+        } else {
+            dialog.assertRejected("SSH remotes work only in the desktop app - use the HTTPS URL with a token")
+        }
     }
 
     @Test

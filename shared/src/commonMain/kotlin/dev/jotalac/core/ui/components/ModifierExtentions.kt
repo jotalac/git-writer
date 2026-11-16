@@ -20,7 +20,7 @@ fun Modifier.onContextMenuOpen(onEvent: (DpOffset) -> Unit): Modifier = composed
                     if (!pressChange.isConsumed) {
                         val position = pressChange.position
                         val offset = with(density) {
-                            DpOffset(position.x.toDp(), (position.y - 10).toDp())
+                            DpOffset(position.x.toDp(), position.y.toDp())
                         }
                         onEvent(offset)
                         pressChange.consume()

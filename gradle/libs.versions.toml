@@ -30,6 +30,8 @@ datastore = "1.2.1"
 compose-latex = "1.5.3"
 jgit-android-version = "5.13.3.202401111512-r"
 jgit-desktop-version = "7.7.0.202606012155-r"
+# the version JGit is built with - ed25519 ssh keys need it (Apache MINA SSHD finds it on its own)
+bouncycastle = "1.84"
 desugar-jdk-libs = "2.1.5"
 jna = "5.19.1"
 build-konfig = "0.22.0"
@@ -84,6 +86,10 @@ datastore = { module = "androidx.datastore:datastore", version.ref = "datastore"
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 jgit-v5 = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit-android-version" }
 jgit-latest = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit-desktop-version" }
+jgit-ssh = { module = "org.eclipse.jgit:org.eclipse.jgit.ssh.apache", version.ref = "jgit-desktop-version" }
+jgit-ssh-agent = { module = "org.eclipse.jgit:org.eclipse.jgit.ssh.apache.agent", version.ref = "jgit-desktop-version" }
+bouncycastle-provider = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+jgit-ssh-test-server = { module = "org.eclipse.jgit:org.eclipse.jgit.junit.ssh", version.ref = "jgit-desktop-version" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar-jdk-libs" }
 androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }

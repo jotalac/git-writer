@@ -11,6 +11,7 @@
     <string name="create_notebook_button">创建</string>
     <string name="clone_notebook_button">克隆</string>
     <string name="username_placeholder">用户名</string>
+    <string name="ssh_key_passphrase_label">密钥口令（可选）</string>
     <string name="git_auth_placeholder">密码/令牌</string>
     <string name="cancel_button">取消</string>
     <string name="open_notebook">打开笔记本</string>
@@ -19,7 +20,7 @@
     <string name="plus_icon">加号图标</string>
     <string name="delete_icon">删除图标</string>
     <string name="git_merge_icon">Git 合并图标</string>
-    <string name="git_repository_url_input_label">仓库 URL</string>
+    <string name="git_repository_url_input_label">仓库 URL (HTTP/SSH)</string>
     <string name="destination_directory_label">目标目录</string>
     <string name="open_notebook_directory">笔记本目录</string>
     <string name="browse_destination_button">浏览</string>
@@ -128,6 +129,8 @@
     <string name="find_next">下一个匹配项</string>
     <string name="find_button">在笔记中查找</string>
     <string name="app_version_display">应用版本：</string>
+    <string name="settings_github_link">GitHub 上的源代码</string>
+    <string name="settings_docs_link">文档</string>
     <string name="open_existing_notebook">导入现有笔记本</string>
 
 

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.hrm.latex.renderer.measure.LatexDimensions
 import com.hrm.latex.renderer.measure.rememberLatexMeasurer
 import com.hrm.latex.renderer.model.LatexConfig
@@ -101,7 +102,7 @@ internal fun rememberPreviewStyles(textStyle: TextStyle): PreviewStyles {
                         textDecoration = TextDecoration.LineThrough,
                     )
                     TextLook.Math -> monospace.copy(color = colors.tertiary)
-                    TextLook.Monospace -> monospace
+                    TextLook.Monospace -> monospace.copy(fontSize = 0.9.em) // make the codeblocks code smaller
                 }
             },
             heading = { level ->

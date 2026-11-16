@@ -31,7 +31,7 @@ class JGitMailboxRepositoryImpl : MailboxRepository {
 
     override suspend fun update(path: String, tokenOrPassword: String, username: String?): Result<Unit> = runGit {
         Git.open(File(path)).use { git ->
-            git.fetch().setRemote(ORIGIN).setCredentialsProvider(credentialsProvider(username, tokenOrPassword)).call()
+            git.fetch().setRemote(ORIGIN).setCredentialsProvider(GitCredentials(username, tokenOrPassword)).call()
             // an empty mailbox has no main yet - nothing to take over
             if (git.repository.resolve(REMOTE_MAIN) != null) {
                 git.reset().setMode(ResetCommand.ResetType.HARD).setRef(REMOTE_MAIN).call()
@@ -52,7 +52,7 @@ class JGitMailboxRepositoryImpl : MailboxRepository {
             val updates = git.push()
                 .setRemote(ORIGIN)
                 .setRefSpecs(RefSpec("$BUNDLE_MAIN_REF:$BUNDLE_MAIN_REF"))
-                .setCredentialsProvider(credentialsProvider(username, tokenOrPassword))
+                .setCredentialsProvider(GitCredentials(username, tokenOrPassword))
                 .call()
                 .flatMap { it.remoteUpdates }
 

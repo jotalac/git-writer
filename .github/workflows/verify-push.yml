@@ -43,7 +43,7 @@ jobs:
 
   ios:
     name: iOS
-    # pinned like in desktop-release.yml, so a new Xcode does not change the build without notice
+    # pinned like in release.yml, so a new Xcode does not change the build without notice
     runs-on: macos-26
     timeout-minutes: 60
     steps:

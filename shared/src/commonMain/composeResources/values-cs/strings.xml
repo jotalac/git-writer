@@ -11,6 +11,7 @@
     <string name="create_notebook_button">Vytvořit</string>
     <string name="clone_notebook_button">Klonovat</string>
     <string name="username_placeholder">Uživatelské jméno</string>
+    <string name="ssh_key_passphrase_label">Heslo ke klíči (nepovinné)</string>
     <string name="git_auth_placeholder">Heslo/Token</string>
     <string name="cancel_button">Zrušit</string>
     <string name="open_notebook">Otevřít zápisník</string>
@@ -19,7 +20,7 @@
     <string name="plus_icon">Ikona plus</string>
     <string name="delete_icon">Ikona smazat</string>
     <string name="git_merge_icon">Ikona sloučení gitu</string>
-    <string name="git_repository_url_input_label">URL repozitáře</string>
+    <string name="git_repository_url_input_label">URL repozitáře (HTTP/SSH)</string>
     <string name="destination_directory_label">Cílová složka</string>
     <string name="open_notebook_directory">Složka poznámkového bloku</string>
     <string name="browse_destination_button">Procházet</string>
@@ -128,6 +129,8 @@
     <string name="find_next">Další shoda</string>
     <string name="find_button">Najít v poznámce</string>
     <string name="app_version_display">Verze aplikace: </string>
+    <string name="settings_github_link">Zdrojový kód na GitHubu</string>
+    <string name="settings_docs_link">Dokumentace</string>
     <string name="open_existing_notebook">Importovat existující</string>
 
     <!-- snackbar / status messages -->

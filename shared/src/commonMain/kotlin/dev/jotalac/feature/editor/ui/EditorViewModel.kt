@@ -30,6 +30,7 @@ import git_writer.shared.generated.resources.err_create_note_no_notebook
 import git_writer.shared.generated.resources.err_failed_create_note
 import git_writer.shared.generated.resources.err_failed_save_images
 import git_writer.shared.generated.resources.err_paste_image_no_notebook
+import dev.jotalac.feature.git_sync.domain.canSync
 
 class EditorViewModel(
     private val notebookRepository: NotebookRepository,
@@ -149,7 +150,7 @@ class EditorViewModel(
         userSettingsManager.userSettingsStateFlow.map { it.autoSync },
         notebookRepository.activeNotebookState,
     ) { autoSync, notebook ->
-        notebook?.takeIf { autoSync && !it.remoteUrl.isNullOrBlank() && !it.remotePassword.isNullOrBlank() }?.id
+        notebook?.takeIf { autoSync && canSync(it.remoteUrl, it.remotePassword) }?.id
     }.distinctUntilChanged()
 
     // the notebook to auto sync right now - also null while the device is offline

@@ -1,5 +1,6 @@
 package dev.jotalac.core.utils
 
+import dev.jotalac.feature.git_sync.domain.isSshRemote
 import io.ktor.client.HttpClient
 import io.ktor.client.request.head
 import io.ktor.http.Url
@@ -40,6 +41,7 @@ fun interface RemoteReachability {
 class HttpRemoteReachability(private val client: HttpClient) : RemoteReachability {
 
     override suspend fun canReach(remoteUrl: String): Boolean {
+        if (isSshRemote(remoteUrl)) return true
         val url = suspendRunCatching { Url(remoteUrl) }.getOrNull() ?: return false
         return withTimeoutOrNull(5.seconds) {
             suspendRunCatching { client.head("${url.protocol.name}://${url.host}") }.isSuccess

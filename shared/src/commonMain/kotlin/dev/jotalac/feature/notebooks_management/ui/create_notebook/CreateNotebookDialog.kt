@@ -26,6 +26,10 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import dev.jotalac.feature.git_sync.domain.isSshRemote
+import git_writer.shared.generated.resources.ssh_key_passphrase_label
+import dev.jotalac.feature.git_sync.domain.hasRemoteCredentials
+import dev.jotalac.feature.notebooks_management.ui.components.ResponsiveRow
 
 private enum class Tab { Init, Clone, Open }
 
@@ -64,9 +68,8 @@ fun CreateNotebookDialog(
     }
 
     fun validateCloneForm(): String? {
-        return if (state.notebookName.isBlank() || state.remoteUrl.isBlank() ||
-            actualDirectory.isBlank() || state.username.isBlank() ||
-            state.password.isBlank()
+        return if (state.notebookName.isBlank() || state.remoteUrl.isBlank() || actualDirectory.isBlank() ||
+            !hasRemoteCredentials(state.remoteUrl, state.username, state.password)
         ) {
             "Please fill in all fields"
         } else {
@@ -249,8 +252,8 @@ fun CreateNotebookDialog(
                     !state.selectedDirectory.isNullOrEmpty()
                 } else {
                     state.notebookName.isNotBlank() && state.remoteUrl.isNotBlank() &&
-                            actualDirectory.isNotBlank() && state.username.isNotBlank() &&
-                            state.password.isNotBlank() && !state.isLoading
+                            actualDirectory.isNotBlank() && !state.isLoading &&
+                            hasRemoteCredentials(state.remoteUrl, state.username, state.password)
                 }
             ) {
                 Row(
@@ -373,22 +376,34 @@ private fun CloneNotebookForm(
             submit = submitForm
         )
 
-        ResponsiveRow(modifier = Modifier.fillMaxWidth()) { childModifier ->
-            SubmittableTextField(
-                value = username,
-                onValueChange = onUsernameChange,
-                label = Res.string.username_placeholder,
-                modifier = childModifier,
-                submit = submitForm
-            )
+        // ssh signs in with the device's keys - only a passphrase of a key that is not in the ssh-agent
+        if (isSshRemote(url)) {
             SubmittableTextField(
                 value = password,
                 onValueChange = onPasswordChange,
-                label = Res.string.git_auth_placeholder,
+                label = Res.string.ssh_key_passphrase_label,
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = childModifier,
+                modifier = Modifier.fillMaxWidth(),
                 submit = submitForm
             )
+        } else {
+            ResponsiveRow(modifier = Modifier.fillMaxWidth()) { childModifier ->
+                SubmittableTextField(
+                    value = username,
+                    onValueChange = onUsernameChange,
+                    label = Res.string.username_placeholder,
+                    modifier = childModifier,
+                    submit = submitForm
+                )
+                SubmittableTextField(
+                    value = password,
+                    onValueChange = onPasswordChange,
+                    label = Res.string.git_auth_placeholder,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = childModifier,
+                    submit = submitForm
+                )
+            }
         }
         // only a remote that is an encrypted notebook needs it
         SubmittableTextField(
@@ -443,27 +458,3 @@ fun DirectoryPickerRow(
     }
 }
 
-
-@Composable
-private fun ResponsiveRow(
-    modifier: Modifier = Modifier,
-    content: @Composable (modifier: Modifier) -> Unit
-) {
-    BoxWithConstraints(modifier = modifier) {
-        if (maxWidth > 400.dp) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                content(Modifier.weight(1f))
-            }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                content(Modifier.fillMaxWidth())
-            }
-        }
-    }
-}

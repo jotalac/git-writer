@@ -19,7 +19,7 @@ fun DrawScope.drawMisspellingUnderlines(
 
     val textLength = layout.layoutInput.text.length
     val strokeWidth = 1.dp.toPx()
-    val amplitude = 1.3.dp.toPx()
+    val amplitude = 1.dp.toPx()
     val halfPeriod = 2.5.dp.toPx()
 
     for (span in spans) {

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
+import dev.jotalac.feature.git_sync.domain.canSync
 
 // `/…/Containers/Data/Application/<uuid>/` — the part of an iOS app path that changes every install
 private val APP_CONTAINER_PREFIX = Regex("^.*?/Application/[0-9A-Fa-f-]{36}/")
@@ -278,26 +279,26 @@ class NotebookRepositoryImpl(
                     if (remoteUrl != existing.remoteUrl) {
                         throw IllegalStateException("The remote of an encrypted notebook cannot be changed")
                     }
-                    if (credentialsChanged && remoteUrl != null && !remotePassword.isNullOrBlank()) {
-                        validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+                    if (credentialsChanged && remoteUrl != null && canSync(remoteUrl, remotePassword)) {
+                        validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword.orEmpty())
                     }
                 }
 
                 encryptionPassword != null -> {
-                    if (remoteUrl.isNullOrBlank() || remotePassword.isNullOrBlank()) {
+                    if (remoteUrl == null || !canSync(remoteUrl, remotePassword)) {
                         throw IllegalStateException("Encryption needs a remote repository")
                     }
-                    validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+                    validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword.orEmpty())
                     encryptionKey = encryptedGitSync
-                        .enable(existing.directoryPath, remoteUrl, remotePassword, remoteUsername, encryptionPassword)
+                        .enable(existing.directoryPath, remoteUrl, remotePassword.orEmpty(), remoteUsername, encryptionPassword)
                         .getOrThrow()
                         .encoded
                 }
 
                 else -> {
                     //validate the remote credentials - if changed
-                    if (!remoteUrl.isNullOrBlank() && !remotePassword.isNullOrBlank() && credentialsChanged) {
-                        validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword)
+                    if (remoteUrl != null && canSync(remoteUrl, remotePassword) && credentialsChanged) {
+                        validateUpdateNotebookRemote(remoteUrl, remoteUsername, remotePassword.orEmpty())
                         //update the git remote, when valid
                         gitSyncRepository.updateRemoteUrl(existing.directoryPath, remoteUrl)
                     }

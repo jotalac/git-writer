@@ -187,7 +187,7 @@ fun LivePreviewField(
                         }
                         .drawWithContent {
                             drawContent()
-                            shownLayout.forText(preview)?.let { drawMisspellingUnderlines(it, underlines, colors.error) }
+                            shownLayout.forText(preview)?.let { drawMisspellingUnderlines(it, underlines, colors.error.copy(alpha = 0.7f)) }
                         }
                         .onSpellingMenuRequest { position ->
                             spellcheck.menuAnchor = layout?.let {

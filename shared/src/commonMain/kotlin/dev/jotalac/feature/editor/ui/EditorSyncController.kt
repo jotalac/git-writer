@@ -25,6 +25,7 @@ import git_writer.shared.generated.resources.err_push_after_resolve
 import git_writer.shared.generated.resources.msg_conflicts_resolved
 import git_writer.shared.generated.resources.msg_notes_synced
 import git_writer.shared.generated.resources.msg_sync_aborted
+import dev.jotalac.feature.git_sync.domain.canSync
 
 /**
  * Orchestrates git sync and merge-conflict resolution for the editor screen.
@@ -47,12 +48,12 @@ class EditorSyncController(
 
     suspend fun sync(): Unit = syncMutex.withLock {
         val notebook = notebookRepository.activeNotebookState.firstOrNull() ?: return
-        if (notebook.remoteUrl.isNullOrBlank() || notebook.remotePassword.isNullOrBlank()) return
+        if (!canSync(notebook.remoteUrl, notebook.remotePassword)) return
 
         state.update { it.copy(gitSyncStatus = GitSyncStatus.Syncing) }
         saveCurrentNote()
 
-        val result = syncNotebook(notebook, notebook.remotePassword)
+        val result = syncNotebook(notebook, notebook.remotePassword.orEmpty())
 
         result.onSuccess { syncResult ->
             if (syncResult is GitSyncStatus.Conflict) {
@@ -138,9 +139,9 @@ class EditorSyncController(
 
     // the resolution is already committed locally, so a failed push is not lost - the next sync pushes it
     private suspend fun pushResolvedConflicts(notebook: Notebook) {
-        val token = notebook.remotePassword
+        val token = notebook.remotePassword.orEmpty()
         val pushResult = when {
-            token.isNullOrBlank() -> Result.success(Unit)
+            !canSync(notebook.remoteUrl, token) -> Result.success(Unit)
             // the resolution is a merge commit the encrypted sync publishes like any other
             notebook.isEncrypted -> syncNotebook(notebook, token).map { status ->
                 check(status !is GitSyncStatus.Conflict) { "Another device changed the same notes meanwhile - sync again" }

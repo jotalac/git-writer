@@ -1,0 +1,322 @@
+# Builds the desktop installers, the Android APK and the iOS .ipa and drops them into a DRAFT release,
+# ready for you to write the notes and publish.
+#
+# The APK is signed with the app's key, from the secrets of the `release` environment - which only master
+# may use, so run this workflow from master. The .ipa needs no secret: it is unsigned, and AltStore /
+# SideStore sign it on the device.
+#
+# The version comes from app.version.number in gradle.properties instead of a workflow input, so the
+# tag, the file names and the version the build reports cannot disagree, and checking out a tag builds
+# the version that tag claims.
+#
+# Why a matrix: jpackage only produces installers for the OS it runs on - there is no cross compiling -
+# and it builds for the architecture of the runner, so arm64 and x86_64 each need their own runner.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Which apps to build"
+        type: choice
+        default: all
+        options:
+          - all
+          - linux
+          - windows
+          - macos
+          - android
+          - ios
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+# only the job that creates the release may write
+permissions:
+  contents: read
+
+jobs:
+  # Fail before spending four runners on installers if the code does not even build and pass tests.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Tests
+        run: ./gradlew :shared:jvmTest
+
+  # The runner list and the version are worked out here rather than in the jobs that use them.
+  #
+  # The matrix cannot be filtered with an `if:` on the job: the matrix context is not available in a
+  # job-level condition, and a job skipped that way still holds a runner, so filtering there would
+  # cost the same as building.
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      runners: ${{ steps.filter.outputs.runners }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      # the repository has to be here: the version is read out of gradle.properties
+      - uses: actions/checkout@v4
+
+      # get the current app version from the gradle.properties file
+      - id: version
+        run: |
+          version=$(grep -m1 '^app.version.number=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          test -n "$version" || { echo "::error::app.version.number is missing from gradle.properties"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - id: filter
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          # Linux is built on the oldest image still offered, not the newest: the native launcher
+          # jpackage generates is linked against the runner's glibc, so a package built on a new
+          # Ubuntu refuses to install on older ones. The arm64 runner is free in public repos and
+          # billed normally in private ones.
+          #
+          # macOS is pinned rather than macos-latest so a release is reproducible; see
+          # https://github.com/actions/runner-images for current labels. There is no Intel macOS build:
+          # the SQLite driver of the database (androidx sqlite-bundled) ships no native library for Intel
+          # Macs, so that build installs but crashes when it opens the database.
+          ALL: |
+            [
+              {"os": "ubuntu-22.04",     "label": "linux-x86_64"},
+              {"os": "ubuntu-22.04-arm", "label": "linux-arm64"},
+              {"os": "windows-latest",   "label": "windows-x86_64"},
+              {"os": "macos-26",         "label": "macos-arm64"}
+            ]
+        run: |
+          runners=$(jq -c --arg p "$PLATFORM" \
+            '[.[] | select($p == "all" or (.label | startswith($p)))]' <<< "$ALL")
+          echo "runners=$runners" >> "$GITHUB_OUTPUT"
+
+  desktop:
+    needs: [verify, plan]
+    # an empty matrix is an error, not a skipped job - e.g. when only ios is built
+    if: needs.plan.outputs.runners != '[]'
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.runners) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      # jpackage needs tools the Linux images do not ship: rpmbuild for .rpm, fakeroot for .deb.
+      # The Windows images already include the WiX toolset that .msi needs.
+      - name: Install packaging tools
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get update && sudo apt-get install -y rpm fakeroot
+
+      - name: Build installers for this OS
+        shell: bash
+        run: >
+          ./gradlew :desktopApp:packageReleaseDistributionForCurrentOS
+          -Papp.version.number=${{ needs.plan.outputs.version }}
+
+      # jpackage leaves the architecture out of the macOS and Windows file names, and names the Linux
+      # packages its own way. Naming every file after its platform and architecture makes the download
+      # obvious, and keeps two builds for the same OS from overwriting each other in the release.
+      - name: Name the files after their platform
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          find desktopApp/build/compose/binaries/main-release -type f \
+            \( -name '*.dmg' -o -name '*.pkg' -o -name '*.msi' -o -name '*.deb' -o -name '*.rpm' \) -print0 |
+          while IFS= read -r -d '' file; do
+            target="dist/GitWriter-${{ needs.plan.outputs.version }}-${{ matrix.label }}.${file##*.}"
+            cp "$file" "$target"
+            echo "$(basename "$file") -> $(basename "$target")"
+          done
+          ls -lh dist
+
+      # plain app without any installer wrapper, runs on every linux with glibc
+      # wrapper can be create for example for arch linux in aur.archlinux.org
+      - name: Pack the portable Linux build
+        if: startsWith(matrix.os, 'ubuntu')
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+          LABEL: ${{ matrix.label }}
+        run: |
+          set -euo pipefail
+          # already built for the installers - this only makes sure the folder is there
+          ./gradlew :desktopApp:createReleaseDistributable -Papp.version.number="$VERSION"
+          app=desktopApp/build/compose/binaries/main-release/app
+          test -x "$app/GitWriter/bin/GitWriter" || { echo "::error::No app folder at $app/GitWriter"; exit 1; }
+          # owned by root in the archive, not by the runner's user - like files a package installs
+          tar --owner=0 --group=0 --numeric-owner -czf "dist/GitWriter-${VERSION}-${LABEL}.tar.gz" -C "$app" GitWriter
+          ls -lh dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.label }}
+          path: dist/*
+          if-no-files-found: error
+
+  android:
+    needs: [verify, plan]
+    if: inputs.platform == 'all' || inputs.platform == 'android'
+    name: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # the signing secrets live in this environment, which only master may use
+    environment: release
+    env:
+      # The certificate every released APK is signed with. Android only installs an update signed with the same
+      # one, so a build signed with anything else must not reach a release. Not a secret - every APK shows it.
+      RELEASE_CERT_SHA256: 8b25223d11d989b36d0686b65f3b36967f7f67d27ba1a1953e92794abf76c2a3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      # read only: nothing from a job that holds the signing key is saved where other runs can read it
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      # a secret is text, so the keystore is stored base64 encoded - written to the runner's temporary folder,
+      # readable only by this user, and deleted at the end of the job
+      - name: Write the keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64" || { echo "::error::ANDROID_KEYSTORE_BASE64 is not set in the release environment"; exit 1; }
+          keystore="$RUNNER_TEMP/release.jks"
+          (umask 077 && base64 --decode <<< "$KEYSTORE_BASE64" > "$keystore")
+          echo "ANDROID_KEYSTORE_FILE=$keystore" >> "$GITHUB_ENV"
+
+      # the passwords only go to this step, read by the signingConfig in androidApp/build.gradle.kts
+      - name: Build the APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: ./gradlew :androidApp:assembleRelease -Papp.version.number="$VERSION"
+
+      - name: Check the signature
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          set -euo pipefail
+          apk=androidApp/build/outputs/apk/release/androidApp-release.apk
+          test -f "$apk" || { echo "::error::No signed APK - an unsigned build is named androidApp-release-unsigned.apk"; exit 1; }
+          apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
+          certs="$("$apksigner" verify --print-certs "$apk")"
+          echo "$certs"
+          grep -qi "certificate SHA-256 digest: $RELEASE_CERT_SHA256" <<< "$certs" ||
+            { echo "::error::The APK is not signed with the release certificate - check the keystore secret"; exit 1; }
+
+          mkdir -p dist
+          cp "$apk" "dist/GitWriter-${VERSION}-android.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Delete the keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
+
+  ios:
+    needs: [verify, plan]
+    if: inputs.platform == 'all' || inputs.platform == 'ios'
+    name: ios
+    # pinned like the macOS installer runner, so a new Xcode does not change the build without notice
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      # the same caches as verify-push.yml - the runs on master save them, so a release usually finds both
+      - name: Restore libgit2
+        id: libgit2
+        uses: actions/cache@v4
+        with:
+          path: third_party/libgit2/slices
+          key: libgit2-${{ runner.os }}-${{ hashFiles('tools/build-libgit2.sh') }}
+
+      - name: Build libgit2
+        if: steps.libgit2.outputs.cache-hit != 'true'
+        run: |
+          command -v ninja >/dev/null || brew install ninja
+          tools/build-libgit2.sh
+
+      - name: Restore Kotlin/Native
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
+
+      # named like the desktop files; the script takes the version from gradle.properties, as plan did
+      - name: Build the .ipa
+        run: tools/build-ios-app.sh "dist/GitWriter-${{ needs.plan.outputs.version }}-ios.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: dist/*
+          if-no-files-found: error
+
+  draft-release:
+    needs: [verify, plan, desktop, android, ios]
+    # runs when the platforms that were not picked are skipped, but not when anything failed - a job whose
+    # needs failed is skipped too, which is why verify is listed even though the builds already need it
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create or update the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          set -euo pipefail
+          # an array, so each file stays one argument even if a name ever contains a space
+          mapfile -t files < <(find dist -type f | sort)
+          (( ${#files[@]} )) || { echo "::error::No files were built"; exit 1; }
+          printf '%s\n' "${files[@]}"
+
+          if [ "$(gh release view "${VERSION}" --json isDraft -q .isDraft 2>/dev/null)" = "true" ]; then
+            # a re-run of a failed workflow adds to the same draft
+            gh release upload "${VERSION}" "${files[@]}" --clobber
+          elif gh release view "${VERSION}" >/dev/null 2>&1; then
+            echo "::error::v${VERSION} is already published. Bump app.version.number in gradle.properties."
+            exit 1
+          else
+            gh release create "${VERSION}" \
+              --draft \
+              --title "v${VERSION}" \
+              --target "$GITHUB_SHA" \
+              --notes "Built from ${GITHUB_SHA:0:7}. Write the notes, then publish." \
+              "${files[@]}"
+          fi

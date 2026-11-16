@@ -11,6 +11,10 @@ import dev.jotalac.feature.notebooks_management.ui.components.SubmittableTextFie
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import dev.jotalac.feature.git_sync.domain.isSshRemote
+import git_writer.shared.generated.resources.ssh_key_passphrase_label
+import dev.jotalac.feature.notebooks_management.ui.components.ResponsiveRow
+import org.jetbrains.compose.resources.StringResource
 
 /** The form of a notebook's name, remote and encryption - in the dialog on desktop and the screen on mobile. */
 @Composable
@@ -69,75 +73,7 @@ internal fun EditNotebookContent(
             modifier = Modifier.fillMaxWidth()
         )
 
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            if (maxWidth > 400.dp) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = state.remoteUsername,
-                        onValueChange = {
-                            onEvent(
-                                EditNotebookViewModel.EditNotebookEvent.UsernameChanged(
-                                    it
-                                )
-                            )
-                        },
-                        label = { Text(stringResource(Res.string.username_placeholder)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f)
-                    )
-                    OutlinedTextField(
-                        value = state.remotePassword,
-                        onValueChange = {
-                            onEvent(
-                                EditNotebookViewModel.EditNotebookEvent.PasswordChanged(
-                                    it
-                                )
-                            )
-                        },
-                        label = { Text(stringResource(Res.string.git_auth_placeholder)) },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = state.remoteUsername,
-                        onValueChange = {
-                            onEvent(
-                                EditNotebookViewModel.EditNotebookEvent.UsernameChanged(
-                                    it
-                                )
-                            )
-                        },
-                        label = { Text(stringResource(Res.string.username_placeholder)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    OutlinedTextField(
-                        value = state.remotePassword,
-                        onValueChange = {
-                            onEvent(
-                                EditNotebookViewModel.EditNotebookEvent.PasswordChanged(
-                                    it
-                                )
-                            )
-                        },
-                        label = { Text(stringResource(Res.string.git_auth_placeholder)) },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-        }
+        RemoteCredentialFields(state, onEvent)
 
         EncryptionSection(state, onEvent = onEvent)
 
@@ -226,5 +162,34 @@ private fun EncryptionSection(state: EditNotebookState, onEvent: (EditNotebookVi
             supportingText = { Text(stringResource(Res.string.encryption_password_warning)) },
             modifier = Modifier.fillMaxWidth(),
         )
+    }
+}
+
+// an ssh remote signs in with the device's keys - only the passphrase of a key that is not in the ssh-agent
+@Composable
+private fun RemoteCredentialFields(state: EditNotebookState, onEvent: (EditNotebookViewModel.EditNotebookEvent) -> Unit) {
+    @Composable
+    fun SecretField(label: StringResource, modifier: Modifier) = OutlinedTextField(
+        value = state.remotePassword,
+        onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.PasswordChanged(it)) },
+        label = { Text(stringResource(label)) },
+        singleLine = true,
+        visualTransformation = PasswordVisualTransformation(),
+        modifier = modifier,
+    )
+
+    if (isSshRemote(state.remoteUrl)) {
+        SecretField(Res.string.ssh_key_passphrase_label, Modifier.fillMaxWidth())
+    } else {
+        ResponsiveRow(modifier = Modifier.fillMaxWidth()) { fieldModifier ->
+            OutlinedTextField(
+                value = state.remoteUsername,
+                onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.UsernameChanged(it)) },
+                label = { Text(stringResource(Res.string.username_placeholder)) },
+                singleLine = true,
+                modifier = fieldModifier,
+            )
+            SecretField(Res.string.git_auth_placeholder, fieldModifier)
+        }
     }
 }

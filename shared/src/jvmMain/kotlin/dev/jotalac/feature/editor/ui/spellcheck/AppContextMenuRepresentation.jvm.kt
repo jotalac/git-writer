@@ -46,8 +46,7 @@ internal class AppContextMenuRepresentation : ContextMenuRepresentation {
 
         val close = { state.status = ContextMenuState.Status.Closed }
 
-        // status.rect is already relative to the anchor, which is the box this menu is composed
-        // in, so it maps straight onto DropdownMenu's anchor-relative offset.
+        // status.rect is relative to the box this menu is composed in - the point the menu opens at
         val density = LocalDensity.current
         val offset = with(density) {
             DpOffset(x = status.rect.left.toDp(), y = status.rect.top.toDp())
