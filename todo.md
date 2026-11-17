@@ -2,9 +2,9 @@
 
 > high priority
 
-- when creating new release - test that the .tar.gz actually works
-
-- make the spellcheck underlines more muted
+- make checkboxes bigger
+- on app startup check the github releases if there is a new version if yes, display notification to the user to install the new release (only on desktop)
+- improve the sidebar top action button - very confusing
 
 > medium priority
 

@@ -20,12 +20,13 @@ fun SubmittableTextField(
     submit: () -> Unit,
     modifier: Modifier = Modifier,
     placeholder: StringResource? = null,
-    visualTransformation: VisualTransformation? = null
+    visualTransformation: VisualTransformation? = null,
+    textAddition: String = ""
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(stringResource(label)) },
+        label = { Text(stringResource(label) + textAddition) },
         placeholder = { placeholder?.let { Text(stringResource(placeholder)) } },
         singleLine = true,
         visualTransformation = visualTransformation ?: VisualTransformation.None,
