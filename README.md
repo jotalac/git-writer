@@ -3,7 +3,7 @@
 A minimalistic, cross-platform note-taking app that uses Git repositories to keep your Markdown notes version-controlled
 and synchronized across devices. Supports all major platforms (Linux, macOS, Windows, Android, iOS).
 
-<img src="readme_images/git-writer-logo.svg" height="150">
+[//]: # (<img src="readme_images/git-writer-logo.svg" height="150">)
 
 Docs, installation and usage guide - [here](https://jotalac.github.io/git-writer-docs/installation.html)
 
@@ -19,7 +19,11 @@ Download binaries from the [**Releases**](https://github.com/jotalac/git-writer/
 
 ---
 
-<img src="readme_images/readme-showcase.png" alt="Desktop screenshot"/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="readme_images/wallpaper-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="readme_images/wallpaper-white.png">
+  <img src="readme_images/wallpaper-dark.png" alt="GitWriter on Android, desktop and iOS" width="1500">
+</picture>
 
 ---
 Support this project with a coffee:
@@ -34,29 +38,8 @@ Support this project with a coffee:
 - **Git Integration**: [JGit](https://www.eclipse.org/jgit/) (Desktop and Android), [libgit2](https://github.com/libgit2/libgit2)
 - **Image & File Handling**: [Coil 3](https://github.com/coil-kt/coil) & [FileKit](https://github.com/vinceglb/FileKit)
 - **Markdown parsing & rendering**:
-  [multiplatform-markdown-renderer](https://github.com/mikepenz/multiplatform-markdown-renderer)
-  & [jetbrains-markdown](https://github.com/JetBrains/markdown)
-
----
-
-### Spell Checking
-
-- misspellings are checked against the **spell check language** in the app settings, which
-  defaults to the app language
-
-| Platform | Setup |
-| --- | --- |
-| **Windows** | Install the language under *Settings -> Time & Language -> Language & region -> Add a language*, including **Basic typing**. The keyboard layout is not needed. |
-| **macOS** | Nothing to do, the dictionaries ship with the system. If your language is not underlined, enable it under *System Settings -> Keyboard -> Text Input -> Edit... -> Spelling*. |
-| **Linux** | Install your language's **hunspell** package. Names are distro and region specific. |
-
-```bash
-sudo apt/dnf search hunspell-<language> 
-sudo apt/dnf install hunspell-es
-```
-
-> Package names include the region: `hunspell-es` and `hunspell-cs`, but `hunspell-de-de` on
-> Debian and Ubuntu. Chinese is not spell checked, hunspell has no dictionary with word segmentation.
+  [jetbrains-markdown](https://github.com/JetBrains/markdown) & [multiplatform-markdown-renderer](https://github.com/mikepenz/multiplatform-markdown-renderer)
+- **Cryptography**: [cryptography-kotlin](https://github.com/whyoleg/cryptography-kotlin)
 
 ---
 
