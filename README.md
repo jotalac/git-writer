@@ -17,6 +17,7 @@ Download binaries from the [**Releases**](https://github.com/jotalac/git-writer/
 > - **macOS:** app is not signed, to make it work, you may need run this command: `xattr -d com.apple.quarantine /Applications/GitWriter.app`  
 > - **iOS:** The `.ipa` is unsigned. Sideload it using tools like [AltStore](https://altstore.io/), [SideStore](https://sidestore.io/), or [Sideloadly](https://sideloadly.io/) with your free Apple ID.
 
+- For automatic updates on Android you may use [Obtanium](https://github.com/ImranR98/Obtainium) app.
 ---
 
 <picture>

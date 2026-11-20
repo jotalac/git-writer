@@ -129,7 +129,6 @@
     <string name="find_previous">Previous match</string>
     <string name="find_next">Next match</string>
     <string name="find_button">Find in note</string>
-    <string name="app_version_display">App version: </string>
     <string name="settings_github_link">Source code on GitHub</string>
     <string name="settings_docs_link">Documentation</string>
     <string name="open_existing_notebook">Import existing</string>
@@ -189,4 +188,15 @@
     <string name="encryption_password_confirm_label">Repeat the password</string>
     <string name="encryption_password_warning">Without this password nobody can read the notes on the remote - it cannot be recovered.</string>
     <string name="encrypted_notebook_password_label">Notebook password (only for encrypted notebooks)</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_app_version_title">App version</string>
+    <string name="settings_up_to_date">Up to date</string>
+    <string name="settings_update_available">Update available</string>
+    <string name="settings_installed_version">Installed version</string>
+    <string name="settings_latest_version">Latest version</string>
+    <string name="settings_latest_version_unknown">Not checked yet</string>
+    <string name="settings_check_updates">Check for updates</string>
+    <string name="settings_check_updates_failed">Could not check for updates</string>
+    <string name="settings_download_update">Download %1$s</string>
+    <string name="msg_update_available">New version available: %1$s → %2$s</string>
 </resources>

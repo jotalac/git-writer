@@ -129,7 +129,6 @@
     <string name="find_previous">Vorheriger Treffer</string>
     <string name="find_next">Nächster Treffer</string>
     <string name="find_button">In Notiz suchen</string>
-    <string name="app_version_display">App-Version: </string>
     <string name="settings_github_link">Quellcode auf GitHub</string>
     <string name="settings_docs_link">Dokumentation</string>
     <string name="open_existing_notebook">Vorhandenes importieren</string>
@@ -191,4 +190,15 @@
     <string name="encryption_password_confirm_label">Passwort wiederholen</string>
     <string name="encryption_password_warning">Ohne dieses Passwort kann niemand die Notizen im Remote-Repository lesen - es lässt sich nicht wiederherstellen.</string>
     <string name="encrypted_notebook_password_label">Notizbuch-Passwort (nur für verschlüsselte Notizbücher)</string>
+    <string name="settings_about_title">Über</string>
+    <string name="settings_app_version_title">App-Version</string>
+    <string name="settings_up_to_date">Auf dem neuesten Stand</string>
+    <string name="settings_update_available">Update verfügbar</string>
+    <string name="settings_installed_version">Installierte Version</string>
+    <string name="settings_latest_version">Neueste Version</string>
+    <string name="settings_latest_version_unknown">Noch nicht geprüft</string>
+    <string name="settings_check_updates">Nach Updates suchen</string>
+    <string name="settings_check_updates_failed">Updates konnten nicht geprüft werden</string>
+    <string name="settings_download_update">%1$s herunterladen</string>
+    <string name="msg_update_available">Neue Version verfügbar: %1$s → %2$s</string>
 </resources>

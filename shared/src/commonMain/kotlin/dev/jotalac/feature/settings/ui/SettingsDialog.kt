@@ -23,6 +23,7 @@ fun SettingsDialog(
     settingsViewModel: SettingsViewModel = koinViewModel()
 ) {
     val settingsState by settingsViewModel.userSettingsState.collectAsStateWithLifecycle()
+    val appUpdateState by settingsViewModel.appUpdateState.collectAsStateWithLifecycle()
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -83,6 +84,7 @@ fun SettingsDialog(
                 // Scrollable Content
                 SettingsContent(
                     userSettingsState = settingsState,
+                    appUpdateState = appUpdateState,
                     onAction = settingsViewModel::onAction,
                     modifier = Modifier
                         .fillMaxWidth()

@@ -129,7 +129,6 @@
     <string name="find_previous">上一个匹配项</string>
     <string name="find_next">下一个匹配项</string>
     <string name="find_button">在笔记中查找</string>
-    <string name="app_version_display">应用版本：</string>
     <string name="settings_github_link">GitHub 上的源代码</string>
     <string name="settings_docs_link">文档</string>
     <string name="open_existing_notebook">导入现有笔记本</string>
@@ -191,4 +190,15 @@
     <string name="encryption_password_confirm_label">再次输入密码</string>
     <string name="encryption_password_warning">没有此密码，任何人都无法读取远程仓库中的笔记，且密码无法找回。</string>
     <string name="encrypted_notebook_password_label">笔记本密码（仅用于加密笔记本）</string>
+    <string name="settings_about_title">关于</string>
+    <string name="settings_app_version_title">应用版本</string>
+    <string name="settings_up_to_date">已是最新版本</string>
+    <string name="settings_update_available">有可用更新</string>
+    <string name="settings_installed_version">已安装版本</string>
+    <string name="settings_latest_version">最新版本</string>
+    <string name="settings_latest_version_unknown">尚未检查</string>
+    <string name="settings_check_updates">检查更新</string>
+    <string name="settings_check_updates_failed">无法检查更新</string>
+    <string name="settings_download_update">下载 %1$s</string>
+    <string name="msg_update_available">有新版本可用：%1$s → %2$s</string>
 </resources>
