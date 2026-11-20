@@ -222,7 +222,7 @@ private fun TaskCheckboxBox(isChecked: Boolean, onClick: () -> Unit, modifier: M
     val checkColor = MaterialTheme.colorScheme.onPrimary
 
     Canvas(modifier = modifier.clickable(interactionSource = null, indication = null, onClick = onClick)) {
-        val side = minOf(size.width, size.height) * 0.75f
+        val side = minOf(size.width, size.height) * 0.9f
         val topLeft = Offset((size.width - side) / 2, (size.height - side) / 2)
         val radius = CornerRadius(side * 0.2f)
 

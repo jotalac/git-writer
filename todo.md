@@ -5,6 +5,8 @@
 - make checkboxes bigger
 - on app startup check the github releases if there is a new version if yes, display notification to the user to install the new release (only on desktop)
 - improve the sidebar top action button - very confusing
+- dont show snackbar message on sync success
+- when deleting notebook, before deleting the atual files from the filesystem check if the notebook location is in the `~/Documents/git-writer-notebooks/*`, if not dont delete it from the file system, becuase it would delete all the user notes that they use somewhere else (mainly on desktop)
 
 > medium priority
 
