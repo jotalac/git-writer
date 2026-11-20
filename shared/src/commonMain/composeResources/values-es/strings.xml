@@ -6,6 +6,7 @@
     <string name="open_notebook_title">Abrir cuaderno</string>
     <string name="clone_notebook">Clonar (git)</string>
     <string name="no_saved_notebooks_msg">No hay cuadernos disponibles</string>
+    <string name="delete_notebook_files_warning">Al eliminar un cuaderno guardado en '%1$s' también se eliminan todos sus archivos.</string>
     <string name="notebook_name_placeholder">Nombre del cuaderno</string>
     <string name="git_remote_example">https://github.com/usuario/repo.git</string>
     <string name="create_notebook_button">Crear</string>

@@ -6,6 +6,7 @@
     <string name="open_notebook_title">Notizbuch öffnen</string>
     <string name="clone_notebook">Klonen (git)</string>
     <string name="no_saved_notebooks_msg">Keine Notizbücher verfügbar</string>
+    <string name="delete_notebook_files_warning">Beim Löschen eines Notizbuchs aus '%1$s' werden auch alle seine Dateien gelöscht.</string>
     <string name="notebook_name_placeholder">Name des Notizbuchs</string>
     <string name="git_remote_example">https://github.com/benutzer/repo.git</string>
     <string name="create_notebook_button">Erstellen</string>

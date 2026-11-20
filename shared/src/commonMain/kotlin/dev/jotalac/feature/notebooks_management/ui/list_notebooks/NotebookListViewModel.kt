@@ -6,6 +6,7 @@ import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.git_sync.domain.GitSyncRepository
 import dev.jotalac.feature.notebooks_management.domain.Notebook
+import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.domain.NotebookRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -14,15 +15,18 @@ import git_writer.shared.generated.resources.msg_notebook_deleted
 
 data class NotebookListState(
     val notebooks: List<Notebook> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val defaultNotebookPath: String = ""
 )
 
 class NotebookListViewModel(
     private val notebookRepository: NotebookRepository,
     private val gitSyncRepository: GitSyncRepository,
     private val snackbarManager: SnackbarManager,
+    private val notebookPathProvider: NotebookPathProvider
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(NotebookListState())
+    private val _uiState =
+        MutableStateFlow(NotebookListState(defaultNotebookPath = notebookPathProvider.getDefaultNotebookDirectory()))
     val uiState: StateFlow<NotebookListState> = _uiState.asStateFlow()
 
     init {

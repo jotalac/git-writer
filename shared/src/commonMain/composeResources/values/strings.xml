@@ -6,6 +6,7 @@
     <string name="open_notebook_title">Open notebook</string>
     <string name="clone_notebook">Clone (git)</string>
     <string name="no_saved_notebooks_msg">No notebooks available</string>
+    <string name="delete_notebook_files_warning">Deleting a notebook stored in '%1$s' also deletes all of its files.</string>
     <string name="notebook_name_placeholder">Notebook name</string>
     <string name="git_remote_example">https://github.com/user/repo.git</string>
     <string name="create_notebook_button">Create</string>

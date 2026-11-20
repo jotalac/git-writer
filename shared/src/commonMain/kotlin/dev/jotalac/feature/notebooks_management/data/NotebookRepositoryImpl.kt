@@ -51,6 +51,10 @@ class NotebookRepositoryImpl(
     private fun NotebookEntity.withRuntimePath(): NotebookEntity =
         copy(directoryPath = directoryPath.toRuntimePath())
 
+    // a notebook folder is <notebooks directory>/<name> - Path also evens out separators and trailing slashes
+    private fun isInNotebooksDirectory(directoryPath: String): Boolean =
+        Path(directoryPath).parent?.toString() == Path(notebookPathProvider.getDefaultNotebookDirectory()).toString()
+
     override fun getAllNotebooks(): Flow<List<Notebook>> {
         return notebookDao.getNotebooksAsFlow().map { entityList ->
             entityList.map { entity -> entity.withRuntimePath().toNotebook() }
@@ -241,10 +245,10 @@ class NotebookRepositoryImpl(
             val notebook = (notebookDao.getNotebookById(id)
                 ?: throw NullPointerException("Notebook with id $id not found")).withRuntimePath()
 
-            // delete the directory and all files inside
-            val notebookDirectoryPath = Path(notebook.directoryPath)
-
-            notebookDirectoryPath.deleteRecursively()
+            // only a folder the app keeps in its notebooks directory is deleted - a folder opened from elsewhere, is the user's and stays. On mobile every notebook is in the notebooks directory.
+            if (isInNotebooksDirectory(notebook.directoryPath)) {
+                Path(notebook.directoryPath).deleteRecursively()
+            }
 
             notebookDao.deleteNotebook(notebook.id)
 

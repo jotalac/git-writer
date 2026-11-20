@@ -15,12 +15,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AlertDialogTitleWithIcon
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.notebooks_management.domain.Notebook
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
@@ -97,6 +101,11 @@ fun NotebookListDialog(
                     }
                 }
 
+                // on mobile every notebook is in the notebooks directory - deleting always deletes its files
+                if (isDesktopPlatform && state.notebooks.isNotEmpty()) {
+                    DeleteFilesWarning(state.defaultNotebookPath)
+                }
+
                 if (state.errorMessage != null) {
                     Text(
                         text = state.errorMessage!!,
@@ -112,6 +121,36 @@ fun NotebookListDialog(
             }
         }
     )
+}
+
+@Composable
+private fun DeleteFilesWarning(notebooksDirectory: String) {
+    val message = stringResource(Res.string.delete_notebook_files_warning, notebooksDirectory)
+    val text = buildAnnotatedString {
+        append(message)
+        val start = message.indexOf(notebooksDirectory)
+        if (start >= 0) {
+            addStyle(SpanStyle(fontFamily = FontFamily.Monospace), start, start + notebooksDirectory.length)
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.info_icon),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+            modifier = Modifier.size(MaterialTheme.dimensions.iconSmall)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+        )
+    }
 }
 
 @Composable

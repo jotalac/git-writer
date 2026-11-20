@@ -6,6 +6,7 @@
     <string name="open_notebook_title">Otevřít zápisník</string>
     <string name="clone_notebook">Klonovat (git)</string>
     <string name="no_saved_notebooks_msg">Žádné uložené zápisníky</string>
+    <string name="delete_notebook_files_warning">Smazáním zápisníku uloženého ve složce '%1$s' se smažou i všechny jeho soubory.</string>
     <string name="notebook_name_placeholder">Název zápisníku</string>
     <string name="git_remote_example">https://github.com/uzivatel/repo.git</string>
     <string name="create_notebook_button">Vytvořit</string>

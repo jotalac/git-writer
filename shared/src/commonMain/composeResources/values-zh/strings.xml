@@ -6,6 +6,7 @@
     <string name="open_notebook_title">打开笔记本</string>
     <string name="clone_notebook">克隆（git）</string>
     <string name="no_saved_notebooks_msg">没有可用的笔记本</string>
+    <string name="delete_notebook_files_warning">删除保存在 '%1$s' 中的笔记本也会删除其所有文件。</string>
     <string name="notebook_name_placeholder">笔记本名称</string>
     <string name="git_remote_example">https://github.com/user/repo.git</string>
     <string name="create_notebook_button">创建</string>
