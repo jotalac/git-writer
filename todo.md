@@ -1,10 +1,15 @@
-## TODO
+# TODO
 
 > high priority
 
-- on app startup check the github releases if there is a new version if yes, display notification to the user to install the new release (only on desktop)
 - improve the sidebar top action button - very confusing
-- dont show snackbar message on every sync success
+- add bigger padding on unordered bullet points
+- resize(scale down) large images on import to app
+- h3 is smaller then h4
+- inline images doesnt, work - eg. image in a list item
+/Users/jotalac/Library/Caches/com.vorssaint.utils/Copied\ Screenshots/Screenshot\ 2026-11-26\ at\ 09.37.54.png
+- add pdf viewer [compose pdf viewer](https://github.com/dshatz/pdfmp) - to view pds in the file tree, and preview them
+- inside notebook there should be option to open a .md/imgage/pdf from a file -> and it will be imported from disk to the notebook root?
 
 > medium priority
 
@@ -17,7 +22,6 @@
   markdown cheatsheet, etc.)
 - add ctrl+r replace (replace all/current)
 - follow clean architecture and introduce UseCases instead of injecting repositories into *r*epositories
-- run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - in the settings as possibility to change the commit message
 - add nucleus fs-watcher (or other fs watcher)
 - fix pdf export -> dont export the compose page -> convert to html for proper text selection and reduced size
