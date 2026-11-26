@@ -96,8 +96,13 @@ private class DecorationCollector(private val text: String, private val selectio
         // get the block type and render it
         when (node.type) {
             MarkdownElementTypes.PARAGRAPH -> {
-                val widget = if (isTopLevel) paragraphWidget(node) else null
-                if (widget != null && !isEdited(node)) addWidget(node, widget) else inline(node.children)
+                val widget = paragraphWidget(node)?.takeIf { isTopLevel || it == WidgetKind.Image }
+                when {
+                    widget == null || isEdited(node) -> inline(node.children)
+                    isTopLevel -> addWidget(node, widget)
+                    // an image in a list item or a quote - the bullet or the quote's bar stays beside it
+                    else -> add(Widget(node.startOffset, text.lineEndAt(node.endOffset), widget))
+                }
             }
 
             MarkdownElementTypes.CODE_FENCE -> codeFence(node)
@@ -333,7 +338,7 @@ private class DecorationCollector(private val text: String, private val selectio
             // <me@example.com>, https://example.com in text
             MarkdownTokenTypes.EMAIL_AUTOLINK, GFMTokenTypes.GFM_AUTOLINK -> autolink(node, isEdited = false)
             MarkdownTokenTypes.HTML_TAG -> look(node, TextLook.Syntax)
-            // an image inside text keeps its source, only a paragraph of its own becomes a picture
+            // an image inside text keeps its source, only a paragraph of its own (in a list too) becomes a picture
             MarkdownElementTypes.IMAGE -> look(node, TextLook.Syntax)
             else -> inline(node.children)
         }

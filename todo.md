@@ -3,15 +3,13 @@
 > high priority
 
 - improve the sidebar top action button - very confusing
-- add bigger padding on unordered bullet points
-- resize(scale down) large images on import to app
-- h3 is smaller then h4
 - inline images doesnt, work - eg. image in a list item
-/Users/jotalac/Library/Caches/com.vorssaint.utils/Copied\ Screenshots/Screenshot\ 2026-11-26\ at\ 09.37.54.png
 - add pdf viewer [compose pdf viewer](https://github.com/dshatz/pdfmp) - to view pds in the file tree, and preview them
-- inside notebook there should be option to open a .md/imgage/pdf from a file -> and it will be imported from disk to the notebook root?
 
 > medium priority
+
+- inside notebook there should be option to open a .md/imgage/pdf from a file -> and it will be imported from disk to the notebook root?
+- resize(scale down) large images on import to app
 
 - add real check for ssh urls to see if they are reachable - something simillar like the http reachability but for ssh
 - support users custom certificates for desktop (Android and iOS already works) - can be easily fixed by configuring the global gitconfig with sslVerify to false for specified domain

@@ -59,6 +59,6 @@ class AppUpdateRepository(
         val LATEST_VERSION = stringPreferencesKey("update_latest_version")
         val LATEST_URL = stringPreferencesKey("update_latest_url")
         val LAST_CHECKED_AT = longPreferencesKey("update_last_checked_at")
-        val CHECK_INTERVAL_MILLIS = 0.days.inWholeMilliseconds
+        val CHECK_INTERVAL_MILLIS = 1.days.inWholeMilliseconds
     }
 }

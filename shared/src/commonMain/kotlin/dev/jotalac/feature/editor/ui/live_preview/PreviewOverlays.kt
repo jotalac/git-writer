@@ -50,11 +50,13 @@ internal sealed interface OverlayItem {
     fun measure(measurable: Measurable, layout: TextLayoutResult?, width: Int): Pair<Placeable, IntOffset?>
 }
 
-// on the line kept for it
+// on the line kept for it, from where it starts on it - after the bullet of a list item
 private data class WidgetItem(override val key: Any, val placed: PlacedDecoration<Widget>, val source: String) : OverlayItem {
-    override fun measure(measurable: Measurable, layout: TextLayoutResult?, width: Int): Pair<Placeable, IntOffset?> =
-        measurable.measure(Constraints(minWidth = width, maxWidth = width)) to
-            layout?.let { IntOffset(0, it.getLineTop(it.getLineForOffset(placed.start)).toInt()) }
+    override fun measure(measurable: Measurable, layout: TextLayoutResult?, width: Int): Pair<Placeable, IntOffset?> {
+        val left = layout?.getBoundingBox(placed.start)?.left?.toInt()?.coerceIn(0, width) ?: 0
+        val placeable = measurable.measure(Constraints(minWidth = width - left, maxWidth = width - left))
+        return placeable to layout?.let { IntOffset(left, it.getLineTop(it.getLineForOffset(placed.start)).toInt()) }
+    }
 }
 
 // over the space kept for it
