@@ -200,4 +200,5 @@
     <string name="settings_check_updates_failed">Aktualizace se nepodařilo zkontrolovat</string>
     <string name="settings_download_update">Stáhnout %1$s</string>
     <string name="msg_update_available">K dispozici je nová verze: %1$s → %2$s</string>
+    <string name="msg_error_pdf_open">Nepodařilo se otevřít PDF soubor</string>
 </resources>

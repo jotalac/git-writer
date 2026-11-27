@@ -201,4 +201,5 @@
     <string name="settings_check_updates_failed">无法检查更新</string>
     <string name="settings_download_update">下载 %1$s</string>
     <string name="msg_update_available">有新版本可用：%1$s → %2$s</string>
+    <string name="msg_error_pdf_open">无法打开 PDF 文件</string>
 </resources>

@@ -200,4 +200,5 @@
     <string name="settings_check_updates_failed">No se pudieron buscar actualizaciones</string>
     <string name="settings_download_update">Descargar %1$s</string>
     <string name="msg_update_available">Nueva versión disponible: %1$s → %2$s</string>
+    <string name="msg_error_pdf_open">No se pudo abrir el archivo PDF</string>
 </resources>

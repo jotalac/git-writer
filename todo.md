@@ -3,14 +3,14 @@
 > high priority
 
 - improve the sidebar top action button - very confusing
-- inline images doesnt, work - eg. image in a list item
-- add pdf viewer [compose pdf viewer](https://github.com/dshatz/pdfmp) - to view pds in the file tree, and preview them
+- fix context menu for images and pdf - not pdf export, and duplicate items in the context menu
 
 > medium priority
 
 - inside notebook there should be option to open a .md/imgage/pdf from a file -> and it will be imported from disk to the notebook root?
 - resize(scale down) large images on import to app
 
+- drag and drop to the sidebar - drop files to the sidebar from system
 - add real check for ssh urls to see if they are reachable - something simillar like the http reachability but for ssh
 - support users custom certificates for desktop (Android and iOS already works) - can be easily fixed by configuring the global gitconfig with sslVerify to false for specified domain
 - add something like quick note, which it be deleted after the application exit (for some quick test notes)

@@ -199,4 +199,5 @@
     <string name="settings_check_updates_failed">Could not check for updates</string>
     <string name="settings_download_update">Download %1$s</string>
     <string name="msg_update_available">New version available: %1$s → %2$s</string>
+    <string name="msg_error_pdf_open">Failed to open pdf file</string>
 </resources>

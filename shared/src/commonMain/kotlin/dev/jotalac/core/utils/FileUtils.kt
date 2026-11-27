@@ -65,7 +65,7 @@ fun Path.traverse(): List<FileNode> {
 }
 
 val IMAGE_FILE_EXTENSIONS = listOf(".png", ".jpg", ".jpeg", ".svg", ".gif", ".webp")
-val ALLOWED_FILE_EXTENSIONS = listOf(".md") + IMAGE_FILE_EXTENSIONS
+val ALLOWED_FILE_EXTENSIONS = listOf(".md", ".pdf") + IMAGE_FILE_EXTENSIONS
 
 fun isImageFile(filename: String): Boolean {
     val lowerName = filename.lowercase()
