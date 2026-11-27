@@ -68,7 +68,8 @@ class EditorSyncController(
             } else {
                 state.value.activeNotePath?.let { reloadNote(it) }
                 state.update { it.copy(gitSyncStatus = GitSyncStatus.UpToDate) }
-                snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_notes_synced))
+                // dont show message on successful sync
+//                snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_notes_synced))
             }
         }.onFailure { errorResult ->
             state.update { it.copy(gitSyncStatus = GitSyncStatus.GitSyncFailed) }

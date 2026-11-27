@@ -23,6 +23,9 @@ import dev.jotalac.feature.notebooks_management.ui.create_notebook.CreateNoteboo
 import dev.jotalac.feature.notebooks_management.ui.edit_notebook.EditNotebookViewModel
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListViewModel
 import dev.jotalac.feature.settings.ui.SettingsViewModel
+import dev.jotalac.feature.app_update.data.AppUpdateRepository
+import dev.jotalac.feature.app_update.data.GitHubReleaseSource
+import dev.jotalac.feature.app_update.domain.ReleaseSource
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -60,6 +63,8 @@ val coreModule = module {
 
     single { HttpClient() }
     single<RemoteReachability> { HttpRemoteReachability(get()) }
+    single<ReleaseSource> { GitHubReleaseSource(get()) }
+    single { AppUpdateRepository(get(), get()) }
     single { RemoteStatusMonitor(get(), get()) }
 
 

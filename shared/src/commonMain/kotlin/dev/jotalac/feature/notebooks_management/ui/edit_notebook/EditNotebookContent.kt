@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.notebooks_management.ui.components.SubmittableTextField
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
@@ -63,10 +64,11 @@ internal fun EditNotebookContent(
 
         }
 
+        val additionText = if (isDesktopPlatform) " (HTTPS/SSH)" else ""
         OutlinedTextField(
             value = state.remoteUrl,
             onValueChange = { onEvent(EditNotebookViewModel.EditNotebookEvent.RemoteUrlChanged(it)) },
-            label = { Text(stringResource(Res.string.git_repository_url_input_label)) },
+            label = { Text(stringResource(Res.string.git_repository_url_input_label) + additionText) },
             placeholder = { Text(stringResource(Res.string.git_remote_example)) },
             singleLine = true,
             enabled = !state.isEncrypted,

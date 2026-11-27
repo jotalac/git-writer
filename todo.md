@@ -1,10 +1,12 @@
-## TODO
+# TODO
 
 > high priority
 
-- when creating new release - test that the .tar.gz actually works
-
-- make the spellcheck underlines more muted
+- **for next release:**
+  - inside notebook there should be option to open a .md/imgage/pdf from a file -> and it will be imported from disk to the notebook root?
+  - resize(scale down) large images on import to app
+  - drag and drop to the sidebar - drop files to the sidebar from system
+  - full-text-search across full notebook
 
 > medium priority
 
@@ -17,7 +19,6 @@
   markdown cheatsheet, etc.)
 - add ctrl+r replace (replace all/current)
 - follow clean architecture and introduce UseCases instead of injecting repositories into *r*epositories
-- run periodic git fetch to display if the notes are actually up to date (or just run it once on notebook open)
 - in the settings as possibility to change the commit message
 - add nucleus fs-watcher (or other fs watcher)
 - fix pdf export -> dont export the compose page -> convert to html for proper text selection and reduced size

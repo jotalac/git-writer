@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
-import dev.jotalac.core.ui.components.onContextMenuOpen
+import dev.jotalac.core.ui.components.onContextMenuGesture
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.feature.sidebar.domain.FileNode
 import dev.jotalac.feature.sidebar.domain.FileType
@@ -113,7 +113,8 @@ fun FileTree(
                     treeSize = it.size
                 }
                 .padding(bottom = 20.dp)
-                .onContextMenuOpen { offset ->
+                // right click on desktop, long press on a phone - on the space around the items
+                .onContextMenuGesture { offset ->
                     showContextMenu = true
                     menuOffset = offset
                 }

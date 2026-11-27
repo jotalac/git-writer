@@ -63,6 +63,7 @@ class NotebookRepositoryImplTest {
     fun createTestDir() {
         testDir = Path(SystemTemporaryDirectory, "git_writer_notebooks_test_${Random.nextInt()}")
         SystemFileSystem.createDirectories(testDir)
+        defaultNotebookDirectory = testDir.toString()
     }
 
     @AfterTest
@@ -253,6 +254,18 @@ class NotebookRepositoryImplTest {
         assertNull(repository.activeNotebookState.first())
         // otherwise the editor would try to open a note from the deleted folder
         assertNull(repository.activeNotePath.first())
+    }
+
+    @Test
+    fun `deleting a notebook opened from another folder keeps its files`() = runTest {
+        // like an Obsidian vault the user also edits elsewhere
+        file("vaults/Diary/monday.md")
+        val notebook = repository.openExistingNotebook(pathOf("vaults/Diary")).getOrThrow()
+
+        repository.deleteNotebook(notebook.id).getOrThrow()
+
+        assertTrue(exists(pathOf("vaults/Diary/monday.md")))
+        assertTrue(dao.rows.value.isEmpty())
     }
 
     @Test

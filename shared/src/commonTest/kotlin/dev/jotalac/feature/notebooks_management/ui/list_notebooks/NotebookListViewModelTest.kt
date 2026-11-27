@@ -3,6 +3,7 @@ package dev.jotalac.feature.notebooks_management.ui.list_notebooks
 import dev.jotalac.core.utils.SnackbarManager
 import dev.jotalac.core.utils.SnackbarText
 import dev.jotalac.feature.notebooks_management.domain.Notebook
+import dev.jotalac.feature.notebooks_management.domain.NotebookPathProvider
 import dev.jotalac.feature.notebooks_management.ui.list_notebooks.NotebookListViewModel.NotebookListEvent
 import dev.jotalac.testing.fakes.FakeGitSyncRepository
 import dev.jotalac.testing.fakes.FakeNotebookRepository
@@ -30,7 +31,9 @@ class NotebookListViewModelTest {
     private val team = Notebook(7, "Team", "/nb/Team", "https://example.com/team.git", "me", "token")
     private var dialogClosed = false
 
-    private fun createViewModel() = NotebookListViewModel(notebooks, gitSync, snackbar)
+    private fun createViewModel() = NotebookListViewModel(notebooks, gitSync, snackbar, object : NotebookPathProvider {
+        override fun getDefaultNotebookDirectory() = "/nb"
+    })
 
     private fun TestScope.collectSnackbars(): List<SnackbarText> {
         val received = mutableListOf<SnackbarText>()

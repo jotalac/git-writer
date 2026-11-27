@@ -31,6 +31,7 @@ fun SettingsScreen(
 ) {
     val snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
     val settingsState by settingsViewModel.userSettingsState.collectAsStateWithLifecycle()
+    val appUpdateState by settingsViewModel.appUpdateState.collectAsStateWithLifecycle()
     val settingsTitle = stringResource(Res.string.settings_title)
 
     // Reflect the current screen in the OS window/taskbar title (desktop only).
@@ -66,6 +67,7 @@ fun SettingsScreen(
     ) { innerPadding ->
         SettingsContent(
             userSettingsState = settingsState,
+            appUpdateState = appUpdateState,
             onAction = settingsViewModel::onAction,
             modifier = Modifier
                 .fillMaxSize()

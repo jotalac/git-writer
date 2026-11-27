@@ -179,11 +179,7 @@ class EditorViewModel(
         }
     }
 
-    /**
-     * The last sync before leaving: the app going to the background (on mobile possibly closed for good -
-     * best effort, the OS may stop it) or the desktop app exiting. Only with auto sync on, and not offline -
-     * it could only fail there, while the closed desktop window waits for it.
-     */
+    // sync on closing the app (if auto-sync is enabled) - might not work correctly on all platforms - android would just kill the app
     suspend fun syncBeforeLeaving() {
         if (remoteStatus.value == RemoteStatus.OFFLINE) return
         if (autoSyncNotebookId().first() != null) syncController.sync()
@@ -393,6 +389,7 @@ class EditorViewModel(
             is EditorAction.ResolveAllConflicts -> viewModelScope.launch {
                 syncController.resolveAllConflicts(action.keepLocalChanges)
             }
+
 
             is EditorAction.AbortConflictResolve -> viewModelScope.launch { syncController.abort() }
 

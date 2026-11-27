@@ -50,11 +50,13 @@ internal sealed interface OverlayItem {
     fun measure(measurable: Measurable, layout: TextLayoutResult?, width: Int): Pair<Placeable, IntOffset?>
 }
 
-// on the line kept for it
+// on the line kept for it, from where it starts on it - after the bullet of a list item
 private data class WidgetItem(override val key: Any, val placed: PlacedDecoration<Widget>, val source: String) : OverlayItem {
-    override fun measure(measurable: Measurable, layout: TextLayoutResult?, width: Int): Pair<Placeable, IntOffset?> =
-        measurable.measure(Constraints(minWidth = width, maxWidth = width)) to
-            layout?.let { IntOffset(0, it.getLineTop(it.getLineForOffset(placed.start)).toInt()) }
+    override fun measure(measurable: Measurable, layout: TextLayoutResult?, width: Int): Pair<Placeable, IntOffset?> {
+        val left = layout?.getBoundingBox(placed.start)?.left?.toInt()?.coerceIn(0, width) ?: 0
+        val placeable = measurable.measure(Constraints(minWidth = width - left, maxWidth = width - left))
+        return placeable to layout?.let { IntOffset(left, it.getLineTop(it.getLineForOffset(placed.start)).toInt()) }
+    }
 }
 
 // over the space kept for it
@@ -222,7 +224,7 @@ private fun TaskCheckboxBox(isChecked: Boolean, onClick: () -> Unit, modifier: M
     val checkColor = MaterialTheme.colorScheme.onPrimary
 
     Canvas(modifier = modifier.clickable(interactionSource = null, indication = null, onClick = onClick)) {
-        val side = minOf(size.width, size.height) * 0.75f
+        val side = minOf(size.width, size.height) * 0.9f
         val topLeft = Offset((size.width - side) / 2, (size.height - side) / 2)
         val radius = CornerRadius(side * 0.2f)
 

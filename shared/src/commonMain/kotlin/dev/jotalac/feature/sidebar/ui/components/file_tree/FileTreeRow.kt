@@ -34,15 +34,18 @@ import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.onContextMenuOpen
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
+import dev.jotalac.core.utils.isImageFile
 import dev.jotalac.feature.sidebar.domain.FileNode
-import dev.jotalac.feature.sidebar.domain.FileType
+import dev.jotalac.feature.sidebar.domain.fileType
 import dev.jotalac.feature.sidebar.domain.FlatFileNode
 import dev.jotalac.feature.sidebar.ui.SidebarAction
 import dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.arrow_right
+import git_writer.shared.generated.resources.docs
 import git_writer.shared.generated.resources.expand_folders
 import git_writer.shared.generated.resources.folder
+import git_writer.shared.generated.resources.image_icon
 import git_writer.shared.generated.resources.more_vert
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -148,7 +151,7 @@ fun FileTreeRow(
             onDismissRequest = { showMenu = false },
             itemPath = flatNode.node.path,
             onAction = onAction,
-            itemType = if (flatNode.node is FileNode.File) FileType.FILE else FileType.DIRECTORY,
+            itemType = flatNode.node.fileType,
         )
     }
 }
@@ -230,6 +233,16 @@ private fun RowScope.FileContent(
             modifier = Modifier.weight(1f)
         )
     } else {
+
+        // icon before the item
+        Icon(
+            painter = if (isImageFile(node.name)) painterResource(Res.drawable.image_icon)
+                else painterResource(Res.drawable.docs),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(end = 8.dp).size(MaterialTheme.dimensions.iconMedium)
+        )
+
         Text(
             text = baseName,
             maxLines = 1,
@@ -240,18 +253,20 @@ private fun RowScope.FileContent(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
+
+        val fileExtension = node.name.substringAfterLast('.', "")
+        // display the file type if it is not a markdown note
+        if (fileExtension.isNotEmpty() && fileExtension.lowercase() != "md") {
+            Text(
+                text = fileExtension.uppercase(),
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = MaterialTheme.dimensions.badgeTextSize
+                ),
+                color = MaterialTheme.colorScheme.outline
+            )
+        }
     }
 
-    val fileExtension = node.name.substringAfterLast('.', "")
-    if (fileExtension.isNotEmpty() && fileExtension.lowercase() != "md") {
-        Text(
-            text = fileExtension.uppercase(),
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontSize = MaterialTheme.dimensions.badgeTextSize
-            ),
-            color = MaterialTheme.colorScheme.outline
-        )
-    }
 }
 
 @Composable

@@ -21,11 +21,11 @@ import dev.jotalac.core.data.UserSettingsState
 import dev.jotalac.core.ui.components.AppVerticalScrollbar
 import dev.jotalac.core.ui.components.DelayedTooltip
 import dev.jotalac.core.ui.theme.dimensions
+import dev.jotalac.feature.settings.ui.settings_sections.AboutSettings
 import dev.jotalac.feature.settings.ui.settings_sections.AppearanceSettings
 import dev.jotalac.feature.settings.ui.settings_sections.LanguageSettings
 import dev.jotalac.feature.settings.ui.settings_sections.SyncSettings
 import git_writer.shared.generated.resources.Res
-import git_writer.shared.generated.resources.app_version_display
 import git_writer.shared.generated.resources.arrow_right
 import git_writer.shared.generated.resources.github
 import git_writer.shared.generated.resources.opened_book
@@ -35,11 +35,11 @@ import git_writer.shared.generated.resources.toggle_collapse
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import git_writer.shared.BuildKonfig
 
 @Composable
 fun SettingsContent(
     userSettingsState: UserSettingsState,
+    appUpdateState: AppUpdateUiState,
     onAction: (SettingsViewModel.SettingsAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -82,23 +82,12 @@ fun SettingsContent(
                 onAutoSyncChange = { onAction(SettingsViewModel.SettingsAction.ChangeAutoSync(it)) },
             )
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                ProjectLinks()
+            AboutSettings(
+                state = appUpdateState,
+                onCheckForUpdates = { onAction(SettingsViewModel.SettingsAction.CheckForUpdates) },
+            )
 
-                // show current app version
-                Text(
-                    text = stringResource(Res.string.app_version_display) + BuildKonfig.APP_VERSION,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
+            ProjectLinks(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
 
         AppVerticalScrollbar(
@@ -115,10 +104,25 @@ private const val DOCS_URL = "https://jotalac.github.io/git-writer-docs/"
 
 // links to the project's repository and its documentation, opened in the browser
 @Composable
-private fun ProjectLinks() {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        ProjectLink(Res.drawable.github, stringResource(Res.string.settings_github_link), GITHUB_URL)
-        ProjectLink(Res.drawable.opened_book, stringResource(Res.string.settings_docs_link), DOCS_URL)
+private fun ProjectLinks(modifier: Modifier = Modifier) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ProjectLink(Res.drawable.github, stringResource(Res.string.settings_github_link), GITHUB_URL)
+            ProjectLink(Res.drawable.opened_book, stringResource(Res.string.settings_docs_link), DOCS_URL)
+        }
+
+        Text(
+            text = "Free and Open-source",
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline
+        )
+
     }
 }
 
@@ -168,6 +172,8 @@ fun SettingsCollapsableSection(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     initiallyExpanded: Boolean = false,
+    // draws attention to the section: shown next to the title, with the subtitle in the accent color
+    highlightIcon: DrawableResource? = null,
     content: @Composable () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(initiallyExpanded) }
@@ -193,16 +199,30 @@ fun SettingsCollapsableSection(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        if (highlightIcon != null) {
+                            Icon(
+                                painter = painterResource(highlightIcon),
+                                contentDescription = null,
+                                modifier = Modifier.size(MaterialTheme.dimensions.iconMedium),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                     if (subtitle != null) {
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (highlightIcon != null) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

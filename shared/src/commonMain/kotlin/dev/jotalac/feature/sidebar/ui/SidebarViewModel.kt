@@ -26,8 +26,12 @@ import git_writer.shared.generated.resources.err_failed_delete
 import git_writer.shared.generated.resources.err_failed_export_pdf
 import git_writer.shared.generated.resources.err_failed_move
 import git_writer.shared.generated.resources.err_failed_rename
+import git_writer.shared.generated.resources.msg_error_pdf_open
 import git_writer.shared.generated.resources.msg_path_copied
 import git_writer.shared.generated.resources.msg_pdf_exported
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 
 data class SidebarState(
     val activeNotebook: Notebook? = null,
@@ -287,6 +291,14 @@ class EditorSidebarViewModel(
     }
 
     fun setActiveNote(notePath: String) {
+        // if it is a pdf, just open it with default pdf viewer
+        if (notePath.endsWith(".pdf", ignoreCase = true)) {
+            runCatching { FileKit.openFileWithDefaultApplication((PlatformFile(notePath))) }
+                .onFailure { snackbarManager.showMessage(SnackbarText.resource(Res.string.msg_error_pdf_open)) }
+            return
+        }
+
+        // if normal .md or image - display it
         viewModelScope.launch {
             val result = notebookRepository.activateNote(notePath)
 

@@ -1,16 +1,8 @@
 package dev.jotalac.feature.editor.ui.components.markdown_rendering
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
@@ -27,11 +19,10 @@ import com.mikepenz.markdown.compose.LocalReferenceLinkHandler
 import com.mikepenz.markdown.compose.components.MarkdownComponentModel
 import com.mikepenz.markdown.model.ReferenceLinkHandler
 import com.mikepenz.markdown.utils.getUnescapedTextInNode
+import dev.jotalac.core.ui.components.AdaptiveMenu
 import dev.jotalac.core.ui.components.ContextMenuHeader
 import dev.jotalac.core.ui.components.ContextMenuItem
-import dev.jotalac.core.ui.components.DesktopContextMenu
-import dev.jotalac.core.ui.components.onContextMenuOpen
-import dev.jotalac.core.utils.isDesktopPlatform
+import dev.jotalac.core.ui.components.onContextMenuGesture
 import git_writer.shared.generated.resources.Res
 import git_writer.shared.generated.resources.delete
 import git_writer.shared.generated.resources.image_remove
@@ -59,15 +50,7 @@ fun CustomImageComponent(
     val pictureSize = imageTransformer.intrinsicSize(imageData.painter)
 
     var menuPosition by remember { mutableStateOf<DpOffset?>(null) }
-    val haptic = LocalHapticFeedback.current
-    val menuModifier = when {
-        onTextChange == null -> Modifier
-        isDesktopPlatform -> Modifier.onContextMenuOpen { menuPosition = it }
-        else -> Modifier.onLongPress {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            menuPosition = DpOffset.Zero
-        }
-    }
+    val menuModifier = if (onTextChange == null) Modifier else Modifier.onContextMenuGesture { menuPosition = it }
 
     Box {
         Image(
@@ -101,7 +84,6 @@ fun CustomImageComponent(
 }
 
 // a menu at the pointer on desktop, a sheet from the bottom on a phone
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ImageContextMenu(
     onDismissRequest: () -> Unit,
@@ -133,27 +115,7 @@ private fun ImageContextMenu(
         )
     }
 
-    if (isDesktopPlatform) {
-        DesktopContextMenu(expanded = true, onDismissRequest = onDismissRequest, offset = DpOffset.Zero, content = items)
-    } else {
-        ModalBottomSheet(onDismissRequest = onDismissRequest) {
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).padding(bottom = 24.dp)) { items() }
-        }
-    }
-}
-
-// a long press on image on phone
-private fun Modifier.onLongPress(onLongPress: () -> Unit): Modifier = pointerInput(Unit) {
-    awaitEachGesture {
-        val down = awaitFirstDown(requireUnconsumed = false)
-        if (awaitLongPressOrCancellation(down.id) != null) {
-            onLongPress()
-            do {
-                val event = awaitPointerEvent()
-                event.changes.forEach { it.consume() }
-            } while (event.changes.any { it.pressed })
-        }
-    }
+    AdaptiveMenu(expanded = true, onDismissRequest = onDismissRequest, content = items)
 }
 
 // --- resizing ------------------------------------------------------------------------------------

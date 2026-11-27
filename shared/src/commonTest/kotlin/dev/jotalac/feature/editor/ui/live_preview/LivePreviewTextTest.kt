@@ -338,6 +338,19 @@ class LivePreviewTextTest {
     }
 
     @Test
+    fun `an image in a list item is drawn beside its bullet - its source where the cursor is`() {
+        val text = "- item\n    - ![photo|270](images/a.png)\n    - more"
+        val image = text.indexOf("![")
+
+        val widget = preview(text).widgets.single()
+        assertEquals(WidgetKind.Image, widget.decoration.kind)
+        assertEquals(image, widget.decoration.start)
+        assertEquals("![photo|270](images/a.png)", text.substring(widget.decoration.start, widget.decoration.end))
+
+        assertTrue(preview(text, cursor = image + 3).widgets.isEmpty())
+    }
+
+    @Test
     fun `maths inside text is drawn as a formula away from the cursor`() {
         val preview = preview("area \$x^2\$ here", styles = withFormulas())
 

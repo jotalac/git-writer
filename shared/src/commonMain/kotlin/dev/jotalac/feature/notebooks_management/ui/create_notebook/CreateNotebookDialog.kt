@@ -367,13 +367,15 @@ private fun CloneNotebookForm(
             submit = submitForm
         )
 
+        val additionLabel = if (isDesktopPlatform) " (HTTP/SSH)" else ""
         SubmittableTextField(
             value = url,
             onValueChange = onUrlChange,
             label = Res.string.git_repository_url_input_label,
             placeholder = Res.string.git_remote_example,
             modifier = Modifier.fillMaxWidth(),
-            submit = submitForm
+            submit = submitForm,
+            textAddition = additionLabel
         )
 
         // ssh signs in with the device's keys - only a passphrase of a key that is not in the ssh-agent
