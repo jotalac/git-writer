@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import dev.jotalac.core.ui.components.DelayedTooltip
 import dev.jotalac.core.ui.theme.dimensions
 import org.jetbrains.compose.resources.DrawableResource
@@ -18,6 +19,7 @@ fun SidebarButtonWithTooltip(
     contentDescription: String,
     tint: Color = MaterialTheme.colorScheme.onSecondaryContainer,
     enabled: Boolean = true,
+    iconSize: Dp = MaterialTheme.dimensions.iconLarge,
 ) {
     DelayedTooltip(
         text = contentDescription,
@@ -32,7 +34,7 @@ fun SidebarButtonWithTooltip(
                 painter = painterResource(icon),
                 contentDescription = contentDescription,
                 tint = if (enabled) tint else MaterialTheme.colorScheme.outline,
-                modifier = Modifier.size(MaterialTheme.dimensions.iconLarge)
+                modifier = Modifier.size(iconSize)
             )
         }
     }

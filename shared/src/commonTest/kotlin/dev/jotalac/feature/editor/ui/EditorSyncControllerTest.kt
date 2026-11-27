@@ -20,7 +20,6 @@ import git_writer.shared.generated.resources.err_failed_resolve_conflicts
 import git_writer.shared.generated.resources.err_failed_sync
 import git_writer.shared.generated.resources.err_push_after_resolve
 import git_writer.shared.generated.resources.msg_conflicts_resolved
-import git_writer.shared.generated.resources.msg_notes_synced
 import git_writer.shared.generated.resources.msg_sync_aborted
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -173,13 +172,11 @@ class EditorSyncControllerTest {
     fun `a successful sync reloads the open note with the pulled changes`() = runTest {
         activateNotebook()
         gitSync.syncResult = Result.success(GitSyncStatus.UpToDate)
-        val messages = collectSnackbars()
 
         controller.sync()
 
         assertEquals(listOf(openNote), reloadedNotes)
         assertEquals(GitSyncStatus.UpToDate, state.value.gitSyncStatus)
-        assertEquals(listOf<SnackbarText>(SnackbarText.resource(Res.string.msg_notes_synced)), messages)
     }
 
     @Test

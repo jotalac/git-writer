@@ -2,13 +2,11 @@
 
 > high priority
 
-- improve the sidebar top action button - very confusing
-- fix context menu for images and pdf - not pdf export, and duplicate items in the context menu
-
-- for next release:
+- **for next release:**
   - inside notebook there should be option to open a .md/imgage/pdf from a file -> and it will be imported from disk to the notebook root?
   - resize(scale down) large images on import to app
   - drag and drop to the sidebar - drop files to the sidebar from system
+  - full-text-search across full notebook
 
 > medium priority
 

@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.ContextMenuItem
-import dev.jotalac.core.ui.components.DesktopContextMenu
+import dev.jotalac.core.ui.components.AdaptiveMenu
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.sidebar.domain.FileType
 import dev.jotalac.feature.sidebar.ui.SidebarAction
@@ -32,11 +32,7 @@ fun AdaptiveContextMenu(
         }
     }
 
-    if (isDesktopPlatform) {
-        DesktopContextMenu(expanded = showMenu, onDismissRequest = onDismissRequest, offset = menuOffset, content = items)
-    } else {
-        MobileContextMenu(showMenu = showMenu, onDismissRequest = onDismissRequest, content = items)
-    }
+    AdaptiveMenu(expanded = showMenu, onDismissRequest = onDismissRequest, offset = menuOffset, content = items)
 }
 
 // a note can also be duplicated and exported, other files (images, pdfs) are not text

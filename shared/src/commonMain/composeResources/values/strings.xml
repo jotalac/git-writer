@@ -2,7 +2,6 @@
     <string name="create_notebook_title">Add Notebook</string>
     <string name="init_notebook">Init</string>
     <string name="empty_notebook_label">Notebook is empty</string>
-    <string name="no_active_notebook_label">No active notebook</string>
     <string name="open_notebook_title">Open notebook</string>
     <string name="clone_notebook">Clone (git)</string>
     <string name="no_saved_notebooks_msg">No notebooks available</string>
@@ -16,8 +15,6 @@
     <string name="git_auth_placeholder">Password/Token</string>
     <string name="cancel_button">Cancel</string>
     <string name="open_notebook">Open notebook</string>
-    <string name="add_notebook">Add notebook</string>
-    <string name="open_settings">Open settings</string>
     <string name="plus_icon">Plus icon</string>
     <string name="delete_icon">Delete icon</string>
     <string name="git_merge_icon">Git merge icon</string>
@@ -28,7 +25,6 @@
     <string name="no_file_loaded_msg">No file loaded</string>
     <string name="no_file_opened_title">No file is opened</string>
     <string name="no_file_opened_subtitle">Select a file from the sidebar to start editing</string>
-    <string name="create_new_file">Add note</string>
     <string name="create_new_folder">Create folder</string>
     <string name="collapse_folders">Collapse folders</string>
     <string name="edit_active_notebook">Edit notebook</string>
@@ -200,4 +196,17 @@
     <string name="settings_download_update">Download %1$s</string>
     <string name="msg_update_available">New version available: %1$s → %2$s</string>
     <string name="msg_error_pdf_open">Failed to open pdf file</string>
+    <string name="sidebar_new_note">New note</string>
+    <string name="sidebar_new_folder">New folder</string>
+    <string name="sidebar_files_header">Files</string>
+    <string name="sidebar_notebooks_header">Notebooks</string>
+    <string name="notebook_switcher_switch">Switch notebook</string>
+    <string name="notebook_menu_new">New notebook</string>
+    <string name="notebook_menu_manage">Manage notebooks</string>
+    <string name="notebook_status_synced">Synced with Git</string>
+    <string name="notebook_status_local">Local only</string>
+    <string name="notebook_status_encrypted_msg">Encrypted on Git remote</string>
+    <string name="sidebar_no_notebook_title">No notebook open</string>
+    <string name="sidebar_no_notebook_hint">Open or create a notebook</string>
+    <string name="sidebar_no_notebook_message">A notebook is a folder of your notes that can sync with Git. Create one to start writing.</string>
 </resources>
