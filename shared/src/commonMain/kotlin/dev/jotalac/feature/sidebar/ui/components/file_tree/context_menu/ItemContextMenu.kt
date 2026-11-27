@@ -6,12 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.jotalac.core.ui.components.ContextMenuItem
+import dev.jotalac.core.ui.components.DesktopContextMenu
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.sidebar.domain.FileType
 import dev.jotalac.feature.sidebar.ui.SidebarAction
 import git_writer.shared.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
+// context menu for item in file tree
 @Composable
 fun AdaptiveContextMenu(
     showMenu: Boolean,
@@ -22,32 +24,28 @@ fun AdaptiveContextMenu(
     onAction: (SidebarAction) -> Unit,
     isRoot: Boolean = false
 ) {
+    val items: @Composable () -> Unit = {
+        when (itemType) {
+            FileType.DIRECTORY -> DirectoryContextMenuContent(onAction, itemPath, onDismissRequest, isRoot)
+            FileType.NOTE -> FileContextMenuContent(onAction, itemPath, onDismissRequest, isNote = true)
+            FileType.GENERAL_FILE -> FileContextMenuContent(onAction, itemPath, onDismissRequest, isNote = false)
+        }
+    }
+
     if (isDesktopPlatform) {
-        FileTreeContextMenu(
-            showMenu = showMenu,
-            menuOffset = menuOffset,
-            itemType = itemType,
-            itemPath = itemPath,
-            onAction = onAction,
-            onDismissRequest = onDismissRequest,
-            isRoot = isRoot
-        )
+        DesktopContextMenu(expanded = showMenu, onDismissRequest = onDismissRequest, offset = menuOffset, content = items)
     } else {
-        MobileContextMenu(
-            showMenu = showMenu,
-            itemType = itemType,
-            itemPath = itemPath,
-            onAction = onAction,
-            onDismissRequest = onDismissRequest
-        )
+        MobileContextMenu(showMenu = showMenu, onDismissRequest = onDismissRequest, content = items)
     }
 }
 
+// a note can also be duplicated and exported, other files (images, pdfs) are not text
 @Composable
-fun FileContextMenuContent(
+private fun FileContextMenuContent(
     onAction: (SidebarAction) -> Unit,
     itemPath: String,
     onDismissRequest: () -> Unit,
+    isNote: Boolean,
 ) {
     ContextMenuItem(
         text = stringResource(Res.string.rename_contect_menu_item),
@@ -63,21 +61,23 @@ fun FileContextMenuContent(
         itemColor = MaterialTheme.colorScheme.error
     )
 
-    HorizontalDivider()
+    if (isNote || isDesktopPlatform) HorizontalDivider()
 
-    ContextMenuItem(
-        text = stringResource(Res.string.duplicate_contect_menu_item),
-        iconPainter = Res.drawable.duplicate,
-        onClick = { onAction(SidebarAction.DuplicateNote(itemPath)) },
-        onDismissRequest = onDismissRequest,
-    )
+    if (isNote) {
+        ContextMenuItem(
+            text = stringResource(Res.string.duplicate_contect_menu_item),
+            iconPainter = Res.drawable.duplicate,
+            onClick = { onAction(SidebarAction.DuplicateNote(itemPath)) },
+            onDismissRequest = onDismissRequest,
+        )
 
-    ContextMenuItem(
-        text = stringResource(Res.string.export_pdf_context_menu_item),
-        iconPainter = Res.drawable.picture_as_pdf,
-        onClick = { onAction(SidebarAction.ExportPdf(itemPath)) },
-        onDismissRequest = onDismissRequest,
-    )
+        ContextMenuItem(
+            text = stringResource(Res.string.export_pdf_context_menu_item),
+            iconPainter = Res.drawable.picture_as_pdf,
+            onClick = { onAction(SidebarAction.ExportPdf(itemPath)) },
+            onDismissRequest = onDismissRequest,
+        )
+    }
 
     if (isDesktopPlatform) {
         ContextMenuItem(
@@ -90,7 +90,7 @@ fun FileContextMenuContent(
 }
 
 @Composable
-fun FolderContextMenuContent(
+private fun DirectoryContextMenuContent(
     onAction: (SidebarAction) -> Unit,
     itemPath: String,
     onDismissRequest: () -> Unit,

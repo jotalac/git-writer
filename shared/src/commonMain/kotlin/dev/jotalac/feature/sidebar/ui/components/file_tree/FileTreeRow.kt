@@ -35,7 +35,7 @@ import dev.jotalac.core.ui.components.onContextMenuOpen
 import dev.jotalac.core.ui.theme.dimensions
 import dev.jotalac.core.utils.isDesktopPlatform
 import dev.jotalac.feature.sidebar.domain.FileNode
-import dev.jotalac.feature.sidebar.domain.FileType
+import dev.jotalac.feature.sidebar.domain.fileType
 import dev.jotalac.feature.sidebar.domain.FlatFileNode
 import dev.jotalac.feature.sidebar.ui.SidebarAction
 import dev.jotalac.feature.sidebar.ui.components.file_tree.context_menu.AdaptiveContextMenu
@@ -148,7 +148,7 @@ fun FileTreeRow(
             onDismissRequest = { showMenu = false },
             itemPath = flatNode.node.path,
             onAction = onAction,
-            itemType = if (flatNode.node is FileNode.File) FileType.FILE else FileType.DIRECTORY,
+            itemType = flatNode.node.fileType,
         )
     }
 }

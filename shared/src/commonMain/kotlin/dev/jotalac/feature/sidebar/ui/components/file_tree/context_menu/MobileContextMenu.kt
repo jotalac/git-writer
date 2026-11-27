@@ -10,20 +10,17 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.jotalac.feature.sidebar.domain.FileType
-import dev.jotalac.feature.sidebar.ui.SidebarAction
 
+// the menu on a phone - a sheet from the bottom with the menu's items
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MobileContextMenu(
     showMenu: Boolean,
     onDismissRequest: () -> Unit,
-    itemType: FileType,
-    itemPath: String,
-    onAction: (SidebarAction) -> Unit
+    content: @Composable () -> Unit,
 ) {
     val sheetState = rememberBottomSheetState(SheetValue.Hidden)
-    
+
     if (showMenu) {
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
@@ -34,19 +31,7 @@ fun MobileContextMenu(
                     .fillMaxWidth()
                     .padding(bottom = 24.dp, top = 24.dp)
             ) {
-                if (itemType == FileType.FILE) {
-                    FileContextMenuContent(
-                        onAction = onAction,
-                        itemPath = itemPath,
-                        onDismissRequest = onDismissRequest
-                    )
-                } else {
-                    FolderContextMenuContent(
-                        onAction = onAction,
-                        itemPath = itemPath,
-                        onDismissRequest = onDismissRequest
-                    )
-                }
+                content()
             }
         }
     }
